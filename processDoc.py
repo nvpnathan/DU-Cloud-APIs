@@ -1,4 +1,7 @@
 import os
+import mimetypes
+import pstats
+import cProfile
 import requests
 from dotenv import load_dotenv
 
@@ -63,8 +66,14 @@ def digitize_document(base_url, projectId, document_path, bearer_token):
     }    
 
     try:
+        # Get Document mime type
+        mime_type, _ = mimetypes.guess_type(document_path)
+        # If the MIME type couldn't be guessed, default to 'application/octet-stream'
+        if mime_type is None:
+            mime_type = 'application/octet-stream'
+
         # Open the file
-        files = {'File': (document_path, open(document_path, 'rb'), 'image/jpeg')}
+        files = {'File': (document_path, open(document_path, 'rb'), mime_type)}
         # Make the POST request with files parameter
         response = requests.post(api_url, files=files, headers=headers)
 
@@ -150,4 +159,15 @@ def get_extraction_results():
         confidence = data.get('Confidence')
         print(f"{field_name}: {values}, Confidence: {confidence}")
 
+
 get_extraction_results()
+
+
+### Analytic purposes ###
+# cProfile.run('get_extraction_results()', 'profile_stats')
+
+# # Analyze the profiling results
+# stats = pstats.Stats('profile_stats')
+# stats.strip_dirs()
+# stats.sort_stats('cumulative')  # Sort by cumulative time spent in functions
+# stats.print_stats(10)  # Print the top 10 functions by cumulative time
