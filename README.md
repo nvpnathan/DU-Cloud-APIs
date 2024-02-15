@@ -25,8 +25,34 @@ This example consists of several functions:
 ## Requirements
 
 - Python 3.x
-- Requests library (can be installed via `pip install requests`)
-- `dotenv` library (can be installed via `pip install python-dotenv`)
+- `requests` library (install via `pip install requests`)
+- `python-dotenv` library (install via `pip install python-dotenv`)
+
+## Setup
+
+1. Clone this repository to your local machine.
+2. Install the required Python libraries using `pip`:
+
+   `pip install -r requirements.txt`
+3. Set up a `.env` file with the following environment variables:
+
+  ```env
+  BASE_URL=<UiPath API base URL>
+  PROJECT_ID=<Your UiPath project ID>
+  APP_ID=<Your UiPath app ID>
+  APP_SECRET=<Your UiPath app secret>
+  AUTH_URL=<UiPath authentication URL>
+  ```
+
+## Usage
+
+1. Place the documents you want to process in the specified document folder.
+2. Run the script by executing `python main.py`.
+3. The script will process each document in the folder:
+- Digitize the document
+- Classify the document
+- Extract data from the document
+4. The extraction results will be written to CSV files in the same folder as the documents.
 
 ## Example
 
@@ -56,5 +82,4 @@ process_documents_in_folder()
 
 ## TODO
 
-* Save Extraction Results to CSV
 * Add validation API support for Action Center
