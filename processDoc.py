@@ -1,18 +1,17 @@
 import os
 import mimetypes
+import requests
 import pstats
 import cProfile
-import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 
-document_path = "ID Card.jpg"
-
+document_folder = "./"
 
 base_url = os.environ['BASE_URL']
 projectId = os.environ['PROJECT_ID']
-extractorId = os.environ['EXTRACTOR_ID']
+# extractorId = os.environ['EXTRACTOR_ID']
 
 # Auth
 client_id = os.environ['APP_ID']
@@ -39,7 +38,7 @@ def get_bearer_token(client_id, client_secret, token_url):
         # Extract and return the access token
         access_token = token_data.get('access_token')
         if access_token:
-            print("Authenticated")
+            print("Authenticated!\n")
             return access_token
         else:
             print("Error: No access token received")
@@ -53,7 +52,6 @@ def get_bearer_token(client_id, client_secret, token_url):
 bearer_token = get_bearer_token(client_id, client_secret, token_url)
 # if bearer_token:
 #     print("Bearer Token:", bearer_token)
-
 
 
 # Digitize Document
@@ -91,53 +89,93 @@ def digitize_document(base_url, projectId, document_path, bearer_token):
 
     except Exception as e:
         print(f"An error occurred: {e}")
-    
+
+
+# Classify Document
+def classify_document(base_url, projectId, document_id, bearer_token):
+    # Define the API endpoint for document classification
+    api_url = f"{base_url}{projectId}/classifiers/ml-classification/classification?api-version=1"
+
+    # Define the headers with the Bearer token and content type
+    headers = {
+        "Authorization": f"Bearer {bearer_token}",
+        "accept": "text/plain",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "documentId": f"{document_id}"
+    }
+
+    try:
+        # Make the POST request
+        response = requests.post(api_url, json=data, headers=headers)
+
+        if response.status_code == 200:
+            print("Document successfully classified!")
+            # Try parsing the JSON response
+            try:
+                classificationResults = response.json()
+                document_type_id = None
+                for result in classificationResults['classificationResults']:
+                    if result['DocumentId'] == document_id:
+                        document_type_id = result['DocumentTypeId']
+                        classification_confidence = result['Confidence']
+                        break
+
+                if document_type_id:
+                    print(f"Document Type ID: {document_type_id}, Confidence: {classification_confidence}\n")
+                else:
+                    print("Document ID not found in classification results.")
+
+                return document_type_id
+            except ValueError as ve:
+                print(f"Error parsing JSON response: {ve}")
+        else:
+            print(f"Error: {response.status_code} - {response.text}")
+
+    except Exception as e:
+        print(f"An error occurred during classification: {e}")
+
 
 # Extract Document Data
-def extract_document(base_url, project_id, document_path, bearer_token):
-    # Digitize the document first
-    document_id = digitize_document(base_url, project_id, document_path, bearer_token)
-    
-    if document_id:
-        # Define the API endpoint for document extraction
-        api_url = f"{base_url}{projectId}/extractors/{extractorId}/extraction?api-version=1"
+def extract_document(base_url, projectId, extractorId, document_id, bearer_token):
+    # Define the API endpoint for document extraction
+    api_url = f"{base_url}{projectId}/extractors/{extractorId}/extraction?api-version=1"
 
-        # Define the headers with the Bearer token and content type
-        headers = {
-            "Authorization": f"Bearer {bearer_token}",
-            "accept": "text/plain",
-            "Content-Type": "application/json"
-        }
+    # Define the headers with the Bearer token and content type
+    headers = {
+        "Authorization": f"Bearer {bearer_token}",
+        "accept": "text/plain",
+        "Content-Type": "application/json"
+    }
 
-        data = {
-            "documentId": f"{document_id}",
-            "prompts": None
-        }
-    
-        try:
-            # Make the GET request
-            response = requests.post(api_url, json=data, headers=headers)
+    data = {
+        "documentId": f"{document_id}",
+        "prompts": None
+    }
 
-            if response.status_code == 200:
-                print("Document successfully extracted!\n")
-                # Try parsing the JSON response
-                try:
-                    extracted_data = response.json()
-                    return extracted_data
-                except ValueError as ve:
-                    print(f"Error parsing JSON response: {ve}")
-            else:
-                print(f"Error: {response.status_code} - {response.text}")
+    try:
+        # Make the POST request
+        response = requests.post(api_url, json=data, headers=headers)
 
-        except Exception as e:
-            print(f"An error occurred during extraction: {e}")
+        if response.status_code == 200:
+            print("Document successfully extracted!\n")
+            # Try parsing the JSON response
+            try:
+                extracted_data = response.json()
+                return extracted_data
+            except ValueError as ve:
+                print(f"Error parsing JSON response: {ve}")
+        else:
+            print(f"Error: {response.status_code} - {response.text}")
 
-    # Return None if an error occurs during digitization, extraction, or parsing
-    return None
+    except Exception as e:
+        print(f"An error occurred during extraction: {e}")
+
 
 # Print Extracted Results
-def get_extraction_results():
-    extraction_results = extract_document(base_url, projectId, document_path, bearer_token)
+def get_extraction_results(extraction_results):
     field_data = {}
 
     for field in extraction_results['extractionResult']['ResultsDocument']['Fields']:
@@ -151,7 +189,6 @@ def get_extraction_results():
         if field_name:
             field_data[field_name] = {'values': values, 'Confidence': confidence}
 
-
     # Print parsed data
     print("Extraction Results: \n")
     for field_name, data in field_data.items():
@@ -160,11 +197,28 @@ def get_extraction_results():
         print(f"{field_name}: {values}, Confidence: {confidence}")
 
 
-get_extraction_results()
+# Main function to process documents in the folder
+def process_documents_in_folder(folder_path):
+    for filename in os.listdir(folder_path):
+        if filename.endswith(('.png',' .jpe', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp', '.pdf' )):  # Filter for supported file types
+            document_path = os.path.join(folder_path, filename)
+            print(f"Processing document: {document_path}")
+            bearer_token = get_bearer_token(client_id, client_secret, token_url)
+            if bearer_token:
+                document_id = digitize_document(base_url, projectId, document_path, bearer_token)
+                if document_id:
+                    extractorId = classify_document(base_url, projectId, document_id, bearer_token)
+                    if extractorId:
+                        extraction_results = extract_document(base_url, projectId, extractorId, document_id, bearer_token)
+                        if extraction_results:
+                            get_extraction_results(extraction_results)
+
+# Call the main function to process documents in the specified folder
+process_documents_in_folder(document_folder)
 
 
 ### Analytic purposes ###
-# cProfile.run('get_extraction_results()', 'profile_stats')
+# cProfile.run('process_documents_in_folder(document_folder)', 'profile_stats')
 
 # # Analyze the profiling results
 # stats = pstats.Stats('profile_stats')
