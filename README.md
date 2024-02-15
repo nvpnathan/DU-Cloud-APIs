@@ -24,9 +24,9 @@ This example consists of several functions:
 
 ## Requirements
 
-- Python 3.x
-- `requests` library (install via `pip install requests`)
-- `python-dotenv` library (install via `pip install python-dotenv`)
+- Python 3.11.6
+- `requests` library 
+- `python-dotenv` library
 
 ## Setup
 
