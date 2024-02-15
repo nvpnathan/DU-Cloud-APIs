@@ -1,4 +1,5 @@
 import os
+import csv
 import mimetypes
 import requests
 import pstats
@@ -11,7 +12,7 @@ document_folder = "./"
 
 base_url = os.environ['BASE_URL']
 projectId = os.environ['PROJECT_ID']
-# extractorId = os.environ['EXTRACTOR_ID']
+
 
 # Auth
 client_id = os.environ['APP_ID']
@@ -197,6 +198,42 @@ def get_extraction_results(extraction_results):
         print(f"{field_name}: {values}, Confidence: {confidence}")
 
 
+# Write Results to CSV
+def write_extraction_results_to_csv(extraction_results, document_path):
+    fields_to_extract = ['FieldName', 'Value', 'Confidence', 'OcrConfidence', 'IsMissing']
+    
+    # Extract file name without extension
+    file_name = os.path.splitext(os.path.basename(document_path))[0]
+    
+    # Construct output file name with .csv extension
+    output_file = file_name + '.csv'
+    
+    with open(output_file, 'w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fields_to_extract)
+        writer.writeheader()
+        
+        for field in extraction_results['extractionResult']['ResultsDocument']['Fields']:
+            if 'Values' in field and field['Values']:
+                field_data = {
+                    'FieldName': field['FieldName'],
+                    'Value': field['Values'][0]['Value'],
+                    'Confidence': field['Values'][0].get('Confidence', ''),
+                    'OcrConfidence': field['Values'][0].get('OcrConfidence', ''),
+                    'IsMissing': field['IsMissing']
+                }
+                writer.writerow(field_data)
+            else:
+                # Handle case where Values is empty or None
+                field_data = {
+                    'FieldName': field['FieldName'],
+                    'Value': '',
+                    'Confidence': '',
+                    'OcrConfidence': '',
+                    'IsMissing': field['IsMissing']
+                }
+                writer.writerow(field_data)
+
+
 # Main function to process documents in the folder
 def process_documents_in_folder(folder_path):
     for filename in os.listdir(folder_path):
@@ -212,6 +249,8 @@ def process_documents_in_folder(folder_path):
                         extraction_results = extract_document(base_url, projectId, extractorId, document_id, bearer_token)
                         if extraction_results:
                             get_extraction_results(extraction_results)
+                            write_extraction_results_to_csv(extraction_results, document_path)
+
 
 # Call the main function to process documents in the specified folder
 process_documents_in_folder(document_folder)
