@@ -1,4 +1,4 @@
-# Document Extraction Example
+# Document Understanding Cloud APIs Example
 
 This code snippet demonstrates how to digitize a document and extract fields from it using a machine learning extractor endpoint. In this example, the ML model used is for processing ID cards.
 
