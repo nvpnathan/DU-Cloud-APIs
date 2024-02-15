@@ -14,9 +14,13 @@ This example consists of several functions:
 
 2. `digitize_document`: This function digitizes the input document by making a POST request to a digitization endpoint. It returns the document ID upon successful digitization.
 
-3. `extract_document`: This function extracts fields from the digitized document using a machine learning extractor endpoint. It requires the document ID obtained from the `digitize_document` function.
+3. `classify_document`: This function classifies the digitized document using a machine learning classification endpoint. It requires the document ID obtained from the `digitize_document` function. 
 
-4. `get_extraction_results`: This function parses the extracted results and prints out the field names, values, and confidence scores.
+4. `extract_document`: This function extracts fields from the digitized document using a machine learning extractor endpoint. It requires the document ID obtained from the `digitize_document` function.
+
+5. `get_extraction_results`: This function parses the extracted results and prints out the field names, values, and confidence scores.
+
+6. `process_documents_in_folder`: This function wraps all of the functions above and processes all documents within a specified folder
 
 ## Requirements
 
@@ -47,11 +51,9 @@ token_url = os.environ['AUTH_URL']
 
 # Authenticate and extract results
 bearer_token = get_bearer_token(client_id, client_secret, token_url)
-get_extraction_results()
+process_documents_in_folder()
 ```
 
 ## TODO
 
-* Loop through multiple files.
 * Save Extraction Results to CSV
-* Select ExtractorId based on the Classification Result
