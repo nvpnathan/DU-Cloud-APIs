@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-document_folder = "./"
+document_folder = "./Example Documents"
 
 base_url = os.environ['BASE_URL']
 projectId = os.environ['PROJECT_ID']
@@ -35,7 +35,7 @@ def get_bearer_token(client_id, client_secret, token_url):
         response.raise_for_status()  # Raise an exception for HTTP errors
 
         token_data = response.json()
-        
+
         # Extract and return the access token
         access_token = token_data.get('access_token')
         if access_token:
@@ -48,11 +48,6 @@ def get_bearer_token(client_id, client_secret, token_url):
     except requests.exceptions.RequestException as e:
         print(f"Error fetching token: {e}")
         return None
-
-
-bearer_token = get_bearer_token(client_id, client_secret, token_url)
-# if bearer_token:
-#     print("Bearer Token:", bearer_token)
 
 
 # Digitize Document
@@ -118,6 +113,7 @@ def classify_document(base_url, projectId, document_id, bearer_token):
             try:
                 classificationResults = response.json()
                 document_type_id = None
+                classification_confidence = None
                 for result in classificationResults['classificationResults']:
                     if result['DocumentId'] == document_id:
                         document_type_id = result['DocumentTypeId']
@@ -173,6 +169,49 @@ def extract_document(base_url, projectId, extractorId, document_id, bearer_token
 
     except Exception as e:
         print(f"An error occurred during extraction: {e}")
+
+
+# Validate Extraction Results
+def validate_extraction_results(base_url, project_id, extractor_id, document_id, extraction_results, bearer_token):
+    # Define the API endpoint for validation
+    api_url = f"{base_url}{project_id}/extractors/{extractor_id}/validation/start?api-version=1"
+
+    # Define the headers with the Bearer token and content type
+    headers = {
+        "Authorization": f"Bearer {bearer_token}",
+        "accept": "text/plain",
+        "Content-Type": "application/json"
+    }
+
+    # Define the payload data
+    payload = {
+        "documentId": document_id,
+        "actionTitle": f"Validate - {extractor_id}",
+        "actionPriority": "Medium",
+        "actionCatalog": "default_du_actions",
+        "actionFolder": "Shared",
+        "storageBucketName": "du_storage_bucket",
+        "storageBucketDirectoryPath": "du_storage_bucket",
+        "extractionResult": extraction_results['extractionResult']
+    }
+
+    print(extraction_results)
+    try:
+        # Make the POST request
+        response = requests.post(api_url, json=payload, headers=headers)
+
+        if response.status_code == 202:
+            print("Validation request successfully sent!")
+            # Parse the JSON response
+            response_data = response.json()
+            # Extract and return the operationId
+            operation_id = response_data.get("operationId")
+            return operation_id
+        else:
+            print(f"Error: {response.status_code} - {response.text}")
+
+    except Exception as e:
+        print(f"An error occurred during validation: {e}")
 
 
 # Print Extracted Results
@@ -237,7 +276,7 @@ def write_extraction_results_to_csv(extraction_results, document_path):
 # Main function to process documents in the folder
 def process_documents_in_folder(folder_path):
     for filename in os.listdir(folder_path):
-        if filename.endswith(('.png',' .jpe', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp', '.pdf' )):  # Filter for supported file types
+        if filename.endswith(('.png',' .jpe', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp', '.pdf')):  # Filter for supported file types
             document_path = os.path.join(folder_path, filename)
             print(f"Processing document: {document_path}")
             bearer_token = get_bearer_token(client_id, client_secret, token_url)
@@ -250,6 +289,8 @@ def process_documents_in_folder(folder_path):
                         if extraction_results:
                             get_extraction_results(extraction_results)
                             write_extraction_results_to_csv(extraction_results, document_path)
+                            validate_extraction_results(base_url, projectId, extractorId,
+                                                        document_id, extraction_results, bearer_token)
 
 
 # Call the main function to process documents in the specified folder
