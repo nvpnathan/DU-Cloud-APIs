@@ -23,7 +23,7 @@ extract_client = Extract(base_url, project_id, bearer_token)
 validate_client = Validate(base_url, project_id, bearer_token)
 
 # Main function to process documents in the folder
-def process_documents_in_folder(folder_path, validate=False):
+def process_documents_in_folder(folder_path, validate_document=False):
     for filename in os.listdir(folder_path):
         if filename.endswith(('.png', '.jpe', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp', '.pdf')):
             document_path = os.path.join(folder_path, filename)
@@ -37,7 +37,7 @@ def process_documents_in_folder(folder_path, validate=False):
                         if extraction_results:
                             ResultPrinter.print_extraction_results(extraction_results)
                             CSVWriter.write_extraction_results_to_csv(extraction_results, document_path)
-                            if validate:
+                            if validate_document:
                                 operation_id = validate_client.validate_extraction_results(document_type_id, document_id,
                                                                                     extraction_results)
                                 if operation_id:
@@ -48,4 +48,4 @@ def process_documents_in_folder(folder_path, validate=False):
 # Call the main function to process documents in the specified folder
 if __name__ == "__main__":
     document_folder = "./Example Documents"
-    process_documents_in_folder(document_folder, validate=False) 
+    process_documents_in_folder(document_folder, validate_document=False) 
