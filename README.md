@@ -2,6 +2,10 @@
 
 This code snippet demonstrates how to digitize a document and extract fields from it using a machine learning extractor endpoint. In this example, the ML model used is for processing ID cards.
 
+## Official Documentation
+
+UiPath Document Understanding offers standalone capabilities, allowing integration with external tools and systems through APIs. This release includes APIs for Discovery, Digitization, Classification, Extraction, and Validation. Please take a look at the [Official Documentation](https://docs.uipath.com/document-understanding/automation-cloud/latest/api-guide/example).
+
 ## Usage
 
 This example consists of several functions:
@@ -44,3 +48,10 @@ token_url = os.environ['AUTH_URL']
 # Authenticate and extract results
 bearer_token = get_bearer_token(client_id, client_secret, token_url)
 get_extraction_results()
+```
+
+## TODO
+
+* Loop through multiple files.
+* Save Extraction Results to CSV
+* Select ExtractorId based on the Classification Result
