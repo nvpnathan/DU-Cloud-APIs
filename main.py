@@ -38,14 +38,15 @@ def process_documents_in_folder(folder_path, validate_document=False):
                             ResultPrinter.print_extraction_results(extraction_results)
                             CSVWriter.write_extraction_results_to_csv(extraction_results, document_path)
                             if validate_document:
-                                operation_id = validate_client.validate_extraction_results(document_type_id, document_id,
+                                valaidated_results = validate_client.validate_extraction_results(document_type_id, document_id,
                                                                                     extraction_results)
-                                if operation_id:
-                                    print("Operation ID:", operation_id)
+                                if valaidated_results:
+                                    print("Validation result:", valaidated_results)
             except Exception as e:
                 print(f"Error processing {document_path}: {e}")
+
 
 # Call the main function to process documents in the specified folder
 if __name__ == "__main__":
     document_folder = "./Example Documents"
-    process_documents_in_folder(document_folder, validate_document=False) 
+    process_documents_in_folder(document_folder, validate_document=True) 
