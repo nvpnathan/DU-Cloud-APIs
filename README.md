@@ -37,11 +37,11 @@ This example consists of several functions:
 3. Set up a `.env` file with the following environment variables:
 
   ```env
-  BASE_URL=<UiPath API base URL>
-  PROJECT_ID=<Your UiPath project ID>
-  APP_ID=<Your UiPath app ID>
-  APP_SECRET=<Your UiPath app secret>
-  AUTH_URL=<UiPath authentication URL>
+  APP_ID=
+  APP_SECRET=
+  AUTH_URL=https://cloud.uipath.com/identity_/connect/token
+  BASE_URL=https://cloud.uipath.com/<Cloud Org>/<Cloud Tenant>/du_/api/framework/projects/
+  PROJECT_ID=00000000-0000-0000-0000-000000000000
   ```
 
 ## Usage
