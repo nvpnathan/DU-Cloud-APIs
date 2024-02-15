@@ -79,4 +79,5 @@ DU-Cloud-APIs/
 
 ## TODO
 
-* Add `boolean` support for Action Center
+* Wait for validation task to be completed for validated results
+* Add optional classification validation
