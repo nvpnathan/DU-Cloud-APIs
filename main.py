@@ -36,12 +36,13 @@ def process_documents_in_folder(folder_path, validate_document=False):
                         extraction_results = extract_client.extract_document(document_type_id, document_id)
                         if extraction_results:
                             ResultPrinter.print_extraction_results(extraction_results)
-                            CSVWriter.write_extraction_results_to_csv(extraction_results, document_path)
-                            if validate_document:
-                                valaidated_results = validate_client.validate_extraction_results(document_type_id, document_id,
-                                                                                    extraction_results)
-                                if valaidated_results:
-                                    print("Validation result:", valaidated_results)
+                            if not validate_document:
+                                CSVWriter.write_extraction_results_to_csv(extraction_results, document_path)
+                            else:
+                                validated_results = validate_client.validate_extraction_results(document_type_id, document_id, extraction_results)
+                                if validated_results:
+                                    print(validated_results)
+                                    CSVWriter.write_validated_results_to_csv(validated_results, extraction_results, document_path)
             except Exception as e:
                 print(f"Error processing {document_path}: {e}")
 
@@ -49,4 +50,4 @@ def process_documents_in_folder(folder_path, validate_document=False):
 # Call the main function to process documents in the specified folder
 if __name__ == "__main__":
     document_folder = "./Example Documents"
-    process_documents_in_folder(document_folder, validate_document=True) 
+    process_documents_in_folder(document_folder, validate_document=False) 

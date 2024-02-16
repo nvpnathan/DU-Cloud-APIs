@@ -79,7 +79,7 @@ class Validate:
                         return response_data
                     else:
                         print("Unknown validation action status.")
-                    time.sleep(5)  # Wait for 2 seconds before checking again
+                    time.sleep(5)  # Wait for 5 seconds before checking again
 
             elif response_data['status'] == 'NotStarted':
                 print("Validation request has not started. Waiting...")

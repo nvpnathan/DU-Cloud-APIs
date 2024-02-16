@@ -61,3 +61,62 @@ class CSVWriter:
                         'IsMissing': field['IsMissing']
                     }
                     writer.writerow(field_data)
+
+
+    @staticmethod
+    def write_validated_results_to_csv(validated_results, extraction_results, document_path):
+        # Extract file name without extension
+        file_name = os.path.splitext(os.path.basename(document_path))[0]
+
+        # Construct output file name with .csv extension
+        output_file = file_name + '.csv'
+
+        # Update the fieldnames to include new columns for validated results
+        fields_to_extract = ['FieldName', 'Value', 'Confidence', 'OcrConfidence', 'IsMissing',
+                            'ActualValue', 'OperatorConfirmed', 'IsCorrect']
+
+        # Write validated results to the same CSV file
+        with open(output_file, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fields_to_extract)
+            writer.writeheader()
+
+            # Compare validated data with extracted data and write to CSV
+            for validated_field in validated_results['result']['validatedExtractionResults']['ResultsDocument']['Fields']:
+                if 'Values' in validated_field and validated_field['Values']:
+                    validated_value = validated_field['Values'][0]['Value']
+                    operator_confirmed = validated_field['OperatorConfirmed']
+
+                    # Find corresponding field in extraction results
+                    extraction_field = next((field for field in extraction_results['extractionResult']['ResultsDocument']['Fields'] 
+                                            if field['FieldName'] == validated_field['FieldName']), None)
+
+                    if extraction_field:
+                        extracted_value = extraction_field.get('Values', [{}])[0].get('Value')
+                        confidence = extraction_field.get('Values', [{}])[0].get('Confidence')
+                        ocr_confidence = extraction_field.get('Values', [{}])[0].get('OcrConfidence')
+                        is_missing = extraction_field.get('IsMissing')
+                    else:
+                        extracted_value = None
+                        confidence = None
+                        ocr_confidence = None
+                        is_missing = None
+
+                    # Compare ValidatedValue with ExtractedValue to determine correctness
+                    if validated_value is None and extracted_value is None:
+                        is_correct = True
+                    elif validated_value == extracted_value:
+                        is_correct = True
+                    else:
+                        is_correct = False
+
+                    field_data = {
+                        'FieldName': validated_field['FieldName'],
+                        'Value': extracted_value,
+                        'Confidence': confidence,
+                        'OcrConfidence': ocr_confidence,
+                        'IsMissing': is_missing,
+                        'ActualValue': validated_value,
+                        'OperatorConfirmed': operator_confirmed,
+                        'IsCorrect': is_correct
+                    }
+                    writer.writerow(field_data)
