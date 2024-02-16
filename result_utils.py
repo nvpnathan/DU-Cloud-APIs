@@ -2,30 +2,6 @@ import csv
 import os
 
 
-class ResultPrinter:
-    @staticmethod
-    def print_extraction_results(extraction_results):
-        field_data = {}
-
-        for field in extraction_results['extractionResult']['ResultsDocument']['Fields']:
-            if isinstance(field, dict):  # Ensure 'field' is a dictionary
-                field_name = field.get('FieldName')
-                values = [value.get('Value') for value in field.get('Values', [])]
-
-                confidence = None
-                if 'Values' in field and field['Values'] and 'Confidence' in field['Values'][0]:
-                    confidence = field['Values'][0]['Confidence']
-                if field_name:
-                    field_data[field_name] = {'values': values, 'Confidence': confidence}
-
-        # Print parsed data
-        print("Extraction Results: \n")
-        for field_name, data in field_data.items():
-            values = data['values']
-            confidence = data.get('Confidence')
-            print(f"{field_name}: {values}, Confidence: {confidence}")
-
-
 class CSVWriter:
     @staticmethod
     def write_extraction_results_to_csv(extraction_results, document_path):
@@ -84,7 +60,7 @@ class CSVWriter:
             for validated_field in validated_results['result']['validatedExtractionResults']['ResultsDocument']['Fields']:
                 if 'Values' in validated_field and validated_field['Values']:
                     validated_value = validated_field['Values'][0]['Value']
-                    operator_confirmed = validated_field['OperatorConfirmed']
+                    operator_confirmed = validated_field.get('OperatorConfirmed', '')
 
                     # Find corresponding field in extraction results
                     extraction_field = next((field for field in extraction_results['extractionResult']['ResultsDocument']['Fields'] 
@@ -120,3 +96,44 @@ class CSVWriter:
                         'IsCorrect': is_correct
                     }
                     writer.writerow(field_data)
+                else:
+                    field_data = {
+                        'FieldName': validated_field['FieldName'],
+                        'Value': None,
+                        'Confidence': None,
+                        'OcrConfidence': None,
+                        'IsMissing': None,
+                        'ActualValue': None,
+                        'OperatorConfirmed': '',
+                        'IsCorrect': False
+                    }
+                    writer.writerow(field_data)
+    
+    
+    @staticmethod
+    def pprint_csv_results(document_path, encoding='utf-8'):
+        # Extract file name without extension
+        file_name = os.path.splitext(os.path.basename(document_path))[0]
+        # Construct output file name with .csv extension
+        output_file = file_name + '.csv'
+
+        with open(output_file, 'r', newline='', encoding=encoding) as csvfile:
+            reader = csv.DictReader(csvfile)
+            headers = reader.fieldnames
+            max_widths = {header: len(header) for header in headers}
+
+            rows = []
+            for row in reader:
+                rows.append(row)
+                for header in headers:
+                    max_widths[header] = max(max_widths[header], len(row[header]))
+
+            # Print headers
+            header_format = "|".join(["{:<{}}".format(header, max_widths[header]) for header in headers])
+            print(header_format)
+            print("-" * len(header_format))
+
+            # Print rows
+            for row in rows:
+                row_format = "|".join(["{:<{}}".format(row[header], max_widths[header]) for header in headers])
+                print(row_format)
