@@ -22,6 +22,7 @@ classify_client = Classify(base_url, project_id, bearer_token)
 extract_client = Extract(base_url, project_id, bearer_token)
 validate_client = Validate(base_url, project_id, bearer_token)
 
+
 # Main function to process documents in the folder
 def process_documents_in_folder(folder_path, validate_document=False):
     for filename in os.listdir(folder_path):
@@ -34,16 +35,14 @@ def process_documents_in_folder(folder_path, validate_document=False):
                     document_type_id = classify_client.classify_document(document_id)
                     if document_type_id:
                         extraction_results = extract_client.extract_document(document_type_id, document_id)
-                        if extraction_results:
+                        if not validate_document:
+                            CSVWriter.write_extraction_results_to_csv(extraction_results, document_path)
                             CSVWriter.pprint_csv_results(document_path)
-                            if not validate_document:
-                                CSVWriter.write_extraction_results_to_csv(extraction_results, document_path)
+                        else:
+                            validated_results = validate_client.validate_extraction_results(document_type_id, document_id, extraction_results)
+                            if validated_results:
+                                CSVWriter.write_validated_results_to_csv(validated_results, extraction_results, document_path)
                                 CSVWriter.pprint_csv_results(document_path)
-                            else:
-                                validated_results = validate_client.validate_extraction_results(document_type_id, document_id, extraction_results)
-                                if validated_results:
-                                    CSVWriter.write_validated_results_to_csv(validated_results, extraction_results, document_path)
-                                    CSVWriter.pprint_csv_results(document_path)
             except Exception as e:
                 print(f"Error processing {document_path}: {e}")
 
@@ -51,4 +50,4 @@ def process_documents_in_folder(folder_path, validate_document=False):
 # Call the main function to process documents in the specified folder
 if __name__ == "__main__":
     document_folder = "./Example Documents"
-    process_documents_in_folder(document_folder, validate_document=True) 
+    process_documents_in_folder(document_folder, validate_document=False)
