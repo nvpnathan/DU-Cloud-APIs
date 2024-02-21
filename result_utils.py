@@ -58,33 +58,31 @@ class CSVWriter:
 
             # Compare validated data with extracted data and write to CSV
             for validated_field in validated_results['result']['validatedExtractionResults']['ResultsDocument']['Fields']:
+                validated_value = None
+                operator_confirmed = None
+
                 if 'Values' in validated_field and validated_field['Values']:
                     validated_value = validated_field['Values'][0]['Value']
-                    operator_confirmed = validated_field.get('OperatorConfirmed', '')
+                    operator_confirmed = validated_field['OperatorConfirmed']
 
-                    # Find corresponding field in extraction results
-                    extraction_field = next((field for field in extraction_results['extractionResult']['ResultsDocument']['Fields'] 
-                                            if field['FieldName'] == validated_field['FieldName']), None)
+                # Find corresponding field in extraction results
+                extraction_field = next((field for field in extraction_results['extractionResult']['ResultsDocument']['Fields']
+                                        if field['FieldName'] == validated_field['FieldName']), None)
 
-                    if extraction_field:
-                        extracted_value = extraction_field.get('Values', [{}])[0].get('Value')
-                        confidence = extraction_field.get('Values', [{}])[0].get('Confidence')
-                        ocr_confidence = extraction_field.get('Values', [{}])[0].get('OcrConfidence')
+                if extraction_field:
+                    extracted_value = None
+                    confidence = None
+                    ocr_confidence = None
+                    is_missing = None
+
+                    if 'Values' in extraction_field and extraction_field['Values']:
+                        extracted_value = extraction_field['Values'][0].get('Value')
+                        confidence = extraction_field['Values'][0].get('Confidence')
+                        ocr_confidence = extraction_field['Values'][0].get('OcrConfidence')
                         is_missing = extraction_field.get('IsMissing')
-                    else:
-                        extracted_value = None
-                        confidence = None
-                        ocr_confidence = None
-                        is_missing = None
 
                     # Compare ValidatedValue with ExtractedValue to determine correctness
-                    if validated_value is None and extracted_value is None:
-                        is_correct = True
-                    elif validated_value == extracted_value:
-                        is_correct = True
-                    else:
-                        is_correct = False
-
+                    is_correct = (validated_value is None and extracted_value is None) or validated_value == extracted_value
                     field_data = {
                         'FieldName': validated_field['FieldName'],
                         'Value': extracted_value,
@@ -95,21 +93,21 @@ class CSVWriter:
                         'OperatorConfirmed': operator_confirmed,
                         'IsCorrect': is_correct
                     }
-                    writer.writerow(field_data)
                 else:
+                    # If no corresponding field found in extraction results
                     field_data = {
                         'FieldName': validated_field['FieldName'],
                         'Value': None,
                         'Confidence': None,
                         'OcrConfidence': None,
                         'IsMissing': None,
-                        'ActualValue': None,
-                        'OperatorConfirmed': '',
-                        'IsCorrect': False
+                        'ActualValue': validated_value,
+                        'OperatorConfirmed': operator_confirmed,
+                        'IsCorrect': True
                     }
-                    writer.writerow(field_data)
-    
-    
+                writer.writerow(field_data)
+
+
     @staticmethod
     def pprint_csv_results(document_path, encoding='utf-8'):
         # Extract file name without extension

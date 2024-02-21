@@ -50,4 +50,4 @@ def process_documents_in_folder(folder_path, validate_document=False):
 # Call the main function to process documents in the specified folder
 if __name__ == "__main__":
     document_folder = "./Example Documents"
-    process_documents_in_folder(document_folder, validate_document=False)
+    process_documents_in_folder(document_folder, validate_document=True)
