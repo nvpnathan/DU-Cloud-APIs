@@ -78,6 +78,3 @@ DU-Cloud-APIs/
 ```
 
 ## TODO
-
-* Wait for validation task to be completed for validated results
-* Add optional classification validation
