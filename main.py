@@ -24,7 +24,7 @@ validate_client = Validate(base_url, project_id, bearer_token)
 
 
 # Main function to process documents in the folder
-def process_documents_in_folder(folder_path, validate_document=False):
+def process_documents_in_folder(folder_path, validate_classification=False, validate_extraction=False):
     for filename in os.listdir(folder_path):
         if filename.endswith(('.png', '.jpe', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp', '.pdf')):
             document_path = os.path.join(folder_path, filename)
@@ -32,17 +32,31 @@ def process_documents_in_folder(folder_path, validate_document=False):
             try:
                 document_id = digitize_client.start(document_path)
                 if document_id:
-                    document_type_id = classify_client.classify_document(document_id)
-                    if document_type_id:
-                        extraction_results = extract_client.extract_document(document_type_id, document_id)
-                        if not validate_document:
-                            CSVWriter.write_extraction_results_to_csv(extraction_results, document_path)
-                            CSVWriter.pprint_csv_results(document_path)
-                        else:
-                            validated_results = validate_client.validate_extraction_results(document_type_id, document_id, extraction_results)
-                            if validated_results:
-                                CSVWriter.write_validated_results_to_csv(validated_results, extraction_results, document_path)
+                    document_type_id = classify_client.classify_document(document_id, validate_classification)
+                    if validate_classification:
+                        classification_results = validate_client.validate_classification_results(document_id, document_type_id)
+                        if document_type_id:
+                            extraction_results = extract_client.extract_document(classification_results, document_id)
+                            if not validate_extraction:
+                                CSVWriter.write_extraction_results_to_csv(extraction_results, document_path)
                                 CSVWriter.pprint_csv_results(document_path)
+                            else:
+                                validated_results = validate_client.validate_extraction_results(document_type_id, document_id, extraction_results)
+                                if validated_results:
+                                    CSVWriter.write_validated_results_to_csv(validated_results, extraction_results, document_path)
+                                    CSVWriter.pprint_csv_results(document_path)
+                    else:
+                        classification_results = document_type_id
+                        if document_type_id:
+                            extraction_results = extract_client.extract_document(classification_results, document_id)
+                            if not validate_extraction:
+                                CSVWriter.write_extraction_results_to_csv(extraction_results, document_path)
+                                CSVWriter.pprint_csv_results(document_path)
+                            else:
+                                validated_results = validate_client.validate_extraction_results(document_type_id, document_id, extraction_results)
+                                if validated_results:
+                                    CSVWriter.write_validated_results_to_csv(validated_results, extraction_results, document_path)
+                                    CSVWriter.pprint_csv_results(document_path)
             except Exception as e:
                 print(f"Error processing {document_path}: {e}")
 
@@ -50,4 +64,4 @@ def process_documents_in_folder(folder_path, validate_document=False):
 # Call the main function to process documents in the specified folder
 if __name__ == "__main__":
     document_folder = "./Example Documents"
-    process_documents_in_folder(document_folder, validate_document=True)
+    process_documents_in_folder(document_folder, validate_classification=True, validate_extraction=True)
