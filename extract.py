@@ -20,7 +20,7 @@ class Extract:
 
         data = {
             "documentId": f"{document_id}",
-            "prompts": prompts
+            **(prompts or {})
         }
 
         try:
