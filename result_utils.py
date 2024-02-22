@@ -4,14 +4,21 @@ import os
 
 class CSVWriter:
     @staticmethod
-    def write_extraction_results_to_csv(extraction_results, document_path):
+    def write_extraction_results_to_csv(extraction_results, document_path, output_directory="Output Results"):
         fields_to_extract = ['FieldName', 'Value', 'Confidence', 'OcrConfidence', 'IsMissing']
 
         # Extract file name without extension
         file_name = os.path.splitext(os.path.basename(document_path))[0]
 
-        # Construct output file name with .csv extension
-        output_file = file_name + '.csv'
+        # Construct output directory path
+        output_dir_path = os.path.join(os.getcwd(), output_directory)
+
+        # Check if the output directory exists, if not, create it
+        if not os.path.exists(output_dir_path):
+            os.makedirs(output_dir_path)
+
+        # Construct output file path with .csv extension
+        output_file = os.path.join(output_dir_path, file_name + '.csv')
 
         with open(output_file, 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fields_to_extract)
@@ -40,19 +47,26 @@ class CSVWriter:
 
 
     @staticmethod
-    def write_validated_results_to_csv(validated_results, extraction_results, document_path):
+    def write_validated_results_to_csv(validated_results, extraction_results, document_path, output_directory="Output Results"):
         # Extract file name without extension
         file_name = os.path.splitext(os.path.basename(document_path))[0]
 
-        # Construct output file name with .csv extension
-        output_file = file_name + '.csv'
+        # Construct output directory path
+        output_dir_path = os.path.join(os.getcwd(), output_directory)
+
+        # Check if the output directory exists, if not, create it
+        if not os.path.exists(output_dir_path):
+            os.makedirs(output_dir_path)
+
+        # Construct output file path with .csv extension
+        output_file = os.path.join(output_dir_path, file_name + '.csv')
 
         # Update the fieldnames to include new columns for validated results
         fields_to_extract = ['FieldName', 'Value', 'Confidence', 'OcrConfidence', 'IsMissing',
                             'ActualValue', 'OperatorConfirmed', 'IsCorrect']
 
         # Write validated results to the same CSV file
-        with open(output_file, 'w', newline='') as csvfile:
+        with open(f'Output Results\ + {output_file}', 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fields_to_extract)
             writer.writeheader()
 
@@ -109,11 +123,15 @@ class CSVWriter:
 
 
     @staticmethod
-    def pprint_csv_results(document_path, encoding='utf-8'):
+    def pprint_csv_results(document_path, encoding='utf-8', output_directory="Output Results"):
         # Extract file name without extension
         file_name = os.path.splitext(os.path.basename(document_path))[0]
-        # Construct output file name with .csv extension
-        output_file = file_name + '.csv'
+
+        # Construct output directory path
+        output_dir_path = os.path.join(os.getcwd(), output_directory)
+
+        # Construct output file path with .csv extension
+        output_file = os.path.join(output_dir_path, file_name + '.csv')
 
         with open(output_file, 'r', newline='', encoding=encoding) as csvfile:
             reader = csv.DictReader(csvfile)
