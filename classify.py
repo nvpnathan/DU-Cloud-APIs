@@ -39,9 +39,7 @@ class Classify:
                             if result['DocumentId'] == document_id:
                                 document_type_id = result['DocumentTypeId']
                                 classification_confidence = result['Confidence']
-                                print(f"Document Type ID: {document_type_id}, Confidence: {classification_confidence}\n")
                                 break
-
                         if document_type_id:
                             print(f"Document Type ID: {document_type_id}, Confidence: {classification_confidence}\n")
                             return document_type_id
