@@ -5,7 +5,7 @@ import os
 class CSVWriter:
     @staticmethod
     def write_extraction_results_to_csv(extraction_results, document_path, output_directory="Output Results"):
-        fields_to_extract = ['FieldName', 'Value', 'Confidence', 'OcrConfidence', 'IsMissing']
+        fields_to_extract = ['FieldName', 'Value', 'OcrConfidence', 'Confidence', 'IsMissing']
 
         # Extract file name without extension
         file_name = os.path.splitext(os.path.basename(document_path))[0]
@@ -62,7 +62,7 @@ class CSVWriter:
         output_file = os.path.join(output_dir_path, file_name + '.csv')
 
         # Update the fieldnames to include new columns for validated results
-        fields_to_extract = ['FieldName', 'Value', 'Confidence', 'OcrConfidence', 'IsMissing',
+        fields_to_extract = ['FieldName', 'Value', 'OcrConfidence', 'Confidence', 'IsMissing',
                             'ActualValue', 'OperatorConfirmed', 'IsCorrect']
 
         # Write validated results to the same CSV file
