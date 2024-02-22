@@ -78,3 +78,6 @@ DU-Cloud-APIs/
 ```
 
 ## TODO
+
+* Add Generative Classification
+* Add Generative Extraction
