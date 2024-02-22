@@ -1,0 +1,16 @@
+{
+    "prompts": [
+      {
+        "name": "id_cards",
+        "description": "A detailed statement of goods or services provided, with individual prices, the total charge, and payment terms."
+      },
+      {
+        "name": "Invoice",
+        "description": "A detailed statement of goods or services provided, with individual prices, the total charge, and payment terms."
+      },
+      {
+        "name": "Receipt",
+        "description": "A written acknowledgment of having received a specified amount of money, goods, or services."
+      }
+    ]
+}

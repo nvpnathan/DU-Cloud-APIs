@@ -24,7 +24,8 @@ validate_client = Validate(base_url, project_id, bearer_token)
 
 
 # Main function to process documents in the folder
-def process_documents_in_folder(folder_path, validate_classification=False, validate_extraction=False):
+def process_documents_in_folder(folder_path, validate_classification=False, validate_extraction=False, 
+                                generative_classification=False, generative_extraction=False):
     # Iterate through files in the specified folder
     for filename in os.listdir(folder_path):
         # Check if the file has one of the supported extensions
@@ -37,7 +38,10 @@ def process_documents_in_folder(folder_path, validate_classification=False, vali
                 document_id = digitize_client.start(document_path)
                 if document_id:
                     # Classify the document to obtain its type
-                    document_type_id = classify_client.classify_document(document_id, validate_classification)
+                    if generative_classification:
+                        document_type_id = classify_client.classify_document(document_id, validate_classification, classifier='generative_classifier', prompts=classify_prompts)
+                    else:
+                        document_type_id = classify_client.classify_document(document_id, validate_classification)
                     if validate_classification:
                         # If classification validation is enabled, validate the classification results
                         classification_results = validate_client.validate_classification_results(document_id, document_type_id)
@@ -79,4 +83,5 @@ def process_documents_in_folder(folder_path, validate_classification=False, vali
 if __name__ == "__main__":
     document_folder = "./Example Documents"
     # Specify whether to perform classification and extraction validation
-    process_documents_in_folder(document_folder, validate_classification=False, validate_extraction=False)
+    process_documents_in_folder(document_folder, validate_classification=False, validate_extraction=False, 
+                                generative_classification=False, generative_extraction=False)
