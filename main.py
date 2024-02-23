@@ -123,4 +123,4 @@ if __name__ == "__main__":
     document_folder = "./Example Documents"
     # Specify whether to perform classification and extraction validation
     process_documents_in_folder(document_folder, validate_classification=False, validate_extraction=False, 
-                                generative_classification=False, generative_extraction=True)
+                                generative_classification=False, generative_extraction=False)
