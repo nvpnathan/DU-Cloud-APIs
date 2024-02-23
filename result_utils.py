@@ -66,7 +66,7 @@ class CSVWriter:
                             'ActualValue', 'OperatorConfirmed', 'IsCorrect']
 
         # Write validated results to the same CSV file
-        with open(f'Output Results\ + {output_file}', 'w', newline='') as csvfile:
+        with open(output_file, 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fields_to_extract)
             writer.writeheader()
 

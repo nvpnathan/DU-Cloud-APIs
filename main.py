@@ -52,14 +52,14 @@ def load_extraction_prompts():
 # Main function to process documents in the folder
 def process_documents_in_folder(folder_path, validate_classification=False, validate_extraction=False, 
                                 generative_classification=False, generative_extraction=False):
-     # Load classification prompts if generative_classification is enabled
+    # Load classification prompts if generative_classification is enabled
     if generative_classification:
         classifier = 'generative_classifier'
         classification_prompts = load_classification_prompts()
     else:
         classifier = 'ml-classification'
         classification_prompts = None
-     # Load extraction prompts if generative_extraction is enabled
+    # Load extraction prompts if generative_extraction is enabled
     if generative_extraction:
         extractor = 'generative_extractor'
         extraction_prompts = load_extraction_prompts()
@@ -83,7 +83,7 @@ def process_documents_in_folder(folder_path, validate_classification=False, vali
                         classification_results = validate_client.validate_classification_results(document_id, document_type_id)
                         if document_type_id:
                             # Extract information from the document based on the classification results
-                            extraction_results = extract_client.extract_document(classification_results, document_id)
+                            extraction_results = extract_client.extract_document(classification_results, document_id, extraction_prompts)
                             if not validate_extraction:
                                 # If extraction validation is disabled, write the extraction results to CSV
                                 CSVWriter.write_extraction_results_to_csv(extraction_results, document_path)
@@ -123,4 +123,4 @@ if __name__ == "__main__":
     document_folder = "./Example Documents"
     # Specify whether to perform classification and extraction validation
     process_documents_in_folder(document_folder, validate_classification=False, validate_extraction=False, 
-                                generative_classification=False, generative_extraction=False)
+                                generative_classification=True, generative_extraction=True)
