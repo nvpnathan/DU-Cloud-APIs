@@ -1,0 +1,104 @@
+{
+    "prompts": [
+        {
+            "id": "SSN",
+            "question": "What is the Social Security Number (SSN) of the employee?"
+        },
+        {
+            "id": "EmployerFEDIDNumber",
+            "question": "What is the Employer Federal Identification Number (EIN) of the employer?"
+        },
+        {
+            "id": "EmployerAddress",
+            "question": "What is the address of the employer?"
+        },
+        {
+            "id": "EmployeeName",
+            "question": "What is the name of the employee?"
+        },
+        {
+            "id": "EmployeeAddress",
+            "question": "What is the address of the employee?"
+        },
+        {
+            "id": "1Wages",
+            "question": "What are the wages earned by the employee?"
+        },
+        {
+            "id": "2FederalIncomeTaxWithheld",
+            "question": "What is the amount of Federal Income Tax withheld?"
+        },
+        {
+            "id": "3SocialSecurityWages",
+            "question": "What are the Social Security wages?"
+        },
+        {
+            "id": "4SocialSecurityTaxWithheld",
+            "question": "What is the amount of Social Security tax withheld?"
+        },
+        {
+            "id": "5MedicareWages",
+            "question": "What are the Medicare wages?"
+        },
+        {
+            "id": "6MedicareTaxWithheld",
+            "question": "What is the amount of Medicare tax withheld?"
+        },
+        {
+            "id": "7SocialSecurityTips",
+            "question": "What are the Social Security tips?"
+        },
+        {
+            "id": "8AllocatedTips",
+            "question": "What are the allocated tips?"
+        },
+        {
+            "id": "10DependentCareBenefits",
+            "question": "What are the dependent care benefits?"
+        },
+        {
+            "id": "11NonqualifiedPlans",
+            "question": "What are the nonqualified plans?"
+        },
+        {
+            "id": "12Code",
+            "question": "What is the code for box 12?"
+        },
+        {
+            "id": "12Amount",
+            "question": "What is the amount for box 12?"
+        },
+        {
+            "id": "13StatutoryEmployee",
+            "question": "Is the employee a statutory employee? (Yes/No)"
+        },
+        {
+            "id": "13RetirementPlan",
+            "question": "Did the employee contribute to a retirement plan? (Yes/No)"
+        },
+        {
+            "id": "13ThirdPartySickPay",
+            "question": "Did the employee receive third-party sick pay? (Yes/No)"
+        },
+        {
+            "id": "14Other",
+            "question": "Is there any other information to report?"
+        },
+        {
+            "id": "9AdvanceEICPayment",
+            "question": "Did the employee receive advance Earned Income Credit (EIC) payment? (Yes/No)"
+        },
+        {
+            "id": "Year",
+            "question": "What tax year is this W2 for?"
+        },
+        {
+            "id": "EmployeeFirstName",
+            "question": "What is the first name of the employee?"
+        },
+        {
+            "id": "EmployeeSuffix",
+            "question": "What is the suffix of the employee's name (e.g., Jr., Sr.)?"
+        }
+    ]
+}

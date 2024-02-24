@@ -1,0 +1,72 @@
+{
+  "prompts": [
+    {
+      "id": "PassportNumber",
+      "question": "What is the passport number?"
+    },
+    {
+      "id": "LastName",
+      "question": "What is the last name on the passport?"
+    },
+    {
+      "id": "FirstName",
+      "question": "What is the first name on the passport?"
+    },
+    {
+      "id": "Nationality",
+      "question": "What is the nationality on the passport?"
+    },
+    {
+      "id": "Gender",
+      "question": "What is the gender on the passport?"
+    },
+    {
+      "id": "DateOfBirth",
+      "question": "What is the date of birth on the passport?"
+    },
+    {
+      "id": "PlaceOfBirth",
+      "question": "What is the place of birth on the passport?"
+    },
+    {
+      "id": "DateOfIssue",
+      "question": "What is the date of issue on the passport?"
+    },
+    {
+      "id": "Address",
+      "question": "What is the address on the passport?"
+    },
+    {
+      "id": "Authority",
+      "question": "What is the authority that issued the passport?"
+    },
+    {
+      "id": "ExpirationDate",
+      "question": "What is the expiration date of the passport?"
+    },
+    {
+      "id": "MRZ",
+      "question": "What is the MRZ (Machine Readable Zone) on the passport?"
+    },
+    {
+      "id": "State",
+      "question": "What is the state on the passport?"
+    },
+    {
+      "id": "StateCode",
+      "question": "What is the state code on the passport?"
+    },
+    {
+      "id": "DocumentType",
+      "question": "What is the document type on the passport?"
+    },
+    {
+      "id": "DocumentTypeCode",
+      "question": "What is the document type code on the passport?"
+    },
+    {
+      "id": "PersonalID",
+      "question": "What is the personal ID on the passport?"
+    }
+  ]
+}

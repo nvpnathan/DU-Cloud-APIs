@@ -1,0 +1,64 @@
+{
+  "prompts": [
+    {
+      "id": "Last Name",
+      "question": "What is the last name?"
+    },
+    {
+      "id": "First Name",
+      "question": "What is the first name?"
+    },
+    {
+      "id": "Birth Place",
+      "question": "Where was the person born?"
+    },
+    {
+      "id": "Birth Date",
+      "question": "What is the date of birth?"
+    },
+    {
+      "id": "Sex",
+      "question": "What is the gender?"
+    },
+    {
+      "id": "Nationality",
+      "question": "What is the nationality?"
+    },
+    {
+      "id": "ID Number",
+      "question": "What is the ID number?"
+    },
+    {
+      "id": "Issued Date",
+      "question": "When was it issued?"
+    },
+    {
+      "id": "Expiration Date",
+      "question": "When does it expire?"
+    },
+    {
+      "id": "Issued Place",
+      "question": "Where was it issued?"
+    },
+    {
+      "id": "Authority",
+      "question": "Who issued it?"
+    },
+    {
+      "id": "ID Number 2",
+      "question": "What is the secondary ID number?"
+    },
+    {
+      "id": "Machine Readable Zone",
+      "question": "What is the machine-readable zone?"
+    },
+    {
+      "id": "Address",
+      "question": "What is the address?"
+    },
+    {
+      "id": "State",
+      "question": "What is the state?"
+    }
+  ]
+}
