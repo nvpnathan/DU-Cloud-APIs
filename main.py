@@ -23,10 +23,10 @@ classify_client = Classify(base_url, project_id, bearer_token)
 extract_client = Extract(base_url, project_id, bearer_token)
 validate_client = Validate(base_url, project_id, bearer_token)
 
-# Function to load Generative AI prompts from a JSON file
-def load_prompts(prompt_type):
+# Function to load prompts from a JSON file based on the document type ID
+def load_prompts(document_type_id):
     prompts_directory = "Generative Prompts"
-    prompts_file = os.path.join(prompts_directory, f"{prompt_type}_prompts.json")
+    prompts_file = os.path.join(prompts_directory, f"{document_type_id}_prompts.json")
     if os.path.exists(prompts_file):
         with open(prompts_file, "r") as file:
             prompts = json.load(file)
@@ -41,10 +41,6 @@ def process_documents_in_folder(folder_path, validate_classification=False, vali
     # Load classification prompts if generative_classification is enabled
     classifier = 'generative_classifier' if generative_classification else 'ml-classification'
     classification_prompts = load_prompts('classification') if generative_classification else None
-
-    # Load extraction prompts if generative_extraction is enabled
-    extractor = 'generative_extractor' if generative_extraction else None
-    extraction_prompts = load_prompts('extraction') if generative_extraction else None
 
     # Iterate through files in the specified folder
     for filename in os.listdir(folder_path):
@@ -63,6 +59,8 @@ def process_documents_in_folder(folder_path, validate_classification=False, vali
                         # If classification validation is enabled, validate the classification results
                         classification_results = validate_client.validate_classification_results(document_id, document_type_id)
                         if document_type_id:
+                            # Load extraction prompts based on the document type ID
+                            extraction_prompts = load_prompts(document_type_id) if generative_extraction else None
                             # Extract information from the document based on the classification results
                             extraction_results = extract_client.extract_document(classification_results, document_id, extraction_prompts)
                             if not validate_extraction:
@@ -77,8 +75,10 @@ def process_documents_in_folder(folder_path, validate_classification=False, vali
                                     CSVWriter.pprint_csv_results(document_path)
                     else:
                         # If classification validation is disabled, directly use the obtained document type ID
-                        classification_results = extractor if generative_extraction else document_type_id
+                        classification_results = document_type_id
                         if document_type_id:
+                            # Load extraction prompts based on the document type ID
+                            extraction_prompts = load_prompts(document_type_id) if generative_extraction else None
                             # Extract information from the document based on the document type ID
                             extraction_results = extract_client.extract_document(classification_results, document_id, extraction_prompts)
                             if not validate_extraction:
@@ -101,4 +101,4 @@ if __name__ == "__main__":
     document_folder = "./Example Documents"
     # Specify whether to perform classification and extraction validation
     process_documents_in_folder(document_folder, validate_classification=False, validate_extraction=False, 
-                                generative_classification=False, generative_extraction=False)
+                                generative_classification=False, generative_extraction=True)
