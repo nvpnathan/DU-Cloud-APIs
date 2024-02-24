@@ -74,7 +74,10 @@ DU-Cloud-APIs/
 │
 ├── .env.example # Example environment variables file
 ├── requirements.txt # List of dependencies
-└── Example Documents/ # Folder containing example documents
-```
+├── Generative Prompts/ # Folder containing Extraction and Classification Prompt Templates
+├── Example Documents/ # Folder containing example documents
+└── Output Results/ # Folder containing the CSV's of the Document Extraction Results
 
 ## TODO
+
+* Write Tests

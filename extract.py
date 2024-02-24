@@ -7,7 +7,7 @@ class Extract:
         self.project_id = project_id
         self.bearer_token = bearer_token
 
-    def extract_document(self, extractor_id, document_id):
+    def extract_document(self, extractor_id, document_id, prompts=None):
         # Define the API endpoint for document extraction
         api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/extraction?api-version=1"
 
@@ -20,7 +20,7 @@ class Extract:
 
         data = {
             "documentId": f"{document_id}",
-            "prompts": None
+            **(prompts or {})
         }
 
         try:

@@ -1,0 +1,72 @@
+{
+    "prompts": [
+        {
+            "id": "Name",
+            "question": "What is your name (as it appears on your tax return)?"
+        },
+        {
+            "id": "BusinessName",
+            "question": "What is the name of your business (if applicable)?"
+        },
+        {
+            "id": "TaxClassification",
+            "question": "What is your tax classification (e.g., individual/sole proprietor, C corporation, S corporation, partnership, trust/estate)?"
+        },
+        {
+            "id": "LLCTaxClassification",
+            "question": "If your business is an LLC, what is its tax classification (e.g., disregarded entity, partnership, corporation)?"
+        },
+        {
+            "id": "OtherTaxClassification",
+            "question": "If you selected 'Other' as your tax classification, please specify."
+        },
+        {
+            "id": "ExemptPayeeCode",
+            "question": "Do you qualify as an exempt payee under IRS regulations? If so, what is your exemption code (if any)?"
+        },
+        {
+            "id": "ExemptionFATCACode",
+            "question": "Do you have any FATCA filing requirements? If so, what is your FATCA exemption code (if any)?"
+        },
+        {
+            "id": "Address",
+            "question": "What is your address?"
+        },
+        {
+            "id": "City",
+            "question": "What city are you located in?"
+        },
+        {
+            "id": "State",
+            "question": "What state or province are you located in?"
+        },
+        {
+            "id": "ZIPCode",
+            "question": "What is your ZIP code or postal code?"
+        },
+        {
+            "id": "AccountNumbers",
+            "question": "What are your account numbers (if applicable)?"
+        },
+        {
+            "id": "RequesterNameAndAddress",
+            "question": "What is the name and address of the requester?"
+        },
+        {
+            "id": "SSN",
+            "question": "What is your Social Security Number (SSN) (or Individual Taxpayer Identification Number ITIN) (if required)?"
+        },
+        {
+            "id": "EIN",
+            "question": "What is your Employer Identification Number (EIN) (if applicable)?"
+        },
+        {
+            "id": "Signature",
+            "question": "Please provide your signature."
+        },
+        {
+            "id": "Date",
+            "question": "What is the date?"
+        }
+    ]
+}

@@ -6,9 +6,9 @@ class Classify:
         self.project_id = project_id
         self.bearer_token = bearer_token
 
-    def classify_document(self, document_id, validate_classification=False):
-        # Define the API endpoint for document classification
-        api_url = f"{self.base_url}{self.project_id}/classifiers/ml-classification/classification?api-version=1"
+    def classify_document(self, document_id, classifier, prompts, validate_classification=False):
+        # Define the API endpoint for document classification        
+        api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier}/classification?api-version=1"
 
         # Define the headers with the Bearer token and content type
         headers = {
@@ -18,7 +18,8 @@ class Classify:
         }
 
         data = {
-            "documentId": f"{document_id}"
+            "documentId": f"{document_id}",
+            **(prompts or {})
         }
 
         try:

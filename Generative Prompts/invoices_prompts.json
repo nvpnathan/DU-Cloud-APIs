@@ -1,0 +1,140 @@
+{
+  "prompts": [
+    {
+      "id": "VendorName",
+      "question": "What is the name of the vendor?"
+    },
+    {
+      "id": "VendorAddress",
+      "question": "What is the address of the vendor?"
+    },
+    {
+      "id": "BillingName",
+      "question": "What is the billing name?"
+    },
+    {
+      "id": "BillingAddress",
+      "question": "What is the billing address?"
+    },
+    {
+      "id": "ShippingAddress",
+      "question": "What is the shipping address?"
+    },
+    {
+      "id": "InvoiceNumber",
+      "question": "What is the invoice number?"
+    },
+    {
+      "id": "CustomerPurchaseOrderNumber",
+      "question": "What is the customer purchase order number?"
+    },
+    {
+      "id": "VendorVATNumber",
+      "question": "What is the vendor VAT number?"
+    },
+    {
+      "id": "InvoiceDate",
+      "question": "What is the invoice date?"
+    },
+    {
+      "id": "TaxAmounts",
+      "question": "What are the tax amounts?"
+    },
+    {
+      "id": "TotalAmount",
+      "question": "What is the total amount?"
+    },
+    {
+      "id": "PaymentTerms",
+      "question": "What are the payment terms?"
+    },
+    {
+      "id": "NetAmount",
+      "question": "What is the net amount?"
+    },
+    {
+      "id": "DueDate",
+      "question": "What is the due date?"
+    },
+    {
+      "id": "Discount",
+      "question": "What is the discount?"
+    },
+    {
+      "id": "ShippingCharges",
+      "question": "What are the shipping charges?"
+    },
+    {
+      "id": "PaymentAddress",
+      "question": "What is the payment address?"
+    },
+    {
+      "id": "Description",
+      "question": "Please provide a description."
+    },
+    {
+      "id": "Quantity",
+      "question": "What is the quantity?"
+    },
+    {
+      "id": "UnitPrice",
+      "question": "What is the unit price?"
+    },
+    {
+      "id": "LineAmount",
+      "question": "What is the line amount?"
+    },
+    {
+      "id": "CustomerPurchaseOrderNumberItemLevel",
+      "question": "What is the customer purchase order number at item level?"
+    },
+    {
+      "id": "LineNumber",
+      "question": "What is the line number?"
+    },
+    {
+      "id": "PartNumber",
+      "question": "What is the part number?"
+    },
+    {
+      "id": "BillingVATNumber",
+      "question": "What is the billing VAT number?"
+    },
+    {
+      "id": "ShippingDate",
+      "question": "What is the shipping date?"
+    },
+    {
+      "id": "VendorEmailAddress",
+      "question": "What is the email address of the vendor?"
+    },
+    {
+      "id": "BankName",
+      "question": "What is the name of the bank?"
+    },
+    {
+      "id": "BankAccountNumber",
+      "question": "What is the bank account number?"
+    },
+    {
+      "id": "IBAN",
+      "question": "What is the IBAN?"
+    },
+    {
+      "id": "SWIFTCode",
+      "question": "What is the SWIFT code?"
+    },
+    {
+      "id": "BankAddress",
+      "question": "What is the address of the bank?"
+    },
+    {
+      "id": "BankRoutingNumber",
+      "question": "What is the bank routing number?"
+    },
+    {
+      "id": "TaxRates",
+      "question": "What are the tax rates?"
+    }
+  ]
+}
