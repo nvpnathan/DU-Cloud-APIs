@@ -61,7 +61,7 @@ def process_documents_in_folder(folder_path, validate_classification=False, vali
                         if document_type_id:
                             # Load extraction prompts based on the document type ID
                             extraction_prompts = load_prompts(document_type_id) if generative_extraction else None
-                            classification_results = 'generative_extractor' if generative_extraction else None
+                            classification_results = 'generative_extractor' if generative_extraction else classification_results
                             # Extract information from the document based on the classification results
                             extraction_results = extract_client.extract_document(classification_results, document_id, extraction_prompts)
                             if not validate_extraction:
@@ -80,7 +80,7 @@ def process_documents_in_folder(folder_path, validate_classification=False, vali
                         if document_type_id:
                             # Load extraction prompts based on the document type ID
                             extraction_prompts = load_prompts(document_type_id) if generative_extraction else None
-                            classification_results = 'generative_extractor' if generative_extraction else None
+                            classification_results = 'generative_extractor' if generative_extraction else classification_results
                             # Extract information from the document based on the document type ID
                             extraction_results = extract_client.extract_document(classification_results, document_id, extraction_prompts)
                             if not validate_extraction:
@@ -103,4 +103,4 @@ if __name__ == "__main__":
     document_folder = "./Example Documents"
     # Specify whether to perform classification and extraction validation
     process_documents_in_folder(document_folder, validate_classification=False, validate_extraction=False, 
-                                generative_classification=True, generative_extraction=True)
+                                generative_classification=True, generative_extraction=False)
