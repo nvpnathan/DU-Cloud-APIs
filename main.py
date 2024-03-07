@@ -70,7 +70,7 @@ def process_documents_in_folder(folder_path, output_directory, validate_classifi
                                 CSVWriter.pprint_csv_results(document_path)
                             else:
                                 # Validate the extraction results and write the validated results to CSV
-                                validated_results = validate_client.validate_extraction_results(document_type_id, document_id, extraction_results)
+                                validated_results = validate_client.validate_extraction_results(classification_results, document_id, extraction_results)
                                 if validated_results:
                                     CSVWriter.write_validated_results_to_csv(validated_results, extraction_results, document_path, output_directory)
                                     CSVWriter.pprint_csv_results(document_path)
@@ -103,5 +103,5 @@ if __name__ == "__main__":
     document_folder = "./Example Documents"
     output_directory= "./Output Results"
     # Specify whether to perform classification and extraction validation
-    process_documents_in_folder(document_folder, output_directory, validate_classification=True, validate_extraction=False, 
+    process_documents_in_folder(document_folder, output_directory, validate_classification=True, validate_extraction=True, 
                                 generative_classification=False, generative_extraction=False)

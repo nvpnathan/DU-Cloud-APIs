@@ -1,17 +1,17 @@
-FieldName,Value,OcrConfidence,Confidence,IsMissing
-Document Type,DRIVER'S LICENSE,0.98999995,0.97723615,False
-Last Name,SAMPLE,1.0,0.9926846,False
-First Name,CARON ELIZABETH,0.98999995,0.98165315,False
-Birth Place,,,,True
-Birth Date,1966-01-11,0.98999995,0.96636504,False
-Sex,F,0.98999995,0.9767388,False
-Nationality,,,,True
-ID Number,K12-34-5678,0.98999995,0.9629157,False
-Issued Date,2017-01-11,0.98999995,0.95969933,False
-Expiration Date,2023-01-11,0.98999995,0.9864417,False
-Issued Place,,,,True
-Authority,,,,True
-ID Number 2,DD XX123XWMXX1,0.98999995,0.9813859,False
-Machine Readable Zone,,,,True
-Address,"123 NORTH STREET APT. 2 TOPEKA, KS 66612-1234",0.98999995,0.9807686,False
-State,KANSAS,0.98999995,0.9520455,False
+FieldName,Value,OcrConfidence,Confidence,IsMissing,ActualValue,OperatorConfirmed,IsCorrect
+Document Type,DRIVER'S LICENSE,0.98999995,0.97723615,False,DRIVER'S LICENSE,True,True
+Last Name,SAMPLE,1.0,0.9926846,False,NESS,True,False
+First Name,CARON ELIZABETH,0.98999995,0.98165315,False,CARON ELIZABETH,True,True
+Birth Place,,,,,,,True
+Birth Date,1966-01-11,0.98999995,0.96636504,False,1966-01-11,True,True
+Sex,F,0.98999995,0.9767388,False,M,True,False
+Nationality,,,,,,,True
+ID Number,K12-34-5678,0.98999995,0.9629157,False,K12-34-5678,True,True
+Issued Date,2017-01-11,0.98999995,0.95969933,False,2017-01-11,True,True
+Expiration Date,2023-01-11,0.98999995,0.9864417,False,2023-01-11,True,True
+Issued Place,,,,,,,True
+Authority,,,,,,,True
+ID Number 2,DD XX123XWMXX1,0.98999995,0.9813859,False,DD XX123XWMXX1,True,True
+Machine Readable Zone,,,,,,,True
+Address,"123 NORTH STREET APT. 2 TOPEKA, KS 66612-1234",0.98999995,0.9807686,False,"123 NORTH STREET APT. 2 TOPEKA, KS 66612-1234",True,True
+State,KANSAS,0.98999995,0.9520455,False,KANSAS,True,True

@@ -53,22 +53,23 @@ class Validate:
             print(f"An error occurred during validation: {e}")
 
 
-    def submit_extraction_validation_request(self, classification_results, operation_id):
-        extractor_id = classification_results['classificationResults'][0]['DocumentTypeId']
-
-        url = f'{self.base_url}{self.project_id}/extractors/{extractor_id}/validation/result/{operation_id}?api-version=1'
+    def submit_extraction_validation_request(self, extractor_id, operation_id):
+        # Define the API endpoint for validation
+        api_url = f'{self.base_url}{self.project_id}/extractors/{extractor_id}/validation/result/{operation_id}?api-version=1'
+        
+        # Define the headers with the Bearer token and content type
         headers = {
             'accept': 'application/json',
             'Authorization': f'Bearer {self.bearer_token}'
         }
 
         while True:
-            response = requests.get(url, headers=headers)
+            response = requests.get(api_url, headers=headers)
             response_data = response.json()
             if response_data['status'] == 'Succeeded':
                 print("Extraction Validation request submitted successfully!")
                 while True:
-                    response = requests.get(url, headers=headers)
+                    response = requests.get(api_url, headers=headers)
                     response_data = response.json()
                     # Check the status inside actionData
                     action_data_status = response_data['result']['actionData']['status']
@@ -146,19 +147,19 @@ class Validate:
 
 
     def submit_classification_validation_request(self, operation_id):
-        url = f'{self.base_url}{self.project_id}/classifiers/ml-classification/validation/result/{operation_id}?api-version=1'
+        api_url = f'{self.base_url}{self.project_id}/classifiers/ml-classification/validation/result/{operation_id}?api-version=1'
         headers = {
             'accept': 'application/json',
             'Authorization': f'Bearer {self.bearer_token}'
         }
 
         while True:
-            response = requests.get(url, headers=headers)
+            response = requests.get(api_url, headers=headers)
             response_data = response.json()
             if response_data['status'] == 'Succeeded':
                 print("Classification Validation request submitted successfully!")
                 while True:
-                    response = requests.get(url, headers=headers)
+                    response = requests.get(api_url, headers=headers)
                     response_data = response.json()
                     # Check the status inside actionData
                     action_data_status = response_data['result']['actionData']['status']
