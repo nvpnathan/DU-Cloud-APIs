@@ -1,10 +1,10 @@
 FieldName,Value,OcrConfidence,Confidence,IsMissing,ActualValue,OperatorConfirmed,IsCorrect
 Document Type,DRIVER'S LICENSE,0.98999995,0.97723615,False,DRIVER'S LICENSE,True,True
-Last Name,SAMPLE,1.0,0.9926846,False,NESS,True,False
+Last Name,SAMPLE,1.0,0.9926846,False,SAMPLE,True,True
 First Name,CARON ELIZABETH,0.98999995,0.98165315,False,CARON ELIZABETH,True,True
 Birth Place,,,,,,,True
 Birth Date,1966-01-11,0.98999995,0.96636504,False,1966-01-11,True,True
-Sex,F,0.98999995,0.9767388,False,M,True,False
+Sex,F,0.98999995,0.9767388,False,F,True,True
 Nationality,,,,,,,True
 ID Number,K12-34-5678,0.98999995,0.9629157,False,K12-34-5678,True,True
 Issued Date,2017-01-11,0.98999995,0.95969933,False,2017-01-11,True,True

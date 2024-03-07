@@ -28,7 +28,7 @@ class Validate:
             "actionFolder": "Shared",
             "storageBucketName": "du_storage_bucket",
             "storageBucketDirectoryPath": "du_storage_bucket",
-            "extractionResult": extraction_results['extractionResult']
+            **extraction_results
         }
 
         try:
@@ -37,7 +37,7 @@ class Validate:
             response = requests.post(api_url, json=payload, headers=headers)
 
             if response.status_code == 202:
-                print("\nValidation request sent!")
+                print("\nExtraction Validation request sent!")
                 # Parse the JSON response
                 response_data = response.json()
                 # Extract and return the operationId
@@ -96,9 +96,9 @@ class Validate:
                 return None
             
 
-    def validate_classification_results(self, document_id, classification_results):
+    def validate_classification_results(self, document_id, classification_results, classificastion_prompts):
         # Define the API endpoint for validation
-        api_url = f"{self.base_url}{self.project_id}/classifiers/ml-classification/validation/start?api-version=1"
+        api_url = f"{self.base_url}{self.project_id}/classifiers/generative_classifier/validation/start?api-version=1"
         
         document_type_id = classification_results['classificationResults'][0]['DocumentTypeId']
         # Define the headers with the Bearer token and content type
@@ -107,7 +107,7 @@ class Validate:
             "accept": "text/plain",
             "Content-Type": "application/json"
         }
-        
+        print(classification_results)
         # Define the payload data
         payload = {
             "documentId": document_id,
@@ -117,7 +117,8 @@ class Validate:
             "actionFolder": "Shared",
             "storageBucketName": "du_storage_bucket",
             "storageBucketDirectoryPath": "du_storage_bucket",
-            "classificationResults": classification_results['classificationResults']
+            **classification_results,
+            **(classificastion_prompts or {})
         }
 
         try:

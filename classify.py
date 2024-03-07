@@ -6,7 +6,7 @@ class Classify:
         self.project_id = project_id
         self.bearer_token = bearer_token
 
-    def classify_document(self, document_id, classifier, prompts, validate_classification=False):
+    def classify_document(self, document_id, classifier, classification_prompts, validate_classification=False):
         # Define the API endpoint for document classification        
         api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier}/classification?api-version=1"
 
@@ -19,7 +19,7 @@ class Classify:
 
         data = {
             "documentId": f"{document_id}",
-            **(prompts or {})
+            **(classification_prompts or {})
         }
 
         try:

@@ -57,7 +57,7 @@ def process_documents_in_folder(folder_path, output_directory, validate_classifi
                     document_type_id = classify_client.classify_document(document_id, classifier, classification_prompts, validate_classification)
                     if validate_classification:
                         # If classification validation is enabled, validate the classification results
-                        classification_results = validate_client.validate_classification_results(document_id, document_type_id)
+                        classification_results = validate_client.validate_classification_results(document_id, document_type_id, classification_prompts)
                         if document_type_id:
                             # Load extraction prompts based on the document type ID
                             extraction_prompts = load_prompts(document_type_id) if generative_extraction else None
@@ -103,5 +103,5 @@ if __name__ == "__main__":
     document_folder = "./Example Documents"
     output_directory= "./Output Results"
     # Specify whether to perform classification and extraction validation
-    process_documents_in_folder(document_folder, output_directory, validate_classification=True, validate_extraction=True, 
-                                generative_classification=False, generative_extraction=False)
+    process_documents_in_folder(document_folder, output_directory, validate_classification=False, validate_extraction=True, 
+                                generative_classification=True, generative_extraction=False)
