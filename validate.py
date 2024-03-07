@@ -8,7 +8,7 @@ class Validate:
         self.project_id = project_id
         self.bearer_token = bearer_token
 
-    def validate_extraction_results(self, extractor_id, document_id, extraction_results):
+    def validate_extraction_results(self, extractor_id, document_id, extraction_results, extraction_prompts):
         # Define the API endpoint for validation
         api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/validation/start?api-version=1"
 
@@ -28,7 +28,8 @@ class Validate:
             "actionFolder": "Shared",
             "storageBucketName": "du_storage_bucket",
             "storageBucketDirectoryPath": "du_storage_bucket",
-            **extraction_results
+            **extraction_results,
+            **(extraction_prompts or {})
         }
 
         try:
@@ -86,19 +87,19 @@ class Validate:
                     time.sleep(5)  # Wait for 5 seconds before checking again
 
             elif response_data['status'] == 'NotStarted':
-                print("Validation request has not started. Waiting...")
+                print("Extraction Validation request has not started. Waiting...")
             elif response_data['status'] == 'Running':
-                print("Validation request is in progress. Waiting...")
+                print("Extraction Validation request is in progress. Waiting...")
             elif response_data['status'] == 'Unassigned':
-                print("Validation request is unassigned. Waiting...")
+                print("Extraction Validation request is unassigned. Waiting...")
             else:
-                print("Validation request failed...")
+                print("Extraction Validation request failed...")
                 return None
             
 
-    def validate_classification_results(self, document_id, classification_results, classificastion_prompts):
+    def validate_classification_results(self, document_id, classifier_id, classification_results, classificastion_prompts):
         # Define the API endpoint for validation
-        api_url = f"{self.base_url}{self.project_id}/classifiers/generative_classifier/validation/start?api-version=1"
+        api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier_id}/validation/start?api-version=1"
         
         document_type_id = classification_results['classificationResults'][0]['DocumentTypeId']
         # Define the headers with the Bearer token and content type
@@ -177,11 +178,11 @@ class Validate:
                     time.sleep(5)  # Wait for 5 seconds before checking again
 
             elif response_data['status'] == 'NotStarted':
-                print("Validation request has not started. Waiting...")
+                print("Classification Validation request has not started. Waiting...")
             elif response_data['status'] == 'Running':
-                print("Validation request is in progress. Waiting...")
+                print("Classification Validation request is in progress. Waiting...")
             elif response_data['status'] == 'Unassigned':
-                print("Validation request is unassigned. Waiting...")
+                print("Classification Validation request is unassigned. Waiting...")
             else:
-                print("Validation request failed...")
+                print("Classification Validation request failed...")
                 return None
