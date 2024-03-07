@@ -1,6 +1,6 @@
 # Document Understanding Cloud APIs Example
 
-This code snippet demonstrates how to digitize, classify, and extract documents using UiPath Document Understanding API's.
+This code snippet demonstrates how to digitize, classify, validate, and extract documents using UiPath Document Understanding API's.
 
 ## Official Documentation
 
