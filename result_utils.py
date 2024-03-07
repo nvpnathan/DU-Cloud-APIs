@@ -4,7 +4,7 @@ import os
 
 class CSVWriter:
     @staticmethod
-    def write_extraction_results_to_csv(extraction_results, document_path, output_directory="Output Results"):
+    def write_extraction_results_to_csv(extraction_results, document_path, output_directory):
         fields_to_extract = ['FieldName', 'Value', 'OcrConfidence', 'Confidence', 'IsMissing']
 
         # Extract file name without extension
@@ -47,7 +47,7 @@ class CSVWriter:
 
 
     @staticmethod
-    def write_validated_results_to_csv(validated_results, extraction_results, document_path, output_directory="Output Results"):
+    def write_validated_results_to_csv(validated_results, extraction_results, document_path, output_directory):
         # Extract file name without extension
         file_name = os.path.splitext(os.path.basename(document_path))[0]
 
