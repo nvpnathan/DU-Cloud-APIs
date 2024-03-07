@@ -10,7 +10,7 @@ class Extract:
     def extract_document(self, extractor_id, document_id, prompts=None):
         # Define the API endpoint for document extraction
         api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/extraction?api-version=1"
-
+        
         # Define the headers with the Bearer token and content type
         headers = {
             "Authorization": f"Bearer {self.bearer_token}",
