@@ -25,7 +25,7 @@ validate_client = Validate(base_url, project_id, bearer_token)
 
 
 # Function to load prompts from a JSON file based on the document type ID
-def load_prompts(document_type_id: str):
+def load_prompts(document_type_id: str) -> (dict | None):
     prompts_directory = "Generative Prompts"
     prompts_file = os.path.join(prompts_directory, f"{document_type_id}_prompts.json")
     if os.path.exists(prompts_file):
@@ -83,12 +83,12 @@ def process_document(document_path: str,
                 # Write extraction results based on validation flag
                 if not validate_extraction:
                     CSVWriter.write_extraction_results_to_csv(extraction_results, document_path, output_directory)
-                    CSVWriter.pprint_csv_results(document_path)
+                    CSVWriter.pprint_csv_results(document_path, output_directory)
                 else:
                     validated_results = validate_client.validate_extraction_results(classification_results, document_id, extraction_results, extraction_prompts)
                     if validated_results:
                         CSVWriter.write_validated_results_to_csv(validated_results, extraction_results, document_path, output_directory)
-                        CSVWriter.pprint_csv_results(document_path)
+                        CSVWriter.pprint_csv_results(document_path, output_directory)
     except Exception as e:
         # Handle any errors that occur during the document processing
         print(f"Error processing {document_path}: {e}")
