@@ -131,5 +131,4 @@ if __name__ == "__main__":
     OUTPUT_DIRECTORY = "./Output Results"
     process_documents_in_folder(DOCUMENT_FOLDER, OUTPUT_DIRECTORY,
                                 validate_classification=False, validate_extraction=False,
-                                generative_classification=True, generative_extraction=True)
-    
+                                generative_classification=False, generative_extraction=False)
