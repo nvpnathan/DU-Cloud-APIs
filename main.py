@@ -61,7 +61,7 @@ def process_document(document_path: str,
     """
     try:
         # Start the digitization process for the document
-        document_id = digitize_client.start(document_path)
+        document_id = digitize_client.digitize(document_path)
         if document_id:
             # Classify the document to obtain its type
             classifier_id = 'generative_classifier' if generative_classification else 'ml-classification'

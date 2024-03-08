@@ -9,7 +9,7 @@ class Digitize:
         self.project_id = project_id
         self.bearer_token = bearer_token
 
-    def start(self, document_path: str) -> (str | None):
+    def digitize(self, document_path: str) -> (str | None):
         # Define the API endpoint for digitization
         api_url = f"{self.base_url}{self.project_id}/digitization/start?api-version=1"
         headers = {
