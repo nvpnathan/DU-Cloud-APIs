@@ -67,6 +67,6 @@ class Digitize:
                 print("Document Digitization not started...")
             elif response_data["status"] == "Running":
                 time.sleep(1)
-                print("Document Digitization not running...")
+                print("Document Digitization running...")
             else:
-                print("Document Digitization not failed.")
+                print("Document Digitization failed.")
