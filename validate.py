@@ -108,7 +108,7 @@ class Validate:
             "accept": "text/plain",
             "Content-Type": "application/json"
         }
-        print(classification_results)
+
         # Define the payload data
         payload = {
             "documentId": document_id,
