@@ -32,7 +32,7 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
     pip install -r requirements.txt
     ```
 
-4. Set up your environment variables by creating a `.env` file in the root directory and adding the following variables:
+4. Set up your environment variables by copying `.env.example` to `.env` file in the root directory and provide the `APP_ID` and `APP_SECRET` from your Cloud Envirnment:
 
   ```env
   APP_ID=
@@ -51,7 +51,7 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
 2. Run the main script `main.py` to process the documents:
 
     ```bash
-    python main.py
+    python3 src/main.py
     ```
 
 3. Monitor the console output for processing status and any errors.
@@ -64,21 +64,23 @@ The project structure is organized as follows:
 ```bash
 DU-Cloud-APIs/
 │
-├── main.py # Main script for document processing
-├── auth.py # Authentication class for obtaining bearer token
-├── digitize.py # Digitize class for initiating document digitization
-├── classify.py # Classify class for document classification
-├── extract.py # Extract class for document extraction
-├── validate.py # Validate class for document validation
-├── result_utils.py # Utility classes for printing and writing extraction results
+├── src/
+│   ├── main.py         # Main entry point for the application
+│   ├── auth.py         # Authentication module for obtaining bearer token
+│   ├── digitize.py     # Digitize module for initiating document digitization
+│   ├── classify.py     # Classify module for document classification
+│   ├── extract.py      # Extract module for document extraction
+│   ├── validate.py     # Validate module for document validation
+│   └── result_utils.py # Utility module for printing and writing extraction results
 │
-├── .env.example # Example environment variables file
-├── requirements.txt # List of dependencies
-├── Generative Prompts/ # Folder containing Extraction and Classification Prompt Templates
-├── Example Documents/ # Folder containing example documents
-└── Output Results/ # Folder containing the CSV's of the Document Extraction Results
+├── .env.example         # Example environment variables file
+├── requirements.txt     # Rust package configuration file
+├── example_documents/   # Folder containing example documents
+├── generative_prompts/  # Folder containing Extraction and Classification Prompt Templates
+└── output_results/      # Folder containing the CSV's of the Document Extraction Results
 ```
 
 ## TODO
 
 * Write Tests
+* Write Discovery API
