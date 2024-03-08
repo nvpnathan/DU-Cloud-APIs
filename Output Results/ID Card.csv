@@ -1,16 +1,16 @@
-FieldName,Value,OcrConfidence,Confidence,IsMissing,ActualValue,OperatorConfirmed,IsCorrect
-Last Name,Sample,1.0,0.0,False,Sample,True,True
-First Name,Caron Elizabeth,0.98999995,0.0,False,Caron Elizabeth,True,True
-Birth Place,,,,,,,True
-Birth Date,01/11/1966,0.98999995,0.0,False,01/11/1966,True,True
-Sex,F,0.98999995,0.0,False,F,True,True
-Nationality,USA,1.0,0.0,False,USA,True,True
-ID Number,K12-34-5678,0.98999995,0.0,False,K12-34-5678,True,True
-Issued Date,01/11/2017,0.98999995,0.0,False,01/11/2017,True,True
-Expiration Date,01/11/2023,0.98999995,0.0,False,01/11/2023,True,True
-Issued Place,,,,,,,True
-Authority,,,,,,,True
-ID Number 2,XX123XWMXX1,0.98999995,0.0,False,XX123XWMXX1,True,True
-Machine Readable Zone,,,,,,,True
-Address,"123 NORTH STREET APT. 2 TOPEKA, KS 66612-1234",0.98999995,0.0,False,"123 NORTH STREET APT. 2 TOPEKA, KS 66612-1234",True,True
-State,Kansas,0.98999995,0.0,False,Kansas,True,True
+FieldName,Value,OcrConfidence,Confidence,IsMissing
+Last Name,Sample,1.0,0.0,False
+First Name,Caron Elizabeth,0.98999995,0.0,False
+Birth Place,,,,True
+Birth Date,01/11/1966,0.98999995,0.0,False
+Sex,F,0.98999995,0.0,False
+Nationality,USA,1.0,0.0,False
+ID Number,K12-34-5678,0.98999995,0.0,False
+Issued Date,01/11/2017,0.98999995,0.0,False
+Expiration Date,01/11/2023,0.98999995,0.0,False
+Issued Place,,,,True
+Authority,,,,True
+ID Number 2,XX123XWMXX1,0.98999995,0.0,False
+Machine Readable Zone,,,,True
+Address,"123 NORTH STREET APT. 2 TOPEKA, KS 66612-1234",0.98999995,0.0,False
+State,Kansas,0.98999995,0.0,False

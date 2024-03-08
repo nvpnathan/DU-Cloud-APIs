@@ -7,7 +7,7 @@ class Authentication:
         self.client_secret = client_secret
         self.token_url = token_url
 
-    def get_bearer_token(self):
+    def get_bearer_token(self) -> (str | None):
         data = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,
@@ -17,7 +17,7 @@ class Authentication:
 
         try:
             # Make the POST request to obtain the token
-            response = requests.post(self.token_url, data=data)
+            response = requests.post(self.token_url, data=data, timeout=30)
             response.raise_for_status()  # Raise an exception for HTTP errors
 
             token_data = response.json()

@@ -20,7 +20,7 @@ class CSVWriter:
         # Construct output file path with .csv extension
         output_file = os.path.join(output_dir_path, file_name + '.csv')
 
-        with open(output_file, 'w', newline='') as csvfile:
+        with open(output_file, 'w', newline='', encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fields_to_extract)
             writer.writeheader()
 
@@ -66,7 +66,7 @@ class CSVWriter:
                             'ActualValue', 'OperatorConfirmed', 'IsCorrect']
 
         # Write validated results to the same CSV file
-        with open(output_file, 'w', newline='') as csvfile:
+        with open(output_file, 'w', newline='', encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fields_to_extract)
             writer.writeheader()
 
@@ -123,7 +123,7 @@ class CSVWriter:
 
 
     @staticmethod
-    def pprint_csv_results(document_path, encoding='utf-8', output_directory="Output Results"):
+    def pprint_csv_results(document_path, output_directory):
         # Extract file name without extension
         file_name = os.path.splitext(os.path.basename(document_path))[0]
 
@@ -133,7 +133,7 @@ class CSVWriter:
         # Construct output file path with .csv extension
         output_file = os.path.join(output_dir_path, file_name + '.csv')
 
-        with open(output_file, 'r', newline='', encoding=encoding) as csvfile:
+        with open(output_file, 'r', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             headers = reader.fieldnames
             max_widths = {header: len(header) for header in headers}

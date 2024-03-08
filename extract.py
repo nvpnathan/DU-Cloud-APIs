@@ -7,7 +7,10 @@ class Extract:
         self.project_id = project_id
         self.bearer_token = bearer_token
 
-    def extract_document(self, extractor_id, document_id, prompts=None):
+    def extract_document(self, 
+                         extractor_id: str,
+                         document_id: str,
+                         prompts: dict = None) -> (dict | None):
         # Define the API endpoint for document extraction
         api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/extraction?api-version=1"
         
@@ -25,7 +28,7 @@ class Extract:
 
         try:
             # Make the POST request
-            response = requests.post(api_url, json=data, headers=headers)
+            response = requests.post(api_url, json=data, headers=headers, timeout=300)
 
             if response.status_code == 200:
                 print("Document successfully extracted!\n")

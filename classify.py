@@ -6,8 +6,13 @@ class Classify:
         self.project_id = project_id
         self.bearer_token = bearer_token
 
-    def classify_document(self, document_id, classifier, classification_prompts, validate_classification=False):
-        # Define the API endpoint for document classification        
+
+    def classify_document(self,
+                          document_id: str,
+                          classifier: str,
+                          classification_prompts: dict,
+                          validate_classification: bool = False):
+        # Define the API endpoint for document classification
         api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier}/classification?api-version=1"
 
         # Define the headers with the Bearer token and content type
@@ -24,7 +29,7 @@ class Classify:
 
         try:
             # Make the POST request
-            response = requests.post(api_url, json=data, headers=headers)
+            response = requests.post(api_url, json=data, headers=headers, timeout=60)
 
             if response.status_code == 200:
                 print("Document successfully classified!")
@@ -44,9 +49,9 @@ class Classify:
                         if document_type_id:
                             print(f"Document Type ID: {document_type_id}, Confidence: {classification_confidence}\n")
                             return document_type_id
-                        else:
-                            print("Document ID not found in classification results.")
-                            return None
+                        
+                        print("Document ID not found in classification results.")
+                        return None
                 except ValueError as ve:
                     print(f"Error parsing JSON response: {ve}")
                     return None

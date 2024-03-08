@@ -8,7 +8,11 @@ class Validate:
         self.project_id = project_id
         self.bearer_token = bearer_token
 
-    def validate_extraction_results(self, extractor_id, document_id, extraction_results, extraction_prompts):
+    def validate_extraction_results(self,
+                                    extractor_id: str,
+                                    document_id: str,
+                                    extraction_results: dict,
+                                    extraction_prompts: dict) -> (dict | None):
         # Define the API endpoint for validation
         api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/validation/start?api-version=1"
 
@@ -35,7 +39,7 @@ class Validate:
         try:
             
             # Make the POST request to initiate validation
-            response = requests.post(api_url, json=payload, headers=headers)
+            response = requests.post(api_url, json=payload, headers=headers, timeout=60)
 
             if response.status_code == 202:
                 print("\nExtraction Validation request sent!")
@@ -54,7 +58,7 @@ class Validate:
             print(f"An error occurred during validation: {e}")
 
 
-    def submit_extraction_validation_request(self, extractor_id, operation_id):
+    def submit_extraction_validation_request(self, extractor_id: str, operation_id: str):
         # Define the API endpoint for validation
         api_url = f'{self.base_url}{self.project_id}/extractors/{extractor_id}/validation/result/{operation_id}?api-version=1'
         
@@ -65,12 +69,12 @@ class Validate:
         }
 
         while True:
-            response = requests.get(api_url, headers=headers)
+            response = requests.get(api_url, headers=headers, timeout=60)
             response_data = response.json()
             if response_data['status'] == 'Succeeded':
                 print("Extraction Validation request submitted successfully!")
                 while True:
-                    response = requests.get(api_url, headers=headers)
+                    response = requests.get(api_url, headers=headers, timeout=60)
                     response_data = response.json()
                     # Check the status inside actionData
                     action_data_status = response_data['result']['actionData']['status']
@@ -95,12 +99,16 @@ class Validate:
             else:
                 print("Extraction Validation request failed...")
                 return None
-            
 
-    def validate_classification_results(self, document_id, classifier_id, classification_results, classificastion_prompts):
+
+    def validate_classification_results(self,
+                                        document_id: str,
+                                        classifier_id: str,
+                                        classification_results: dict,
+                                        classificastion_prompts: dict) -> (str | None):
         # Define the API endpoint for validation
         api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier_id}/validation/start?api-version=1"
-        
+
         document_type_id = classification_results['classificationResults'][0]['DocumentTypeId']
         # Define the headers with the Bearer token and content type
         headers = {
@@ -124,7 +132,7 @@ class Validate:
 
         try:
             # Make the POST request to initiate validation
-            response = requests.post(api_url, json=payload, headers=headers)
+            response = requests.post(api_url, json=payload, headers=headers, timeout=60)
 
             if response.status_code == 202:
                 print("\nClassification Validation request sent!")
@@ -132,15 +140,14 @@ class Validate:
                 response_data = response.json()
                 # Extract and return the operationId
                 operation_id = response_data.get("operationId")
-                
+
                 # Wait until the validation operation is completed
                 validation_result = self.submit_classification_validation_request(operation_id)
                 if validation_result:
                     document_type_id = validation_result['result']['validatedClassificationResults'][0]['DocumentTypeId']
                     return document_type_id
-                else:
-                    print("Validation result is None.")
-                    return None
+                print("Validation result is None.")
+                return None
             else:
                 print(f"Error: {response.status_code} - {response.text}")
 
@@ -148,7 +155,7 @@ class Validate:
             print(f"An error occurred during validation: {e}")
 
 
-    def submit_classification_validation_request(self, operation_id):
+    def submit_classification_validation_request(self, operation_id: str) -> (dict | None):
         api_url = f'{self.base_url}{self.project_id}/classifiers/ml-classification/validation/result/{operation_id}?api-version=1'
         headers = {
             'accept': 'application/json',
@@ -156,12 +163,12 @@ class Validate:
         }
 
         while True:
-            response = requests.get(api_url, headers=headers)
+            response = requests.get(api_url, headers=headers, timeout=60)
             response_data = response.json()
             if response_data['status'] == 'Succeeded':
                 print("Classification Validation request submitted successfully!")
                 while True:
-                    response = requests.get(api_url, headers=headers)
+                    response = requests.get(api_url, headers=headers, timeout=60)
                     response_data = response.json()
                     # Check the status inside actionData
                     action_data_status = response_data['result']['actionData']['status']

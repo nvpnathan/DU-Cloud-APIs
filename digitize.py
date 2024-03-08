@@ -8,7 +8,7 @@ class Digitize:
         self.project_id = project_id
         self.bearer_token = bearer_token
 
-    def start(self, document_path):
+    def start(self, document_path: str) -> (str | None):
         # Define the API endpoint for digitization
         api_url = f"{self.base_url}{self.project_id}/digitization/start?api-version=1"
         headers = {
@@ -26,7 +26,7 @@ class Digitize:
             # Open the file
             files = {'File': (document_path, open(document_path, 'rb'), mime_type)}
             # Make the POST request with files parameter
-            response = requests.post(api_url, files=files, headers=headers)
+            response = requests.post(api_url, files=files, headers=headers, timeout=300)
 
             # Check if the request was successful (status code 200)
             if response.status_code == 202:
