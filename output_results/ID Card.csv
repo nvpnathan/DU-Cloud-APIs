@@ -1,0 +1,17 @@
+FieldName,Value,OcrConfidence,Confidence,IsMissing
+Document Type,DRIVER'S LICENSE,0.98999995,0.999,False
+Last Name,SAMPLE,1.0,0.991,False
+First Name,CARON ELIZABETH,0.98999995,0.998,False
+Birth Place,,,,True
+Birth Date,1966-01-11,0.98999995,1.0,False
+Sex,F,0.98999995,1.0,False
+Nationality,,,,True
+ID Number,K12-34-5678,0.98999995,1.0,False
+Issued Date,2017-01-11,0.98999995,0.999,False
+Expiration Date,2023-01-11,0.98999995,1.0,False
+Issued Place,,,,True
+Authority,Qlinad Koppar Sam Wellians,0.98999995,0.686,False
+ID Number 2,DD XX123XWMXX1,0.98999995,0.982,False
+Machine Readable Zone,,,,True
+Address,"123 NORTH STREET APT. 2 TOPEKA, KS 66612-1234",0.98999995,1.0,False
+State,KANSAS,0.98999995,0.822,False

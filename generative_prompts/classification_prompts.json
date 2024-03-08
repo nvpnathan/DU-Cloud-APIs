@@ -1,0 +1,104 @@
+{
+  "prompts": [
+    {
+      "name": "1040",
+      "description": "A U.S. Internal Revenue Service form for reporting an individual's income tax return."
+    },
+    {
+      "name": "4506t",
+      "description": "A U.S. Internal Revenue Service form used to request a transcript of a tax return."
+    },
+    {
+      "name": "990",
+      "description": "A U.S. Internal Revenue Service form used by tax-exempt organizations to provide the IRS with annual financial information."
+    },
+    {
+      "name": "acord125",
+      "description": "A standardized form used in the insurance industry to provide information about a commercial property."
+    },
+    {
+      "name": "acord126",
+      "description": "A standardized form used in the insurance industry to provide information about a commercial general liability policy."
+    },
+    {
+      "name": "acord131",
+      "description": "A standardized form used in the insurance industry to provide information about an application for property insurance."
+    },
+    {
+      "name": "acord140",
+      "description": "A standardized form used in the insurance industry to provide information about a property loss notice."
+    },
+    {
+      "name": "acord25",
+      "description": "A standardized form used in the insurance industry to provide information about an insurance policy."
+    },
+    {
+      "name": "bank_statements",
+      "description": "A summary of financial transactions that have occurred over a given period on a bank account."
+    },
+    {
+      "name": "bills_of_lading",
+      "description": "A legal document issued by a carrier to a shipper that details the type, quantity, and destination of the goods being carried."
+    },
+    {
+      "name": "checks",
+      "description": "A written order to a bank to pay a specified sum of money from a person's account to another account."
+    },
+    {
+      "name": "financial_statements",
+      "description": "Reports that show the financial position and performance of a business."
+    },
+    {
+      "name": "fm1003",
+      "description": "A standardized mortgage loan application form used in the United States."
+    },
+    {
+      "name": "i9",
+      "description": "A U.S. Citizenship and Immigration Services form used to verify the identity and employment authorization of individuals hired for employment in the United States."
+    },
+    {
+      "name": "id_cards",
+      "description": "A card issued by a government or organization that verifies the identity of the holder."
+    },
+    {
+      "name": "invoices",
+      "description": "A detailed statement of goods or services provided, with individual prices, the total charge, and payment terms."
+    },
+    {
+      "name": "packing_lists",
+      "description": "A document that lists the contents of a package or shipment."
+    },
+    {
+      "name": "passports",
+      "description": "A government-issued document certifying the identity and nationality of the holder for international travel."
+    },
+    {
+      "name": "purchase_orders",
+      "description": "A commercial document issued by a buyer to a seller, indicating the types, quantities, and agreed prices for products or services the seller will provide to the buyer."
+    },
+    {
+      "name": "receipts",
+      "description": "A written acknowledgment of having received a specified amount of money, goods, or services."
+    },
+    {
+      "name": "remittance_advices",
+      "description": "A document sent by a customer to a supplier, indicating the invoice number and the amount to be paid."
+    },
+    {
+      "name": "utility_bills",
+      "description": "A bill for services provided by a utility company, such as electricity, gas, or water."
+    },
+    {
+      "name": "vehicle_titles",
+      "description": "A legal document that establishes ownership of a vehicle."
+    },
+    {
+      "name": "w2",
+      "description": "A U.S. Internal Revenue Service form used by employers to report wages paid to employees and taxes withheld from them."
+    },
+    {
+      "name": "w9",
+      "description": "A U.S. Internal Revenue Service form used by businesses to request taxpayer identification information from individuals and entities."
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+    "prompts": [
+        {
+            "id": "BillingName",
+            "question": "What is the billing name?"
+        },
+        {
+            "id": "BillingAddress",
+            "question": "What is the billing address?"
+        },
+        {
+            "id": "NameVendor",
+            "question": "What is the name of the vendor?"
+        },
+        {
+            "id": "VendorAddress",
+            "question": "What is the address of the vendor?"
+        },
+        {
+            "id": "AccountNumber",
+            "question": "What is the account number?"
+        },
+        {
+            "id": "InvoiceNumber",
+            "question": "What is the invoice number?"
+        },
+        {
+            "id": "Total",
+            "question": "What is the total amount?"
+        },
+        {
+            "id": "Date",
+            "question": "What is the date of the bill?"
+        },
+        {
+            "id": "DueDate",
+            "question": "What is the due date?"
+        },
+        {
+            "id": "PaymentAddress",
+            "question": "What is the payment address?"
+        },
+        {
+            "id": "ServiceFromDate",
+            "question": "What is the service start date?"
+        },
+        {
+            "id": "ServiceToDate",
+            "question": "What is the service end date?"
+        },
+        {
+            "id": "PaymentTerms",
+            "question": "What are the payment terms?"
+        },
+        {
+            "id": "PreviousBalance",
+            "question": "What is the previous balance?"
+        },
+        {
+            "id": "PaymentsReceived",
+            "question": "What are the payments received?"
+        },
+        {
+            "id": "BalanceForward",
+            "question": "What is the balance forward?"
+        },
+        {
+            "id": "CurrentCharges",
+            "question": "What are the current charges?"
+        },
+        {
+            "id": "ServiceAddress",
+            "question": "What is the service address?"
+        },
+        {
+            "id": "LatePaymentFees",
+            "question": "What are the late payment fees?"
+        },
+        {
+            "id": "DaysBilled",
+            "question": "For how many days is the bill?"
+        },
+        {
+            "id": "MeterIDLine",
+            "question": "What is the meter ID?"
+        },
+        {
+            "id": "StartReadLine",
+            "question": "What is the start reading?"
+        },
+        {
+            "id": "StartReadDateLine",
+            "question": "What is the date of the start reading?"
+        },
+        {
+            "id": "EndReadLine",
+            "question": "What is the end reading?"
+        },
+        {
+            "id": "EndReadDateLine",
+            "question": "What is the date of the end reading?"
+        },
+        {
+            "id": "MeterUsageLine",
+            "question": "What is the meter usage?"
+        },
+        {
+            "id": "MeterUsage",
+            "question": "What is the usage of the meter?"
+        }
+    ]
+}
