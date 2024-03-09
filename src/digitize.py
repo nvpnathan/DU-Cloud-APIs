@@ -27,7 +27,7 @@ class Digitize:
             # Open the file
             files = {'File': (document_path, open(document_path, 'rb'), mime_type)}
             # Make the POST request with files parameter
-            response = requests.post(api_url, files=files, headers=headers, timeout=300)
+            response = requests.post(api_url, files=files, headers=headers, timeout=60)
 
             # Check if the request was successful (status code 200)
             if response.status_code == 202:
