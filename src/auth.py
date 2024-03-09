@@ -12,7 +12,13 @@ class Authentication:
             'client_id': self.client_id,
             'client_secret': self.client_secret,
             'grant_type': 'client_credentials',
-            'scope': 'Du.DocumentManager.Document Du.Classification.Api Du.Digitization.Api Du.Extraction.Api Du.Validation.Api'
+            'scope': (
+                'Du.DocumentManager.Document '
+                'Du.Classification.Api '
+                'Du.Digitization.Api '
+                'Du.Extraction.Api '
+                'Du.Validation.Api'
+            )
         }
 
         try:

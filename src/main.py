@@ -66,11 +66,15 @@ def process_document(document_path: str,
             # Classify the document to obtain its type
             classifier_id = 'generative_classifier' if generative_classification else 'ml-classification'
             classification_prompts = load_prompts('classification') if generative_classification else None
-            document_type_id = classify_client.classify_document(document_id, classifier_id, classification_prompts, validate_classification)
+            document_type_id = classify_client.classify_document(document_id, classifier_id,
+                                                                 classification_prompts, validate_classification)
 
             # Handle classification validation based on flags
             if validate_classification and document_type_id:
-                classification_results = validate_client.validate_classification_results(document_id, classifier_id, document_type_id, classification_prompts)
+                classification_results = validate_client.validate_classification_results(document_id,
+                                                                                         classifier_id,
+                                                                                         document_type_id,
+                                                                                         classification_prompts)
             else:
                 classification_results = document_type_id
 
@@ -78,16 +82,21 @@ def process_document(document_path: str,
             if classification_results:
                 extraction_prompts = load_prompts(classification_results) if generative_extraction else None
                 classification_results = 'generative_extractor' if generative_extraction else classification_results
-                extraction_results = extract_client.extract_document(classification_results, document_id, extraction_prompts)
+                extraction_results = extract_client.extract_document(classification_results,
+                                                                     document_id, extraction_prompts)
 
                 # Write extraction results based on validation flag
                 if not validate_extraction:
                     CSVWriter.write_extraction_results_to_csv(extraction_results, document_path, output_directory)
                     CSVWriter.pprint_csv_results(document_path, output_directory)
                 else:
-                    validated_results = validate_client.validate_extraction_results(classification_results, document_id, extraction_results, extraction_prompts)
+                    validated_results = validate_client.validate_extraction_results(classification_results,
+                                                                                    document_id,
+                                                                                    extraction_results,
+                                                                                    extraction_prompts)
                     if validated_results:
-                        CSVWriter.write_validated_results_to_csv(validated_results, extraction_results, document_path, output_directory)
+                        CSVWriter.write_validated_results_to_csv(validated_results, extraction_results,
+                                                                 document_path, output_directory)
                         CSVWriter.pprint_csv_results(document_path, output_directory)
     except Exception as e:
         # Handle any errors that occur during the document processing
