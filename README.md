@@ -74,7 +74,7 @@ DU-Cloud-APIs/
 │   └── result_utils.py # Utility module for printing and writing extraction results
 │
 ├── .env.example         # Example environment variables file
-├── requirements.txt     # Rust package configuration file
+├── requirements.txt     # Python modules configuration file
 ├── example_documents/   # Folder containing example documents
 ├── generative_prompts/  # Folder containing Extraction and Classification Prompt Templates
 └── output_results/      # Folder containing the CSV's of the Document Extraction Results
