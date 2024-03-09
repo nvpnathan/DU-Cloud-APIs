@@ -41,3 +41,9 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+      env:
+          APP_ID: ${{ secrets.APP_ID }}
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+          AUTH_URL: ${{ secrets.AUTH_URL }}
+          BASE_URL: "https://cloud.uipath.com/cloudOrg/cloudTenant/du_/api/framework/projects/"
+          PROJECT_ID: "00000000-0000-0000-0000-000000000000"
