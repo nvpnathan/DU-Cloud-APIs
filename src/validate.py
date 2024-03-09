@@ -153,6 +153,7 @@ class Validate:
 
     def submit_classification_validation_request(self, operation_id: str) -> (dict | None):
         api_url = f'{self.base_url}{self.project_id}/classifiers/ml-classification/validation/result/{operation_id}?api-version=1'
+        
         headers = {
             'accept': 'application/json',
             'Authorization': f'Bearer {self.bearer_token}'

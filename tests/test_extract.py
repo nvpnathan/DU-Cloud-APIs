@@ -25,7 +25,7 @@ class TestExtract(unittest.TestCase):
 
         with unittest.mock.patch('requests.post', return_value=response) as mock_post:
             extractor = Extract(base_url, project_id, bearer_token)
-            extracted_data = extractor.extract_document(extractor_id, document_id, prompts= prompts)
+            extracted_data = extractor.extract_document(extractor_id, document_id, prompts=prompts)
 
             self.assertEqual(extracted_data, response_data)
             mock_post.assert_called_once()
@@ -44,7 +44,7 @@ class TestExtract(unittest.TestCase):
 
         with unittest.mock.patch('requests.post', return_value=response) as mock_post:
             extractor = Extract(base_url, project_id, bearer_token)
-            extracted_data = extractor.extract_document(extractor_id, document_id, prompts= prompts)
+            extracted_data = extractor.extract_document(extractor_id, document_id, prompts=prompts)
 
             self.assertIsNone(extracted_data)
             mock_post.assert_called_once()
@@ -59,10 +59,11 @@ class TestExtract(unittest.TestCase):
 
         with unittest.mock.patch('requests.post', side_effect=RequestException) as mock_post:
             extractor = Extract(base_url, project_id, bearer_token)
-            extracted_data = extractor.extract_document(extractor_id, document_id, prompts= prompts)
+            extracted_data = extractor.extract_document(extractor_id, document_id, prompts=prompts)
 
             self.assertIsNone(extracted_data)
             mock_post.assert_called_once()
+
 
 if __name__ == '__main__':
     unittest.main()

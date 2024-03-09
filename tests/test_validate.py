@@ -25,9 +25,13 @@ class TestValidate(unittest.TestCase):
         response.json.return_value = response_data
 
         with unittest.mock.patch('requests.post', return_value=response) as mock_post, \
-                unittest.mock.patch.object(Validate, 'submit_extraction_validation_request', return_value=response_data) as mock_submit:
+                unittest.mock.patch.object(Validate, 'submit_extraction_validation_request',
+                                           return_value=response_data) as mock_submit:
             validator = Validate(base_url, project_id, bearer_token)
-            validated_results = validator.validate_extraction_results(extractor_id, document_id, extraction_results, extraction_prompts)
+            validated_results = validator.validate_extraction_results(extractor_id,
+                                                                      document_id,
+                                                                      extraction_results,
+                                                                      extraction_prompts)
 
             self.assertEqual(validated_results, response_data)
             mock_post.assert_called_once()
@@ -48,7 +52,10 @@ class TestValidate(unittest.TestCase):
 
         with unittest.mock.patch('requests.post', return_value=response) as mock_post:
             validator = Validate(base_url, project_id, bearer_token)
-            validated_results = validator.validate_extraction_results(extractor_id, document_id, extraction_results, extraction_prompts)
+            validated_results = validator.validate_extraction_results(extractor_id,
+                                                                      document_id,
+                                                                      extraction_results,
+                                                                      extraction_prompts)
 
             self.assertIsNone(validated_results)
             mock_post.assert_called_once()
@@ -64,10 +71,14 @@ class TestValidate(unittest.TestCase):
 
         with unittest.mock.patch('requests.post', side_effect=RequestException) as mock_post:
             validator = Validate(base_url, project_id, bearer_token)
-            validated_results = validator.validate_extraction_results(extractor_id, document_id, extraction_results, extraction_prompts)
+            validated_results = validator.validate_extraction_results(extractor_id,
+                                                                      document_id,
+                                                                      extraction_results,
+                                                                      extraction_prompts)
 
             self.assertIsNone(validated_results)
             mock_post.assert_called_once()
+
 
 if __name__ == '__main__':
     unittest.main()

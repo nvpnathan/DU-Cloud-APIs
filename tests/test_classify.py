@@ -28,7 +28,10 @@ class TestClassify(unittest.TestCase):
 
         with unittest.mock.patch('requests.post', return_value=response) as mock_post:
             classifier = Classify(base_url, project_id, bearer_token)
-            result = classifier.classify_document(document_id, classifier, classification_prompts, validate_classification=False)
+            result = classifier.classify_document(document_id,
+                                                  classifier,
+                                                  classification_prompts,
+                                                  validate_classification=False)
 
             self.assertEqual(result, 'doc_type_1')
             mock_post.assert_called_once()
@@ -47,10 +50,14 @@ class TestClassify(unittest.TestCase):
 
         with unittest.mock.patch('requests.post', return_value=response) as mock_post:
             classifier = Classify(base_url, project_id, bearer_token)
-            result = classifier.classify_document(document_id, classifier, classification_prompts, validate_classification=False)
+            result = classifier.classify_document(document_id,
+                                                  classifier,
+                                                  classification_prompts,
+                                                  validate_classification=False)
 
             self.assertIsNone(result)
             mock_post.assert_called_once()
+
 
 if __name__ == '__main__':
     unittest.main()
