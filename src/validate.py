@@ -37,7 +37,6 @@ class Validate:
         }
 
         try:
-            
             # Make the POST request to initiate validation
             response = requests.post(api_url, json=payload, headers=headers, timeout=60)
 
@@ -47,7 +46,7 @@ class Validate:
                 response_data = response.json()
                 # Extract and return the operationId
                 operation_id = response_data.get("operationId")
-                
+
                 # Wait until the validation operation is completed
                 validation_result = self.submit_extraction_validation_request(extractor_id, operation_id)
                 return validation_result
@@ -57,11 +56,10 @@ class Validate:
         except Exception as e:
             print(f"An error occurred during validation: {e}")
 
-
     def submit_extraction_validation_request(self, extractor_id: str, operation_id: str):
         # Define the API endpoint for validation
         api_url = f'{self.base_url}{self.project_id}/extractors/{extractor_id}/validation/result/{operation_id}?api-version=1'
-        
+
         # Define the headers with the Bearer token and content type
         headers = {
             'accept': 'application/json',
@@ -99,7 +97,6 @@ class Validate:
             else:
                 print("Extraction Validation request failed...")
                 return None
-
 
     def validate_classification_results(self,
                                         document_id: str,
@@ -153,7 +150,6 @@ class Validate:
 
         except Exception as e:
             print(f"An error occurred during validation: {e}")
-
 
     def submit_classification_validation_request(self, operation_id: str) -> (dict | None):
         api_url = f'{self.base_url}{self.project_id}/classifiers/ml-classification/validation/result/{operation_id}?api-version=1'

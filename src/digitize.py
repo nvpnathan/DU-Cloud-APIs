@@ -47,7 +47,6 @@ class Digitize:
         except Exception as e:
             print(f"An error occurred: {e}")
 
-
     def submit_digitization_request(self, document_id):
         # Define the API endpoint for validation
         api_url = f'{self.base_url}{self.project_id}/digitization/result/{document_id}?api-version=1'

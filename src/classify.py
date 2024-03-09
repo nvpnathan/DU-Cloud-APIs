@@ -1,5 +1,6 @@
 import requests
 
+
 class Classify:
     def __init__(self, base_url, project_id, bearer_token):
         self.base_url = base_url
@@ -32,7 +33,6 @@ class Classify:
             print(f"Error parsing JSON response: {ve}")
             return None
 
-
     def classify_document(self,
                           document_id: str,
                           classifier: str,
@@ -54,7 +54,7 @@ class Classify:
 
             if response.status_code == 200:
                 print("Document successfully classified!")
-                return self._parse_classification_results(response, document_id, 
+                return self._parse_classification_results(response, document_id,
                                                           validate_classification)
 
             print(f"Error: {response.status_code} - {response.text}")

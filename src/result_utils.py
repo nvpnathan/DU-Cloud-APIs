@@ -45,7 +45,6 @@ class CSVWriter:
                     }
                     writer.writerow(field_data)
 
-
     @staticmethod
     def write_validated_results_to_csv(validated_results, extraction_results, document_path, output_directory):
         # Extract file name without extension
@@ -63,7 +62,7 @@ class CSVWriter:
 
         # Update the fieldnames to include new columns for validated results
         fields_to_extract = ['FieldName', 'Value', 'OcrConfidence', 'Confidence', 'IsMissing',
-                            'ActualValue', 'OperatorConfirmed', 'IsCorrect']
+                             'ActualValue', 'OperatorConfirmed', 'IsCorrect']
 
         # Write validated results to the same CSV file
         with open(output_file, 'w', newline='', encoding="utf-8") as csvfile:
@@ -120,7 +119,6 @@ class CSVWriter:
                         'IsCorrect': True
                     }
                 writer.writerow(field_data)
-
 
     @staticmethod
     def pprint_csv_results(document_path, output_directory):

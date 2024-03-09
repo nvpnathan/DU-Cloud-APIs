@@ -102,7 +102,7 @@ def process_documents_in_folder(
     validate_extraction: bool = False,
     generative_classification: bool = False,
     generative_extraction: bool = False
-    ) -> None:
+) -> None:
     """Process all documents in a folder.
 
     Args:
@@ -124,6 +124,7 @@ def process_documents_in_folder(
             process_document(document_path, output_directory,
                              validate_classification, validate_extraction,
                              generative_classification, generative_extraction)
+
 
 # Call the main function to process documents in the specified folder
 if __name__ == "__main__":
