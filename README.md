@@ -14,7 +14,7 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
 ## Requirements
 
 - Python 3.11.6
-- `requests` library 
+- `requests` library
 - `python-dotenv` library
 
 ## Setup
