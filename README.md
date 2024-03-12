@@ -84,3 +84,4 @@ DU-Cloud-APIs/
 
 * Write Tests
 * Write Discovery API
+* Add [Black](https://github.com/psf/black)
