@@ -7,18 +7,18 @@ class Authentication:
         self.client_secret = client_secret
         self.token_url = token_url
 
-    def get_bearer_token(self) -> (str | None):
+    def get_bearer_token(self) -> str | None:
         data = {
-            'client_id': self.client_id,
-            'client_secret': self.client_secret,
-            'grant_type': 'client_credentials',
-            'scope': (
-                'Du.DocumentManager.Document '
-                'Du.Classification.Api '
-                'Du.Digitization.Api '
-                'Du.Extraction.Api '
-                'Du.Validation.Api'
-            )
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "grant_type": "client_credentials",
+            "scope": (
+                "Du.DocumentManager.Document "
+                "Du.Classification.Api "
+                "Du.Digitization.Api "
+                "Du.Extraction.Api "
+                "Du.Validation.Api"
+            ),
         }
 
         try:
@@ -29,7 +29,7 @@ class Authentication:
             token_data = response.json()
 
             # Extract and return the access token
-            access_token = token_data.get('access_token')
+            access_token = token_data.get("access_token")
             if access_token:
                 print("Authenticated!\n")
                 return access_token
