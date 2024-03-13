@@ -13,7 +13,7 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
 
 ## Requirements
 
-- Python 3.11.6
+- Python 3.11+
 - `requests` library
 - `python-dotenv` library
 
@@ -34,7 +34,7 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
 3. Install the required dependencies:
 
     ```bash
-    pip install -r requirements.txt
+    pip3 install -r requirements.txt
     ```
 
 4. Set up your environment variables by copying `.env.example` to `.env` file in the root directory and provide the `APP_ID` and `APP_SECRET` from your Cloud Envirnment:
