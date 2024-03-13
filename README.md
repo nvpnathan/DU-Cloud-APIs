@@ -31,13 +31,20 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
     cd DU-Cloud-APIs
     ```
 
-3. Install the required dependencies:
+3. Create a Python virtual environment:
+
+   ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+
+5. Install the required dependencies:
 
     ```bash
     pip3 install -r requirements.txt
     ```
 
-4. Set up your environment variables by copying `.env.example` to `.env` file in the root directory and provide the `APP_ID` and `APP_SECRET` from your Cloud Envirnment:
+6. Set up your environment variables by copying `.env.example` to `.env` file in the root directory and provide the `APP_ID` and `APP_SECRET` from your Cloud Envirnment:
 
   ```env
   APP_ID=
