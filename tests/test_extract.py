@@ -9,7 +9,6 @@ from extract import Extract
 
 
 class TestExtract(unittest.TestCase):
-
     def test_extract_document_successful(self):
         base_url = "https://example.com/"
         project_id = "project123"

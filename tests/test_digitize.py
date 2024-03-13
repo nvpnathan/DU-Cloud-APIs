@@ -8,7 +8,6 @@ from digitize import Digitize
 
 
 class TestDigitize(unittest.TestCase):
-
     def test_digitize_successful(self):
         base_url = "https://example.com/"
         project_id = "project123"

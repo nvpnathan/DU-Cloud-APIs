@@ -9,7 +9,6 @@ from validate import Validate
 
 
 class TestValidate(unittest.TestCase):
-
     def test_validate_extraction_results_successful(self):
         base_url = "https://example.com/"
         project_id = "project123"
