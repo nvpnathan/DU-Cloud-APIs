@@ -2,7 +2,8 @@ import os
 import sys
 import unittest
 from unittest.mock import Mock
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 from classify import Classify
 
 
@@ -19,21 +20,27 @@ class TestClassify(unittest.TestCase):
         # Mock response for the POST request
         response_data = {
             "classificationResults": [
-                {"DocumentId": "12345", "DocumentTypeId": "doc_type_1", "Confidence": 0.95}
+                {
+                    "DocumentId": "12345",
+                    "DocumentTypeId": "doc_type_1",
+                    "Confidence": 0.95,
+                }
             ]
         }
         response = Mock()
         response.status_code = 200
         response.json.return_value = response_data
 
-        with unittest.mock.patch('requests.post', return_value=response) as mock_post:
+        with unittest.mock.patch("requests.post", return_value=response) as mock_post:
             classifier = Classify(base_url, project_id, bearer_token)
-            result = classifier.classify_document(document_id,
-                                                  classifier,
-                                                  classification_prompts,
-                                                  validate_classification=False)
+            result = classifier.classify_document(
+                document_id,
+                classifier,
+                classification_prompts,
+                validate_classification=False,
+            )
 
-            self.assertEqual(result, 'doc_type_1')
+            self.assertEqual(result, "doc_type_1")
             mock_post.assert_called_once()
 
     def test_classify_document_failed(self):
@@ -48,16 +55,18 @@ class TestClassify(unittest.TestCase):
         response = Mock()
         response.status_code = 400
 
-        with unittest.mock.patch('requests.post', return_value=response) as mock_post:
+        with unittest.mock.patch("requests.post", return_value=response) as mock_post:
             classifier = Classify(base_url, project_id, bearer_token)
-            result = classifier.classify_document(document_id,
-                                                  classifier,
-                                                  classification_prompts,
-                                                  validate_classification=False)
+            result = classifier.classify_document(
+                document_id,
+                classifier,
+                classification_prompts,
+                validate_classification=False,
+            )
 
             self.assertIsNone(result)
             mock_post.assert_called_once()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -7,10 +7,9 @@ class Extract:
         self.project_id = project_id
         self.bearer_token = bearer_token
 
-    def extract_document(self,
-                         extractor_id: str,
-                         document_id: str,
-                         prompts: dict = None) -> (dict | None):
+    def extract_document(
+        self, extractor_id: str, document_id: str, prompts: dict = None
+    ) -> dict | None:
         # Define the API endpoint for document extraction
         api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/extraction?api-version=1"
 
@@ -18,13 +17,10 @@ class Extract:
         headers = {
             "Authorization": f"Bearer {self.bearer_token}",
             "accept": "text/plain",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
-        data = {
-            "documentId": f"{document_id}",
-            **(prompts or {})
-        }
+        data = {"documentId": f"{document_id}", **(prompts or {})}
 
         try:
             # Make the POST request

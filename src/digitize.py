@@ -9,12 +9,12 @@ class Digitize:
         self.project_id = project_id
         self.bearer_token = bearer_token
 
-    def digitize(self, document_path: str) -> (str | None):
+    def digitize(self, document_path: str) -> str | None:
         # Define the API endpoint for digitization
         api_url = f"{self.base_url}{self.project_id}/digitization/start?api-version=1"
         headers = {
             "Authorization": f"Bearer {self.bearer_token}",
-            "accept": "text/plain"
+            "accept": "text/plain",
         }
 
         try:
@@ -22,10 +22,10 @@ class Digitize:
             mime_type, _ = mimetypes.guess_type(document_path)
             # If the MIME type couldn't be guessed, default to 'application/octet-stream'
             if mime_type is None:
-                mime_type = 'application/octet-stream'
+                mime_type = "application/octet-stream"
 
             # Open the file
-            files = {'File': (document_path, open(document_path, 'rb'), mime_type)}
+            files = {"File": (document_path, open(document_path, "rb"), mime_type)}
             # Make the POST request with files parameter
             response = requests.post(api_url, files=files, headers=headers, timeout=60)
 
@@ -34,7 +34,7 @@ class Digitize:
                 print("Document successfully digitized!")
                 response_data = response.json()
                 # Extract the documentID if it exists
-                document_id = response_data.get('documentId')
+                document_id = response_data.get("documentId")
 
                 # Wait until document digitization is completed
                 if document_id:
@@ -49,19 +49,19 @@ class Digitize:
 
     def submit_digitization_request(self, document_id):
         # Define the API endpoint for validation
-        api_url = f'{self.base_url}{self.project_id}/digitization/result/{document_id}?api-version=1'
+        api_url = f"{self.base_url}{self.project_id}/digitization/result/{document_id}?api-version=1"
 
         # Define the headers with the Bearer token and content type
         headers = {
-            'accept': 'application/json',
-            'Authorization': f'Bearer {self.bearer_token}'
+            "accept": "application/json",
+            "Authorization": f"Bearer {self.bearer_token}",
         }
 
         while True:
             response = requests.get(api_url, headers=headers, timeout=60)
             response_data = response.json()
-            if response_data['status'] == 'Succeeded':
-                return response_data['result']['documentObjectModel']['documentId']
+            if response_data["status"] == "Succeeded":
+                return response_data["result"]["documentObjectModel"]["documentId"]
             elif response_data["status"] == "NotStarted":
                 print("Document Digitization not started...")
             elif response_data["status"] == "Running":

@@ -6,10 +6,15 @@ This code snippet demonstrates how to digitize, classify, validate, and extract 
 
 UiPath Document Understanding offers standalone capabilities, allowing integration with external tools and systems through APIs. This release includes APIs for Discovery, Digitization, Classification, Extraction, and Validation. Please take a look at the [Official Documentation](https://docs.uipath.com/document-understanding/automation-cloud/latest/api-guide/example).
 
+
+## Process Flowchart
+
+![](flowchart.png)
+
 ## Requirements
 
 - Python 3.11.6
-- `requests` library 
+- `requests` library
 - `python-dotenv` library
 
 ## Setup
