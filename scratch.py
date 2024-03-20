@@ -56,7 +56,7 @@ def write_extraction_results_to_csv():
             )
             if table_data:
                 headers_dict = extract_table_data(table_data)
-                index = len(fieldnames)  # Insert at the end of the original fieldnames
+                index = len(fieldnames)
                 for key in headers_dict:
                     fieldnames.insert(index, key)
                     fieldnames.insert(index + 1, f"{key}_IsMissing")
