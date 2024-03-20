@@ -64,42 +64,42 @@ class CSVWriter:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
 
-        # Write regular fields to the CSV
-        for field in extraction_results["extractionResult"]["ResultsDocument"][
-            "Fields"
-        ]:
-            if "Values" in field and field["Values"]:
-                field_data = {
-                    "FieldName": field["FieldName"],
-                    "Value": field["Values"][0]["Value"],
-                    "Confidence": field["Values"][0].get("Confidence", ""),
-                    "OcrConfidence": field["Values"][0].get("OcrConfidence", ""),
-                    "IsMissing": field["IsMissing"],
-                }
-                writer.writerow(field_data)
+            # Write regular fields to the CSV
+            for field in extraction_results["extractionResult"]["ResultsDocument"][
+                "Fields"
+            ]:
+                if "Values" in field and field["Values"]:
+                    field_data = {
+                        "FieldName": field["FieldName"],
+                        "Value": field["Values"][0]["Value"],
+                        "Confidence": field["Values"][0].get("Confidence", ""),
+                        "OcrConfidence": field["Values"][0].get("OcrConfidence", ""),
+                        "IsMissing": field["IsMissing"],
+                    }
+                    writer.writerow(field_data)
 
-        if table_exists:
-            num_rows = max(
-                len(value["Values"]) for value in headers_dict.values()
-            )  # Get the maximum number of rows
+            if table_exists:
+                num_rows = max(
+                    len(value["Values"]) for value in headers_dict.values()
+                )  # Get the maximum number of rows
 
-            for i in range(num_rows):
-                # Create a dictionary for each row with values from headers_dict
-                row_data = {}
+                for i in range(num_rows):
+                    # Create a dictionary for each row with values from headers_dict
+                    row_data = {}
 
-                for key, value in headers_dict.items():
-                    # Check if the current row index is within the range of values list for this key
-                    if i < len(value["Values"]):
-                        row_data[key] = value["Values"][i]
-                        # Add IsMissing column
-                        row_data[f"{key}_IsMissing"] = value["IsMissing"][i]
-                    else:
-                        # If the value list is exhausted, fill with empty string and set IsMissing as True
-                        row_data[key] = ""
-                        row_data[f"{key}_IsMissing"] = True
+                    for key, value in headers_dict.items():
+                        # Check if the current row index is within the range of values list for this key
+                        if i < len(value["Values"]):
+                            row_data[key] = value["Values"][i]
+                            # Add IsMissing column
+                            row_data[f"{key}_IsMissing"] = value["IsMissing"][i]
+                        else:
+                            # If the value list is exhausted, fill with empty string and set IsMissing as True
+                            row_data[key] = ""
+                            row_data[f"{key}_IsMissing"] = True
 
-                # Write row_data to CSV
-                writer.writerow(row_data)
+                    # Write row_data to CSV
+                    writer.writerow(row_data)
 
     @staticmethod
     def write_validated_results_to_csv(
