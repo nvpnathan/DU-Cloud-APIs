@@ -130,7 +130,6 @@ class CSVWriter:
             "IsCorrect",
         ]
 
-        # Write validated results to the same CSV file
         with open(output_file, "w", newline="", encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fields_to_extract)
             writer.writeheader()
@@ -199,6 +198,80 @@ class CSVWriter:
                         "IsCorrect": True,
                     }
                 writer.writerow(field_data)
+
+            # Handle table data comparison
+            validated_table = next(
+                (
+                    field
+                    for field in validated_results["result"][
+                        "validatedExtractionResults"
+                    ]["ResultsDocument"]["Fields"]
+                    if field.get("FieldName") == "items"
+                ),
+                None,
+            )
+            extraction_table = next(
+                (
+                    field
+                    for field in extraction_results["extractionResult"][
+                        "ResultsDocument"
+                    ]["Fields"]
+                    if field.get("FieldName") == "items"
+                ),
+                None,
+            )
+
+            if validated_table and extraction_table:
+                validated_headers_dict = extract_table_data(validated_table)
+                extracted_headers_dict = extract_table_data(extraction_table)
+
+                headers = list(validated_headers_dict.keys())
+                for header in headers:
+                    if header not in extracted_headers_dict:
+                        extracted_headers_dict[header] = {
+                            "Values": [""],
+                            "IsMissing": [True],
+                        }
+
+                for i in range(
+                    max(len(v["Values"]) for v in validated_headers_dict.values())
+                ):
+                    row_data = {}
+                    for header in headers:
+                        validated_value = (
+                            validated_headers_dict[header]["Values"][i]
+                            if i < len(validated_headers_dict[header]["Values"])
+                            else ""
+                        )
+                        extracted_value = (
+                            extracted_headers_dict[header]["Values"][i]
+                            if i < len(extracted_headers_dict[header]["Values"])
+                            else ""
+                        )
+                        validated_is_missing = (
+                            validated_headers_dict[header]["IsMissing"][i]
+                            if i < len(validated_headers_dict[header]["IsMissing"])
+                            else True
+                        )
+                        extracted_is_missing = (
+                            extracted_headers_dict[header]["IsMissing"][i]
+                            if i < len(extracted_headers_dict[header]["IsMissing"])
+                            else True
+                        )
+
+                        is_correct = validated_value == extracted_value
+
+                        row_data.update(
+                            {
+                                header: extracted_value,
+                                f"{header}_IsMissing": extracted_is_missing,
+                                f"{header}_ActualValue": validated_value,
+                                f"{header}_OperatorConfirmed": validated_is_missing,
+                                f"{header}_IsCorrect": is_correct,
+                            }
+                        )
+
+                    writer.writerow(row_data)
 
     @staticmethod
     def pprint_csv_results(document_path, output_directory):
