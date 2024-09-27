@@ -85,6 +85,13 @@ DU-Cloud-APIs/
 │   ├── validate.py     # Validate module for document validation
 │   └── result_utils.py # Utility module for printing and writing extraction results
 │
+├── tests/
+│   ├── test_main.py     # Test for the main application entry point
+│   ├── test_digitize.py # Test for the document digitization module
+│   ├── test_classify.py # Test for the document classification module
+│   ├── test_extract.py  # Test for the document extraction module
+│   └── test_validate.py # Test for the document validation module
+│
 ├── .env.example         # Example environment variables file
 ├── requirements.txt     # Python modules configuration file
 ├── example_documents/   # Folder containing example documents
