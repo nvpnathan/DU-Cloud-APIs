@@ -29,9 +29,42 @@ class CSVWriter:
         output_file = os.path.join(output_dir_path, file_name + ".csv")
 
         with open(output_file, "w", newline="", encoding="utf-8") as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=fields_to_extract)
+            # Initialize an empty list for fieldnames
+            fieldnames = fields_to_extract.copy()
+
+            # Check if a table exists
+            table_exists = any(
+                field.get("FieldName") == "items"
+                for field in extraction_results["extractionResult"]["ResultsDocument"][
+                    "Fields"
+                ]
+            )
+
+            # If a table exists, extract table headers and append them to fieldnames
+            if table_exists:
+                table_data = next(
+                    (
+                        field
+                        for field in extraction_results["extractionResult"][
+                            "ResultsDocument"
+                        ]["Fields"]
+                        if field.get("FieldName") == "items"
+                    ),
+                    None,
+                )
+                if table_data:
+                    headers_dict = extract_table_data(table_data)
+                    index = len(fieldnames)
+                    for key in headers_dict:
+                        fieldnames.insert(index, key)
+                        fieldnames.insert(index + 1, f"{key}_IsMissing")
+                        index += 2
+
+            # Initialize csv.DictWriter with dynamic fieldnames
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
 
+            # Write regular fields to the CSV
             for field in extraction_results["extractionResult"]["ResultsDocument"][
                 "Fields"
             ]:
@@ -44,16 +77,29 @@ class CSVWriter:
                         "IsMissing": field["IsMissing"],
                     }
                     writer.writerow(field_data)
-                else:
-                    # Handle case where Values is empty or None
-                    field_data = {
-                        "FieldName": field["FieldName"],
-                        "Value": "",
-                        "Confidence": "",
-                        "OcrConfidence": "",
-                        "IsMissing": field["IsMissing"],
-                    }
-                    writer.writerow(field_data)
+
+            if table_exists:
+                num_rows = max(
+                    len(value["Values"]) for value in headers_dict.values()
+                )  # Get the maximum number of rows
+
+                for i in range(num_rows):
+                    # Create a dictionary for each row with values from headers_dict
+                    row_data = {}
+
+                    for key, value in headers_dict.items():
+                        # Check if the current row index is within the range of values list for this key
+                        if i < len(value["Values"]):
+                            row_data[key] = value["Values"][i]
+                            # Add IsMissing column
+                            row_data[f"{key}_IsMissing"] = value["IsMissing"][i]
+                        else:
+                            # If the value list is exhausted, fill with empty string and set IsMissing as True
+                            row_data[key] = ""
+                            row_data[f"{key}_IsMissing"] = True
+
+                    # Write row_data to CSV
+                    writer.writerow(row_data)
 
     @staticmethod
     def write_validated_results_to_csv(
@@ -84,7 +130,6 @@ class CSVWriter:
             "IsCorrect",
         ]
 
-        # Write validated results to the same CSV file
         with open(output_file, "w", newline="", encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fields_to_extract)
             writer.writeheader()
@@ -154,6 +199,80 @@ class CSVWriter:
                     }
                 writer.writerow(field_data)
 
+            # Handle table data comparison
+            validated_table = next(
+                (
+                    field
+                    for field in validated_results["result"][
+                        "validatedExtractionResults"
+                    ]["ResultsDocument"]["Fields"]
+                    if field.get("FieldName") == "items"
+                ),
+                None,
+            )
+            extraction_table = next(
+                (
+                    field
+                    for field in extraction_results["extractionResult"][
+                        "ResultsDocument"
+                    ]["Fields"]
+                    if field.get("FieldName") == "items"
+                ),
+                None,
+            )
+
+            if validated_table and extraction_table:
+                validated_headers_dict = extract_table_data(validated_table)
+                extracted_headers_dict = extract_table_data(extraction_table)
+
+                headers = list(validated_headers_dict.keys())
+                for header in headers:
+                    if header not in extracted_headers_dict:
+                        extracted_headers_dict[header] = {
+                            "Values": [""],
+                            "IsMissing": [True],
+                        }
+
+                for i in range(
+                    max(len(v["Values"]) for v in validated_headers_dict.values())
+                ):
+                    row_data = {}
+                    for header in headers:
+                        validated_value = (
+                            validated_headers_dict[header]["Values"][i]
+                            if i < len(validated_headers_dict[header]["Values"])
+                            else ""
+                        )
+                        extracted_value = (
+                            extracted_headers_dict[header]["Values"][i]
+                            if i < len(extracted_headers_dict[header]["Values"])
+                            else ""
+                        )
+                        validated_is_missing = (
+                            validated_headers_dict[header]["IsMissing"][i]
+                            if i < len(validated_headers_dict[header]["IsMissing"])
+                            else True
+                        )
+                        extracted_is_missing = (
+                            extracted_headers_dict[header]["IsMissing"][i]
+                            if i < len(extracted_headers_dict[header]["IsMissing"])
+                            else True
+                        )
+
+                        is_correct = validated_value == extracted_value
+
+                        row_data.update(
+                            {
+                                header: extracted_value,
+                                f"{header}_IsMissing": extracted_is_missing,
+                                f"{header}_ActualValue": validated_value,
+                                f"{header}_OperatorConfirmed": validated_is_missing,
+                                f"{header}_IsCorrect": is_correct,
+                            }
+                        )
+
+                    writer.writerow(row_data)
+
     @staticmethod
     def pprint_csv_results(document_path, output_directory):
         # Extract file name without extension
@@ -192,3 +311,28 @@ class CSVWriter:
                     ]
                 )
                 print(row_format)
+
+
+def extract_table_data(table_data):
+    # Extract headers
+    headers_dict = {
+        component["FieldName"]: {"IsMissing": [], "Values": []}
+        for field in table_data["Values"][0]["Components"]
+        if field.get("FieldId") == "items.Header"
+        for component in field["Values"][0]["Components"]
+    }
+
+    # Extract data rows
+    for field in table_data["Values"][0]["Components"]:
+        if field.get("FieldId") == "items.Body":
+            for line in field["Values"]:
+                for component in line["Components"]:
+                    header_name = component["FieldName"]
+                    value = (
+                        component["Values"][0]["Value"] if component["Values"] else ""
+                    )
+                    is_missing = bool(component["IsMissing"])
+                    headers_dict[header_name]["Values"].append(value)
+                    headers_dict[header_name]["IsMissing"].append(is_missing)
+
+    return headers_dict

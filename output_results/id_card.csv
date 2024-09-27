@@ -1,0 +1,16 @@
+FieldName,Value,OcrConfidence,Confidence,IsMissing
+Last Name,Sample,1.0,0.0,False
+First Name,Caron Elizabeth,0.98999995,0.0,False
+Birth Place,,,,True
+Birth Date,01/11/1966,0.98999995,0.0,False
+Sex,F,0.98999995,0.0,False
+Nationality,USA,1.0,0.0,False
+ID Number,K12-34-5678,0.98999995,0.0,False
+Issued Date,01/11/2017,0.98999995,0.0,False
+Expiration Date,01/11/2023,0.98999995,0.0,False
+Issued Place,,,,True
+Authority,,,,True
+ID Number 2,XX123XWMXX1,0.98999995,0.0,False
+Machine Readable Zone,,,,True
+Address,"123 NORTH STREET APT. 2 TOPEKA, KS 66612-1234",0.98999995,0.0,False
+State,Kansas,0.98999995,0.0,False
