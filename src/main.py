@@ -2,6 +2,7 @@ import os
 import json
 from dotenv import load_dotenv
 from auth import Authentication
+from discovery import Discovery
 from digitize import Digitize
 from classify import Classify
 from extract import Extract
@@ -19,7 +20,20 @@ bearer_token = auth.get_bearer_token()
 
 # Initialize API clients
 base_url = os.environ["BASE_URL"]
-project_id = os.environ["PROJECT_ID"]
+# project_id = os.environ["PROJECT_ID"]
+
+
+def load_endpoints():
+    discovery_client = Discovery(base_url, bearer_token)
+    project_id = discovery_client.get_projects()
+    classifier = discovery_client.get_classifers(project_id)
+    extractor_dict = discovery_client.get_extractors(project_id)
+
+    return project_id, classifier, extractor_dict
+
+
+project_id, classifier, extractor_dict = load_endpoints()
+
 digitize_client = Digitize(base_url, project_id, bearer_token)
 classify_client = Classify(base_url, project_id, bearer_token)
 extract_client = Extract(base_url, project_id, bearer_token)
@@ -67,18 +81,13 @@ def process_document(
         # Start the digitization process for the document
         document_id = digitize_client.digitize(document_path)
         if document_id:
-            # Classify the document to obtain its type
-            classifier_id = (
-                "generative_classifier"
-                if generative_classification
-                else "ml-classification"
-            )
             classification_prompts = (
                 load_prompts("classification") if generative_classification else None
             )
+            # Classify the document to obtain its type
             document_type_id = classify_client.classify_document(
                 document_id,
-                classifier_id,
+                classifier,
                 classification_prompts,
                 validate_classification,
             )
@@ -88,28 +97,27 @@ def process_document(
                 classification_results = (
                     validate_client.validate_classification_results(
                         document_id,
-                        classifier_id,
+                        classifier,
                         document_type_id,
                         classification_prompts,
                     )
                 )
+                extractor_id = extractor_dict[classification_results]["id"]
+                extractor_name = extractor_dict[classification_results]["name"]
             else:
-                classification_results = document_type_id
+                extractor_id = extractor_dict[document_type_id]["id"]
+                extractor_name = extractor_dict[document_type_id]["name"]
 
             # Handle extraction based on validation flags
-            if classification_results:
+            if extractor_id:
                 extraction_prompts = (
-                    load_prompts(classification_results)
-                    if generative_extraction
-                    else None
+                    load_prompts(extractor_name) if generative_extraction else None
                 )
-                classification_results = (
-                    "generative_extractor"
-                    if generative_extraction
-                    else classification_results
+                extractor_id = (
+                    "generative_extractor" if generative_extraction else extractor_id
                 )
                 extraction_results = extract_client.extract_document(
-                    classification_results, document_id, extraction_prompts
+                    extractor_id, document_id, extraction_prompts
                 )
 
                 # Write extraction results based on validation flag
@@ -186,6 +194,4 @@ if __name__ == "__main__":
         OUTPUT_DIRECTORY,
         validate_classification=False,
         validate_extraction=False,
-        generative_classification=False,
-        generative_extraction=False,
     )
