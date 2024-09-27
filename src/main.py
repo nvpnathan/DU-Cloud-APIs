@@ -27,12 +27,12 @@ def load_endpoints():
     discovery_client = Discovery(base_url, bearer_token)
     project_id = discovery_client.get_projects()
     classifier = discovery_client.get_classifers(project_id)
-    extractor = discovery_client.get_extractors(project_id)
+    extractor_dict = discovery_client.get_extractors(project_id)
 
-    return project_id, classifier, extractor
+    return project_id, classifier, extractor_dict
 
 
-project_id, classifier, extractor = load_endpoints()
+project_id, classifier, extractor_dict = load_endpoints()
 
 digitize_client = Digitize(base_url, project_id, bearer_token)
 classify_client = Classify(base_url, project_id, bearer_token)
@@ -81,8 +81,9 @@ def process_document(
         # Start the digitization process for the document
         document_id = digitize_client.digitize(document_path)
         if document_id:
-            if "generative_classifier" in classifier:
-                classification_prompts = load_prompts("classification")
+            classification_prompts = (
+                load_prompts("classification") if generative_classification else None
+            )
             # Classify the document to obtain its type
             document_type_id = classify_client.classify_document(
                 document_id,
@@ -101,23 +102,22 @@ def process_document(
                         classification_prompts,
                     )
                 )
+                extractor_id = extractor_dict[classification_results]["id"]
+                extractor_name = extractor_dict[classification_results]["name"]
             else:
-                classification_results = document_type_id
+                extractor_id = extractor_dict[document_type_id]["id"]
+                extractor_name = extractor_dict[document_type_id]["name"]
 
             # Handle extraction based on validation flags
-            if classification_results:
+            if extractor_id:
                 extraction_prompts = (
-                    load_prompts(classification_results)
-                    if generative_extraction
-                    else None
+                    load_prompts(extractor_name) if generative_extraction else None
                 )
-                classification_results = (
-                    "generative_extractor"
-                    if generative_extraction
-                    else classification_results
+                extractor_id = (
+                    "generative_extractor" if generative_extraction else extractor_id
                 )
                 extraction_results = extract_client.extract_document(
-                    classification_results, document_id, extraction_prompts
+                    extractor_id, document_id, extraction_prompts
                 )
 
                 # Write extraction results based on validation flag
