@@ -13,7 +13,7 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
 
 ## Requirements
 
-- Python 3.11.6
+- Python 3.11+
 - `requests` library
 - `python-dotenv` library
 
@@ -31,13 +31,20 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
     cd DU-Cloud-APIs
     ```
 
-3. Install the required dependencies:
+3. Create a Python virtual environment:
 
-    ```bash
-    pip install -r requirements.txt
+   ```bash
+    python3 -m venv venv
+    source venv/bin/activate
     ```
 
-4. Set up your environment variables by copying `.env.example` to `.env` file in the root directory and provide the `APP_ID` and `APP_SECRET` from your Cloud Envirnment:
+5. Install the required dependencies:
+
+    ```bash
+    pip3 install -r requirements.txt
+    ```
+
+6. Set up your environment variables by copying `.env.example` to `.env` file in the root directory and provide the `APP_ID` and `APP_SECRET` from your Cloud Envirnment:
 
   ```env
   APP_ID=
@@ -89,3 +96,4 @@ DU-Cloud-APIs/
 
 * Write Tests
 * Write Discovery API
+* Add [Black](https://github.com/psf/black)

@@ -4,7 +4,6 @@ from main import process_document, process_documents_in_folder
 
 
 class TestMain(unittest.TestCase):
-
     @patch("main.digitize_client")
     @patch("main.classify_client")
     @patch("main.extract_client")
@@ -20,7 +19,6 @@ class TestMain(unittest.TestCase):
         mock_classify_client,
         mock_digitize_client,
     ):
-
         mock_digitize_client.digitize.return_value = "DOC123"
         mock_classify_client.classify_document.return_value = "TypeID123"
         mock_load_prompts.side_effect = [{"prompt1": "value1"}]

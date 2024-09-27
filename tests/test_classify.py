@@ -8,7 +8,6 @@ from classify import Classify
 
 
 class TestClassify(unittest.TestCase):
-
     def test_classify_document_successful(self):
         base_url = "https://example.com/"
         project_id = "project123"

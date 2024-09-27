@@ -61,7 +61,10 @@ class Digitize:
             response = requests.get(api_url, headers=headers, timeout=60)
             response_data = response.json()
             if response_data["status"] == "Succeeded":
-                return response_data["result"]["documentObjectModel"]["documentId"]
+                document_id = response_data["result"]["documentObjectModel"][
+                    "documentId"
+                ]
+                return document_id
             elif response_data["status"] == "NotStarted":
                 print("Document Digitization not started...")
             elif response_data["status"] == "Running":
