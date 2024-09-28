@@ -16,6 +16,7 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
 - Python 3.11+
 - `requests` library
 - `python-dotenv` library
+- `questionary` library
 
 ## Setup
 
@@ -51,14 +52,13 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
   APP_SECRET=
   AUTH_URL=https://cloud.uipath.com/identity_/connect/token
   BASE_URL=https://cloud.uipath.com/<Cloud Org>/<Cloud Tenant>/du_/api/framework/projects/
-  PROJECT_ID=00000000-0000-0000-0000-000000000000
   ```
 
 ## Usage
 
 ### Processing Documents
 
-1. Place the documents you want to process in the specified folder (`Example Documents` by default).
+1. Place the documents you want to process in the specified folder (`example_documents` by default).
 
 2. Run the main script `main.py` to process the documents:
 
@@ -66,9 +66,11 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
     python3 src/main.py
     ```
 
-3. Monitor the console output for processing status and any errors.
+3. Select your Document Understanding **Project**, **Classifier** (*optional if extracting one document type only*), an **Extractor(s)** (*optional if classifying only*).
 
-4. Extracted results will be printed to the console and saved in CSV format in the same folder as the processed documents.
+4. Monitor the console output for processing status and any errors.
+
+5. Extracted results will be printed to the console and saved in CSV format in the `output_results` folder.
 
 ## File Structure
 
@@ -83,6 +85,7 @@ DU-Cloud-APIs/
 │   ├── classify.py     # Classify module for document classification
 │   ├── extract.py      # Extract module for document extraction
 │   ├── validate.py     # Validate module for document validation
+│   ├── config.py       # Configuration module for project variables
 │   └── result_utils.py # Utility module for printing and writing extraction results
 │
 ├── tests/
@@ -101,6 +104,10 @@ DU-Cloud-APIs/
 
 ## TODO
 
-* Write Tests
-* Write Discovery API
-* Add [Black](https://github.com/psf/black)
+&#9744; Write Tests for Discovery API
+
+&#9744; Write Output CSV for Classification
+
+&#9745; Add Ruff for linting
+
+&#9745; Write initial tests for core
