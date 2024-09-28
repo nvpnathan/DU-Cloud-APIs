@@ -51,7 +51,6 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
   APP_SECRET=
   AUTH_URL=https://cloud.uipath.com/identity_/connect/token
   BASE_URL=https://cloud.uipath.com/<Cloud Org>/<Cloud Tenant>/du_/api/framework/projects/
-  PROJECT_ID=00000000-0000-0000-0000-000000000000
   ```
 
 ## Usage
@@ -83,6 +82,7 @@ DU-Cloud-APIs/
 │   ├── classify.py     # Classify module for document classification
 │   ├── extract.py      # Extract module for document extraction
 │   ├── validate.py     # Validate module for document validation
+│   ├── config.py       # Configuration module for project variables
 │   └── result_utils.py # Utility module for printing and writing extraction results
 │
 ├── tests/
@@ -101,6 +101,4 @@ DU-Cloud-APIs/
 
 ## TODO
 
-* Write Tests
-* Write Discovery API
-* Add [Black](https://github.com/psf/black)
+* Write Tests for Discovery API
