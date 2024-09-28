@@ -16,6 +16,7 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
 - Python 3.11+
 - `requests` library
 - `python-dotenv` library
+- `questionary` library
 
 ## Setup
 
@@ -57,7 +58,7 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
 
 ### Processing Documents
 
-1. Place the documents you want to process in the specified folder (`Example Documents` by default).
+1. Place the documents you want to process in the specified folder (`example_documents` by default).
 
 2. Run the main script `main.py` to process the documents:
 
@@ -65,9 +66,11 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
     python3 src/main.py
     ```
 
-3. Monitor the console output for processing status and any errors.
+3. Select your Document Understanding **Project**, **Classifier** (*optional if extracting one document type only*), an **Extractor(s)** (*optional if classifying only*).
 
-4. Extracted results will be printed to the console and saved in CSV format in the same folder as the processed documents.
+4. Monitor the console output for processing status and any errors.
+
+5. Extracted results will be printed to the console and saved in CSV format in the `output_results` folder.
 
 ## File Structure
 
@@ -101,4 +104,10 @@ DU-Cloud-APIs/
 
 ## TODO
 
-* Write Tests for Discovery API
+&#9744; Write Tests for Discovery API
+
+&#9744; Write Output CSV for Classification
+
+&#9745; Add Ruff for linting
+
+&#9745; Write initial tests for core
