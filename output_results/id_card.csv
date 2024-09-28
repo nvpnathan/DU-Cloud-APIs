@@ -1,16 +1,12 @@
 FieldName,Value,OcrConfidence,Confidence,IsMissing
-Last Name,Sample,1.0,0.0,False
-First Name,Caron Elizabeth,0.98999995,0.0,False
-Birth Place,,,,True
-Birth Date,01/11/1966,0.98999995,0.0,False
-Sex,F,0.98999995,0.0,False
-Nationality,USA,1.0,0.0,False
-ID Number,K12-34-5678,0.98999995,0.0,False
-Issued Date,01/11/2017,0.98999995,0.0,False
-Expiration Date,01/11/2023,0.98999995,0.0,False
-Issued Place,,,,True
-Authority,,,,True
-ID Number 2,XX123XWMXX1,0.98999995,0.0,False
-Machine Readable Zone,,,,True
-Address,"123 NORTH STREET APT. 2 TOPEKA, KS 66612-1234",0.98999995,0.0,False
-State,Kansas,0.98999995,0.0,False
+Document Type,DRIVER'S LICENSE,0.98999995,1.0,False
+Last Name,SAMPLE,0.98999995,1.0,False
+First Name,CARON ELIZABETH,0.98999995,0.992,False
+Date of Birth,1966-01-11,0.98999995,1.0,False
+Gender,F,0.96999997,1.0,False
+Personal Identification Number,K12-34-5678,0.98999995,1.0,False
+Date of Issue,2017-01-11,0.98999995,1.0,False
+Date of Expiry,2023-01-11,0.98999995,1.0,False
+Document Number,DD XX123XWMXX1,0.98999995,0.999,False
+Personal Address,"123 NORTH STREET APT. 2 TOPEKA, KS 66612-1234",0.96,1.0,False
+Country or State,KANSAS,0.98999995,1.0,False

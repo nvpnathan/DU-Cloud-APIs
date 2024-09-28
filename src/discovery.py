@@ -23,6 +23,7 @@ class Discovery:
             json.dump(cache_data, f)
 
     def get_projects(self):
+        cache = {}
         # Check if the cache file exists
         if os.path.exists(self.cache_file):
             try:
@@ -144,7 +145,7 @@ class Discovery:
                         classifier_id = cache["project"]["classifier_id"]["id"]
                         return classifier_id
                 else:
-                    print("Cache file exists, but no valid project data found.")
+                    print("Cache file exists, but no valid classifier data found.")
                     # Handle case where the cache file exists but "classifier_id" key is missing or incomplete
                     # Proceed to fetch classifier_id from the API as needed
             except json.JSONDecodeError:
@@ -177,7 +178,7 @@ class Discovery:
                     # Check if classifiers are present
                     if not data["classifiers"]:
                         print("No classifiers found.")
-                        return
+                        return None
 
                     for classifier in data["classifiers"]:
                         status = classifier.get("status")
@@ -242,7 +243,7 @@ class Discovery:
                         extractor_dict = cache["project"]["extractor_ids"]
                         return extractor_dict
                 else:
-                    print("Cache file exists, but no valid project data found.")
+                    print("Cache file exists, but no valid extractor data found.")
                     # Handle case where the cache file exists but "classifier_id" key is missing or incomplete
                     # Proceed to fetch classifier_id from the API as needed
             except json.JSONDecodeError:
@@ -274,7 +275,7 @@ class Discovery:
                     # Check if extractors are present
                     if not data["extractors"]:
                         print("No extractors found.")
-                        return
+                        return None
 
                     for extractor in data["extractors"]:
                         status = extractor.get("status")
