@@ -1,6 +1,6 @@
 # Document Understanding Cloud APIs Example
 
-This code snippet demonstrates how to digitize, classify, validate, and extract documents using UiPath Document Understanding API's.
+This project demonstrates how to **digitize**, **classify**, **validate**, and **extract** documents using UiPath Document Understanding API's.
 
 ## Official Documentation
 
@@ -66,11 +66,11 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
     python3 src/main.py
     ```
 
-3. Select your Document Understanding **Project**, **Classifier** (*optional if extracting one document type only*), an **Extractor(s)** (*optional if classifying only*).
+3. Select your Document Understanding **Project**, **Classifier** (*optional if extracting one document type only*), and **Extractor(s)** (*optional if classifying only*).
 
 4. Monitor the console output for processing status and any errors.
 
-5. Extracted results will be printed to the console and saved in CSV format in the `output_results` folder.
+5. **Classification** and **Extraction** results will be printed to the console and saved in CSV format in the `output_results` folder.
 
 ## File Structure
 
@@ -106,7 +106,7 @@ DU-Cloud-APIs/
 
 &#9744; Write Tests for Discovery API
 
-&#9744; Write Output CSV for Classification
+&#9745; Write Output CSV for Classification
 
 &#9745; Add Ruff for linting
 

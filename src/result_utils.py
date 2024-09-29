@@ -3,6 +3,61 @@ import os
 
 
 class CSVWriter:
+    def __init__(self):
+        self.output_directory: str = "output_results"
+        self.output_csv: str = "classification_results.csv"
+
+    def write_classification_results(
+        self,
+        filename: str,
+        document_type_id: str,
+        classification_confidence: float,
+        start_page: int,
+        page_count: int,
+        classifier_name: str,
+    ):
+        # Get just the base filename without the full path
+        base_filename = os.path.basename(filename)
+
+        # Construct output directory path
+        output_dir_path = os.path.join(os.getcwd(), self.output_directory)
+
+        # Check if the output directory exists, if not, create it
+        if not os.path.exists(output_dir_path):
+            os.makedirs(output_dir_path)
+
+        # Construct output file path with .csv extension
+        output_file = os.path.join(output_dir_path, self.output_csv)
+
+        # Open the CSV file in append mode
+        with open(output_file, mode="a", newline="") as csv_file:
+            writer = csv.writer(csv_file)
+
+            # Write the header if the file is being created for the first time
+            if os.stat(output_file).st_size == 0:  # Check if file is empty
+                writer.writerow(
+                    [
+                        "Filename",
+                        "DocumentTypeId",
+                        "Confidence",
+                        "Start Page",
+                        "Page Count",
+                        "Classifier Name",
+                    ]
+                )
+
+            # Write the classification results with just the base filename
+            writer.writerow(
+                [
+                    base_filename,
+                    document_type_id,
+                    classification_confidence,
+                    start_page,
+                    page_count,
+                    classifier_name,
+                ]
+            )
+
     @staticmethod
     def write_extraction_results_to_csv(
         extraction_results, document_path, output_directory
