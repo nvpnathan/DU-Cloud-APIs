@@ -89,13 +89,16 @@ def process_document(
                 else None
             )
             document_type_id = classify_client.classify_document(
+                document_path,
                 document_id,
                 context.classifier,
                 classification_prompts,
                 config.validate_classification,
             )
-            extractor_id = context.extractor_dict[document_type_id]["id"]
-            extractor_name = context.extractor_dict[document_type_id]["name"]
+
+            if config.perform_extraction:
+                extractor_id = context.extractor_dict[document_type_id]["id"]
+                extractor_name = context.extractor_dict[document_type_id]["name"]
 
             if config.validate_classification and document_type_id:
                 classification_results = (

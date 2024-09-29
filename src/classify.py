@@ -1,5 +1,8 @@
 import time
 import requests
+from result_utils import CSVWriter
+
+csv_writer = CSVWriter()
 
 
 class Classify:
@@ -9,34 +12,40 @@ class Classify:
         self.bearer_token = bearer_token
 
     def _parse_classification_results(
-        self, response: dict, document_id: str, validate_classification: bool
+        self, classification_results: dict, filename: str
     ):
         try:
-            classification_results = response.json()
-            if validate_classification:
-                return classification_results
-
             document_type_id = None
             classification_confidence = None
-            for result in classification_results["classificationResults"]:
-                if result["DocumentId"] == document_id:
-                    document_type_id = result["DocumentTypeId"]
-                    classification_confidence = result["Confidence"]
-                    break
-            if document_type_id:
-                print(
-                    f"Document Type ID: {document_type_id}, Confidence: {classification_confidence}\n"
-                )
-                return document_type_id
+            start_page = None
+            page_count = None
+            classifier_name = None
 
-            print("Document ID not found in classification results.")
-            return None
+            # Parse classification results to find the document type, confidence, start_page, and page_count
+            for result in classification_results["result"]["classificationResults"]:
+                document_type_id = result["DocumentTypeId"]
+                classification_confidence = result["Confidence"]
+                start_page = result["DocumentBounds"]["StartPage"]
+                page_count = result["DocumentBounds"]["PageCount"]
+                classifier_name = result["ClassifierName"]
+
+                # Write the classification results to CSV using CSVWriter
+                csv_writer.write_classification_results(
+                    filename,
+                    document_type_id,
+                    classification_confidence,
+                    start_page,
+                    page_count,
+                    classifier_name,
+                )
+
         except ValueError as ve:
             print(f"Error parsing JSON response: {ve}")
             return None
 
     def classify_document(
         self,
+        document_path: str,
         document_id: str,
         classifier: str,
         classification_prompts: dict,
@@ -69,8 +78,18 @@ class Classify:
                     classification_results = self.submit_classification_request(
                         classifier, operation_id
                     )
-                    print(f"Classification: {classification_results}\n")
-                    return classification_results
+
+                    document_type_id = classification_results["result"][
+                        "classificationResults"
+                    ][0]["DocumentTypeId"]
+                    print(f"Classification: {document_type_id}\n")
+
+                    self._parse_classification_results(
+                        classification_results,
+                        document_path,
+                    )
+
+                    return document_type_id
 
             print(f"Error: {response.status_code} - {response.text}")
             return None
@@ -100,9 +119,9 @@ class Classify:
                 response_data = response.json()
 
                 if response_data["status"] == "Succeeded":
-                    return response_data["result"]["classificationResults"][0][
-                        "DocumentTypeId"
-                    ]
+                    classification_results = response_data
+                    return classification_results
+
                 elif response_data["status"] == "NotStarted":
                     print("Document Classification not started...")
                 elif response_data["status"] == "Running":
