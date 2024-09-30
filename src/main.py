@@ -1,5 +1,6 @@
 import os
 import json
+import concurrent.futures
 from dotenv import load_dotenv
 from auth import Authentication
 from discovery import Discovery
@@ -24,6 +25,7 @@ base_url = os.environ["BASE_URL"]
 # project_id = os.environ["PROJECT_ID"]
 
 
+# Select your Classifier and/or Extractor(s)
 def load_endpoints(load_classifier, load_extractor):
     discovery_client = Discovery(base_url, bearer_token)
     project_id = discovery_client.get_projects()
@@ -157,13 +159,32 @@ def process_documents_in_folder(
     config: ProcessingConfig,
     context: DocumentProcessingContext,
 ) -> None:
-    for filename in os.listdir(folder_path):
-        if filename.endswith(
-            (".png", ".jpe", ".jpg", ".jpeg", ".tiff", ".tif", ".bmp", ".pdf")
-        ):
-            document_path = os.path.join(folder_path, filename)
-            print(f"Processing document: {document_path}")
-            process_document(document_path, output_directory, config, context)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = []
+
+        for filename in os.listdir(folder_path):
+            if filename.endswith(
+                (".png", ".jpe", ".jpg", ".jpeg", ".tiff", ".tif", ".bmp", ".pdf")
+            ):
+                document_path = os.path.join(folder_path, filename)
+                print(f"Submitting document for processing: {document_path}")
+                # Submit the document processing function to the thread pool
+                futures.append(
+                    executor.submit(
+                        process_document,
+                        document_path,
+                        output_directory,
+                        config,
+                        context,
+                    )
+                )
+
+        # Wait for all threads to complete and optionally handle the results
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                future.result()  # This will raise an exception if the thread failed
+            except Exception as e:
+                print(f"Error in thread execution: {e}")
 
 
 if __name__ == "__main__":
