@@ -163,7 +163,7 @@ def process_documents_in_folder(
         futures = []
 
         for filename in os.listdir(folder_path):
-            if filename.endswith(
+            if filename.lower().endswith(
                 (".png", ".jpe", ".jpg", ".jpeg", ".tiff", ".tif", ".bmp", ".pdf")
             ):
                 document_path = os.path.join(folder_path, filename)
