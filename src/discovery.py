@@ -312,10 +312,16 @@ class Discovery:
                         )
 
                         # Add the documentTypeId as the key and a dictionary of extractor ID and name as the value
-                        extractor_dict[extractor["documentTypeId"]] = {
-                            "id": extractor["id"],
-                            "name": extractor["name"],
-                        }
+                        if extractor["id"] == "generative_extractor":
+                            extractor_dict[extractor["id"]] = {
+                                "id": extractor["id"],
+                                "name": extractor["name"],
+                            }
+                        else:
+                            extractor_dict[extractor["documentTypeId"]] = {
+                                "id": extractor["id"],
+                                "name": extractor["name"],
+                            }
 
                     # Save to cache
                     cache["project"]["extractor_ids"] = extractor_dict

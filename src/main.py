@@ -19,10 +19,8 @@ auth = Authentication(
     os.environ["APP_ID"], os.environ["APP_SECRET"], os.environ["AUTH_URL"]
 )
 bearer_token = auth.get_bearer_token()
-
 # Initialize API clients
 base_url = os.environ["BASE_URL"]
-# project_id = os.environ["PROJECT_ID"]
 
 
 # Select your Classifier and/or Extractor(s)
@@ -99,8 +97,11 @@ def process_document(
             )
 
             if config.perform_extraction:
-                extractor_id = context.extractor_dict[document_type_id]["id"]
-                extractor_name = context.extractor_dict[document_type_id]["name"]
+                if "generative_extractor" in context.extractor_dict:
+                    extractor_id = document_type_id
+                else:
+                    extractor_id = context.extractor_dict[document_type_id]["id"]
+                    extractor_name = context.extractor_dict[document_type_id]["name"]
 
             if config.validate_classification and document_type_id:
                 classification_results = (
@@ -111,8 +112,13 @@ def process_document(
                         classification_prompts,
                     )
                 )
-                extractor_id = context.extractor_dict[classification_results]["id"]
-                extractor_name = context.extractor_dict[classification_results]["name"]
+                if "generative_extractor" in context.extractor_dict:
+                    extractor_id = classification_results
+                else:
+                    extractor_id = context.extractor_dict[classification_results]["id"]
+                    extractor_name = context.extractor_dict[classification_results][
+                        "name"
+                    ]
         else:
             extractor_info = next(iter(context.extractor_dict.values()))
             extractor_id = extractor_info.get("id")
@@ -135,7 +141,7 @@ def process_document(
                 CSVWriter.pprint_csv_results(document_path, output_directory)
             else:
                 validated_results = validate_client.validate_extraction_results(
-                    classification_results,
+                    extractor_id,
                     document_id,
                     extraction_results,
                     extraction_prompts,

@@ -29,7 +29,7 @@ class Digitize:
             # Open the file
             files = {"File": (document_path, open(document_path, "rb"), mime_type)}
 
-            response = requests.post(api_url, files=files, headers=headers, timeout=60)
+            response = requests.post(api_url, files=files, headers=headers, timeout=300)
             response.raise_for_status()  # Raise an exception for HTTP errors
 
             if response.status_code == 202:
