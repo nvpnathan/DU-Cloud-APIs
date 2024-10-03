@@ -106,8 +106,6 @@ DU-Cloud-APIs/
 
 &#9744; Write Tests for Discovery API
 
-&#9744; Add the ability to use generative and specialized for custom projects
-
 &#9745; Write Output CSV for Classification
 
 &#9745; Add Ruff for linting
