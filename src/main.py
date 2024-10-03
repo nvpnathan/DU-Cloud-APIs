@@ -1,5 +1,7 @@
 import os
 import json
+import time
+import threading
 import concurrent.futures
 from dotenv import load_dotenv
 from auth import Authentication
@@ -13,14 +15,32 @@ from config import ProcessingConfig, DocumentProcessingContext
 
 # Load environment variables
 load_dotenv()
+base_url = os.environ["BASE_URL"]
 
 # Initialize Authentication
 auth = Authentication(
     os.environ["APP_ID"], os.environ["APP_SECRET"], os.environ["AUTH_URL"]
 )
+
+
+def refresh_token():
+    auth.refresh_token()
+
+
 bearer_token = auth.get_bearer_token()
-# Initialize API clients
-base_url = os.environ["BASE_URL"]
+
+
+# Function to periodically refresh the bearer token
+def token_refresh_scheduler():
+    while True:
+        # Sleep for a certain period of time (e.g., half the token validity duration)
+        time.sleep(auth.token_validity_duration() / 2)
+        # Refresh the token
+        refresh_token()
+
+
+refresh_thread = threading.Thread(target=token_refresh_scheduler)
+refresh_thread.start()
 
 
 # Select your Classifier and/or Extractor(s)
