@@ -1,42 +1,22 @@
 import os
-import json
+import concurrent.futures
 from dotenv import load_dotenv
-from auth import Authentication
-from discovery import Discovery
 from digitize import Digitize
 from classify import Classify
 from extract import Extract
 from validate import Validate
 from result_utils import CSVWriter
+from auth import initialize_authentication
+from config import load_endpoints, load_prompts
 from config import ProcessingConfig, DocumentProcessingContext
 
 # Load environment variables
 load_dotenv()
+base_url = os.environ["BASE_URL"]
 
 # Initialize Authentication
-auth = Authentication(
-    os.environ["APP_ID"], os.environ["APP_SECRET"], os.environ["AUTH_URL"]
-)
-bearer_token = auth.get_bearer_token()
-
-# Initialize API clients
-base_url = os.environ["BASE_URL"]
-# project_id = os.environ["PROJECT_ID"]
-
-
-def load_endpoints(load_classifier, load_extractor):
-    discovery_client = Discovery(base_url, bearer_token)
-    project_id = discovery_client.get_projects()
-
-    # Conditionally load classifiers and extractors based on flags
-    classifier = (
-        discovery_client.get_classifers(project_id) if load_classifier else None
-    )
-    extractor_dict = (
-        discovery_client.get_extractors(project_id) if load_extractor else None
-    )
-
-    return project_id, classifier, extractor_dict
+auth = initialize_authentication()
+bearer_token = auth.bearer_token
 
 
 # Function to initialize clients
@@ -49,18 +29,6 @@ def initialize_clients(
     validate_client = Validate(base_url, context.project_id, bearer_token)
 
     return digitize_client, classify_client, extract_client, validate_client
-
-
-# Function to load prompts from a JSON file based on the document type ID
-def load_prompts(document_type_id: str) -> dict | None:
-    prompts_directory = "generative_prompts"
-    prompts_file = os.path.join(prompts_directory, f"{document_type_id}_prompts.json")
-    if os.path.exists(prompts_file):
-        with open(prompts_file, "r", encoding="utf-8") as file:
-            return json.load(file)
-    else:
-        print(f"Error: File '{prompts_file}' not found.")
-        return None
 
 
 # Function to handle document processing
@@ -96,25 +64,63 @@ def process_document(
                 config.validate_classification,
             )
 
-            if config.perform_extraction:
-                extractor_id = context.extractor_dict[document_type_id]["id"]
-                extractor_name = context.extractor_dict[document_type_id]["name"]
+        if config.validate_classification and document_type_id:
+            classification_results = validate_client.validate_classification_results(
+                document_id,
+                context.classifier,
+                document_type_id,
+                classification_prompts,
+            )
 
-            if config.validate_classification and document_type_id:
-                classification_results = (
-                    validate_client.validate_classification_results(
-                        document_id,
-                        context.classifier,
-                        document_type_id,
-                        classification_prompts,
-                    )
-                )
-                extractor_id = context.extractor_dict[classification_results]["id"]
-                extractor_name = context.extractor_dict[classification_results]["name"]
-        else:
-            extractor_info = next(iter(context.extractor_dict.values()))
-            extractor_id = extractor_info.get("id")
-            extractor_name = extractor_info.get("name")
+            # Default extractor settings
+            extractor_id = context.extractor_dict.get(classification_results, {}).get(
+                "id"
+            )
+            extractor_name = context.extractor_dict.get(classification_results, {}).get(
+                "name"
+            )
+
+            # Check if the generative extractor is available
+            generative_extractor = context.extractor_dict.get("generative_extractor")
+
+            # If the generative extractor exists and the document type matches
+            if (
+                generative_extractor
+                and classification_results
+                in generative_extractor.get("doc_type_ids", [])
+            ):
+                extractor_id = "generative_extractor"
+                extractor_name = classification_results
+
+            # Log or handle the result if extractor_id is not found
+            if extractor_id:
+                print(f"Using {extractor_id} for document type {extractor_name}")
+            else:
+                print(f"No extractor found for document type {classification_results}")
+
+        if not config.validate_classification:
+            # Default extractor settings
+            extractor_id = context.extractor_dict.get(document_type_id, {}).get("id")
+            print(extractor_id)
+            extractor_name = context.extractor_dict.get(document_type_id, {}).get(
+                "name"
+            )
+
+            # Check if the generative extractor is available
+            generative_extractor = context.extractor_dict.get("generative_extractor")
+
+            # If the generative extractor exists and the document type matches
+            if generative_extractor and document_type_id in generative_extractor.get(
+                "doc_type_ids", []
+            ):
+                extractor_id = "generative_extractor"
+                extractor_name = document_type_id
+
+            # Log or handle the result if extractor_id is not found
+            if extractor_id:
+                print(f"Using {extractor_id} for document type {extractor_name}")
+            else:
+                print(f"No extractor found for document type {document_type_id}")
 
         if config.perform_extraction and extractor_id:
             extraction_prompts = (
@@ -133,7 +139,7 @@ def process_document(
                 CSVWriter.pprint_csv_results(document_path, output_directory)
             else:
                 validated_results = validate_client.validate_extraction_results(
-                    classification_results,
+                    extractor_id,
                     document_id,
                     extraction_results,
                     extraction_prompts,
@@ -157,13 +163,32 @@ def process_documents_in_folder(
     config: ProcessingConfig,
     context: DocumentProcessingContext,
 ) -> None:
-    for filename in os.listdir(folder_path):
-        if filename.endswith(
-            (".png", ".jpe", ".jpg", ".jpeg", ".tiff", ".tif", ".bmp", ".pdf")
-        ):
-            document_path = os.path.join(folder_path, filename)
-            print(f"Processing document: {document_path}")
-            process_document(document_path, output_directory, config, context)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = []
+
+        for filename in os.listdir(folder_path):
+            if filename.lower().endswith(
+                (".png", ".jpe", ".jpg", ".jpeg", ".tiff", ".tif", ".bmp", ".pdf")
+            ):
+                document_path = os.path.join(folder_path, filename)
+                print(f"Submitting document for processing: {document_path}")
+                # Submit the document processing function to the thread pool
+                futures.append(
+                    executor.submit(
+                        process_document,
+                        document_path,
+                        output_directory,
+                        config,
+                        context,
+                    )
+                )
+
+        # Wait for all threads to complete and optionally handle the results
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                future.result()  # This will raise an exception if the thread failed
+            except Exception as e:
+                print(f"Error in thread execution: {e}")
 
 
 if __name__ == "__main__":
@@ -182,6 +207,8 @@ if __name__ == "__main__":
     project_id, classifier, extractor_dict = load_endpoints(
         load_classifier=config.perform_classification,
         load_extractor=config.perform_extraction,
+        base_url=os.environ["BASE_URL"],
+        bearer_token=bearer_token,
     )
     context = DocumentProcessingContext(project_id, classifier, extractor_dict)
     # Initialize clients using the context

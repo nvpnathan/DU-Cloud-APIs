@@ -2,6 +2,7 @@ import time
 import requests
 from result_utils import CSVWriter
 
+
 csv_writer = CSVWriter()
 
 
@@ -79,15 +80,18 @@ class Classify:
                         classifier, operation_id
                     )
 
-                    document_type_id = classification_results["result"][
-                        "classificationResults"
-                    ][0]["DocumentTypeId"]
-                    print(f"Classification: {document_type_id}\n")
+                    if validate_classification:
+                        return classification_results["result"]
 
                     self._parse_classification_results(
                         classification_results,
                         document_path,
                     )
+
+                    document_type_id = classification_results["result"][
+                        "classificationResults"
+                    ][0]["DocumentTypeId"]
+                    print(f"Classification: {document_type_id}\n")
 
                     return document_type_id
 
