@@ -327,9 +327,6 @@ class Discovery:
                             if extractor["name"] == selected_extractor_name
                         )
 
-                        # Add the documentTypeId as the key and a dictionary of extractor ID and name as the value
-                        # TODO: Fix addition if selecting all extractors including Generative
-                        # If selecting only Generative plus a classifier add all doc types by default
                         if extractor["id"] == "generative_extractor":
                             gen_extractor_doc_types = questionary.confirm(
                                 "Would you like to add doc types for Generative Extraction?"
