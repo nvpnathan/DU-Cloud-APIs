@@ -1,16 +1,13 @@
 import os
-import json
-import time
-import threading
 import concurrent.futures
 from dotenv import load_dotenv
-from auth import Authentication
-from discovery import Discovery
 from digitize import Digitize
 from classify import Classify
 from extract import Extract
 from validate import Validate
 from result_utils import CSVWriter
+from auth import initialize_authentication
+from config import load_endpoints, load_prompts
 from config import ProcessingConfig, DocumentProcessingContext
 
 # Load environment variables
@@ -18,45 +15,8 @@ load_dotenv()
 base_url = os.environ["BASE_URL"]
 
 # Initialize Authentication
-auth = Authentication(
-    os.environ["APP_ID"], os.environ["APP_SECRET"], os.environ["AUTH_URL"]
-)
-
-
-def refresh_token():
-    auth.refresh_token()
-
-
-bearer_token = auth.get_bearer_token()
-
-
-# Function to periodically refresh the bearer token
-def token_refresh_scheduler():
-    while True:
-        time.sleep(auth.token_validity_duration() / 2)
-        refresh_token()
-
-
-# Create a daemon thread for token refresh
-refresh_thread = threading.Thread(target=token_refresh_scheduler)
-refresh_thread.daemon = True
-refresh_thread.start()
-
-
-# Select your Classifier and/or Extractor(s)
-def load_endpoints(load_classifier, load_extractor):
-    discovery_client = Discovery(base_url, bearer_token)
-    project_id = discovery_client.get_projects()
-
-    # Conditionally load classifiers and extractors based on flags
-    classifier = (
-        discovery_client.get_classifers(project_id) if load_classifier else None
-    )
-    extractor_dict = (
-        discovery_client.get_extractors(project_id) if load_extractor else None
-    )
-
-    return project_id, classifier, extractor_dict
+auth = initialize_authentication()
+bearer_token = auth.bearer_token
 
 
 # Function to initialize clients
@@ -69,18 +29,6 @@ def initialize_clients(
     validate_client = Validate(base_url, context.project_id, bearer_token)
 
     return digitize_client, classify_client, extract_client, validate_client
-
-
-# Function to load prompts from a JSON file based on the document type ID
-def load_prompts(document_type_id: str) -> dict | None:
-    prompts_directory = "generative_prompts"
-    prompts_file = os.path.join(prompts_directory, f"{document_type_id}_prompts.json")
-    if os.path.exists(prompts_file):
-        with open(prompts_file, "r", encoding="utf-8") as file:
-            return json.load(file)
-    else:
-        print(f"Error: File '{prompts_file}' not found.")
-        return None
 
 
 # Function to handle document processing
@@ -116,12 +64,49 @@ def process_document(
                 config.validate_classification,
             )
 
-        if config.perform_extraction:
+        if config.validate_classification and document_type_id:
+            classification_results = validate_client.validate_classification_results(
+                document_id,
+                context.classifier,
+                document_type_id,
+                classification_prompts,
+            )
+
             # Default extractor settings
-            extractor_id = context.extractor_dict.get(document_type_id, {}).get("id")
-            extractor_name = context.extractor_dict.get(document_type_id, {}).get(
+            extractor_id = context.extractor_dict.get(classification_results, {}).get(
+                "id"
+            )
+            extractor_name = context.extractor_dict.get(classification_results, {}).get(
                 "name"
             )
+
+            # Check if the generative extractor is available
+            generative_extractor = context.extractor_dict.get("generative_extractor")
+
+            # If the generative extractor exists and the document type matches
+            if (
+                generative_extractor
+                and classification_results
+                in generative_extractor.get("doc_type_ids", [])
+            ):
+                extractor_id = "generative_extractor"
+                extractor_name = classification_results
+
+            # Log or handle the result if extractor_id is not found
+            if extractor_id:
+                print(f"Using {extractor_id} for document type {extractor_name}")
+            else:
+                print(f"No extractor found for document type {classification_results}")
+
+        if config.perform_extraction:
+            # Default extractor settings
+            if not extractor_id:
+                extractor_id = context.extractor_dict.get(document_type_id, {}).get(
+                    "id"
+                )
+                extractor_name = context.extractor_dict.get(document_type_id, {}).get(
+                    "name"
+                )
 
             # Check if the generative extractor is available
             generative_extractor = context.extractor_dict.get("generative_extractor")
@@ -138,46 +123,6 @@ def process_document(
                 print(f"Using {extractor_id} for document type {extractor_name}")
             else:
                 print(f"No extractor found for document type {document_type_id}")
-
-            if config.validate_classification and document_type_id:
-                classification_results = (
-                    validate_client.validate_classification_results(
-                        document_id,
-                        context.classifier,
-                        document_type_id,
-                        classification_prompts,
-                    )
-                )
-
-                # Default extractor settings
-                extractor_id = context.extractor_dict.get(
-                    classification_results, {}
-                ).get("id")
-                extractor_name = context.extractor_dict.get(
-                    classification_results, {}
-                ).get("name")
-
-                # Check if the generative extractor is available
-                generative_extractor = context.extractor_dict.get(
-                    "generative_extractor"
-                )
-
-                # If the generative extractor exists and the document type matches
-                if (
-                    generative_extractor
-                    and classification_results
-                    in generative_extractor.get("doc_type_ids", [])
-                ):
-                    extractor_id = "generative_extractor"
-                    extractor_name = classification_results
-
-                # Log or handle the result if extractor_id is not found
-                if extractor_id:
-                    print(f"Using {extractor_id} for document type {extractor_name}")
-                else:
-                    print(
-                        f"No extractor found for document type {classification_results}"
-                    )
 
         if config.perform_extraction and extractor_id:
             extraction_prompts = (
@@ -254,7 +199,7 @@ if __name__ == "__main__":
 
     # Create a configuration object
     config = ProcessingConfig(
-        validate_classification=False,
+        validate_classification=True,
         validate_extraction=False,
         perform_classification=True,
         perform_extraction=True,
@@ -264,6 +209,8 @@ if __name__ == "__main__":
     project_id, classifier, extractor_dict = load_endpoints(
         load_classifier=config.perform_classification,
         load_extractor=config.perform_extraction,
+        base_url=os.environ["BASE_URL"],
+        bearer_token=bearer_token,
     )
     context = DocumentProcessingContext(project_id, classifier, extractor_dict)
     # Initialize clients using the context

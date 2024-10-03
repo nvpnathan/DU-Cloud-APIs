@@ -125,7 +125,7 @@ class Discovery:
         except Exception as e:
             print(f"An error occurred during getting projects: {e}")
 
-    def get_classifers(self, project_id):
+    def get_classifiers(self, project_id):
         # Check if the cache file exists
         if os.path.exists(self.cache_file):
             try:
@@ -212,7 +212,22 @@ class Discovery:
                     print(f"Selected Classifier ID: {selected_classifier['id']}")
                     print(f"Selected Classifier Name: {selected_classifier['name']}")
                     classifier_id = selected_classifier["id"]
-                    classifier_doc_types = selected_classifier["documentTypeIds"]
+                    if classifier_id == "generative_classifier":
+                        prompts_directory = "generative_prompts"
+                        prompts_file = os.path.join(
+                            prompts_directory, "classification_prompts.json"
+                        )
+                        if os.path.exists(prompts_file):
+                            with open(prompts_file, "r", encoding="utf-8") as file:
+                                data = json.load(file)
+                                classifier_doc_types = [
+                                    item["name"] for item in data["prompts"]
+                                ]
+                        else:
+                            print(f"Error: File '{prompts_file}' not found.")
+                            return None
+                    else:
+                        classifier_doc_types = selected_classifier["documentTypeIds"]
 
                     # Save to cache
                     cache["project"]["classifier_id"] = {
@@ -333,11 +348,19 @@ class Discovery:
                                         "Please select Document Types for Generative Extraction:",
                                         choices=choices,
                                     ).ask()
-                            extractor_dict[extractor["id"]] = {
-                                "id": extractor["id"],
-                                "name": extractor["name"],
-                                "doc_type_ids": selected_gen_ext_doc_types,
-                            }
+                                    if selected_gen_ext_doc_types:
+                                        extractor_dict[extractor["id"]] = {
+                                            "id": extractor["id"],
+                                            "name": extractor["name"],
+                                            "doc_type_ids": selected_gen_ext_doc_types,
+                                        }
+                                    else:
+                                        extractor_dict[extractor["id"]] = {
+                                            "id": extractor["id"],
+                                            "name": extractor["name"],
+                                            "doc_type_ids": choices,
+                                        }
+
                         else:
                             extractor_dict[extractor["documentTypeId"]] = {
                                 "id": extractor["id"],
