@@ -49,7 +49,6 @@ class Classify:
         document_path: str,
         document_id: str,
         classifier: str,
-        extractors: dict,
         classification_prompts: dict,
         validate_classification: bool = False,
     ) -> dict | None:
