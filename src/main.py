@@ -98,15 +98,13 @@ def process_document(
             else:
                 print(f"No extractor found for document type {classification_results}")
 
-        if config.perform_extraction:
+        if not config.validate_classification:
             # Default extractor settings
-            if not extractor_id:
-                extractor_id = context.extractor_dict.get(document_type_id, {}).get(
-                    "id"
-                )
-                extractor_name = context.extractor_dict.get(document_type_id, {}).get(
-                    "name"
-                )
+            extractor_id = context.extractor_dict.get(document_type_id, {}).get("id")
+            print(extractor_id)
+            extractor_name = context.extractor_dict.get(document_type_id, {}).get(
+                "name"
+            )
 
             # Check if the generative extractor is available
             generative_extractor = context.extractor_dict.get("generative_extractor")
@@ -199,7 +197,7 @@ if __name__ == "__main__":
 
     # Create a configuration object
     config = ProcessingConfig(
-        validate_classification=True,
+        validate_classification=False,
         validate_extraction=False,
         perform_classification=True,
         perform_extraction=True,
