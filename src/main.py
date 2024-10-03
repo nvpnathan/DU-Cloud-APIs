@@ -33,13 +33,13 @@ bearer_token = auth.get_bearer_token()
 # Function to periodically refresh the bearer token
 def token_refresh_scheduler():
     while True:
-        # Sleep for a certain period of time (e.g., half the token validity duration)
         time.sleep(auth.token_validity_duration() / 2)
-        # Refresh the token
         refresh_token()
 
 
+# Create a daemon thread for token refresh
 refresh_thread = threading.Thread(target=token_refresh_scheduler)
+refresh_thread.daemon = True
 refresh_thread.start()
 
 
@@ -116,12 +116,28 @@ def process_document(
                 config.validate_classification,
             )
 
-            if config.perform_extraction:
-                if "generative_extractor" in context.extractor_dict:
-                    extractor_id = document_type_id
-                else:
-                    extractor_id = context.extractor_dict[document_type_id]["id"]
-                    extractor_name = context.extractor_dict[document_type_id]["name"]
+        if config.perform_extraction:
+            # Default extractor settings
+            extractor_id = context.extractor_dict.get(document_type_id, {}).get("id")
+            extractor_name = context.extractor_dict.get(document_type_id, {}).get(
+                "name"
+            )
+
+            # Check if the generative extractor is available
+            generative_extractor = context.extractor_dict.get("generative_extractor")
+
+            # If the generative extractor exists and the document type matches
+            if generative_extractor and document_type_id in generative_extractor.get(
+                "doc_type_ids", []
+            ):
+                extractor_id = "generative_extractor"
+                extractor_name = document_type_id
+
+            # Log or handle the result if extractor_id is not found
+            if extractor_id:
+                print(f"Using {extractor_id} for document type {extractor_name}")
+            else:
+                print(f"No extractor found for document type {document_type_id}")
 
             if config.validate_classification and document_type_id:
                 classification_results = (
@@ -132,17 +148,36 @@ def process_document(
                         classification_prompts,
                     )
                 )
-                if "generative_extractor" in context.extractor_dict:
-                    extractor_id = classification_results
+
+                # Default extractor settings
+                extractor_id = context.extractor_dict.get(
+                    classification_results, {}
+                ).get("id")
+                extractor_name = context.extractor_dict.get(
+                    classification_results, {}
+                ).get("name")
+
+                # Check if the generative extractor is available
+                generative_extractor = context.extractor_dict.get(
+                    "generative_extractor"
+                )
+
+                # If the generative extractor exists and the document type matches
+                if (
+                    generative_extractor
+                    and classification_results
+                    in generative_extractor.get("doc_type_ids", [])
+                ):
+                    extractor_id = "generative_extractor"
+                    extractor_name = classification_results
+
+                # Log or handle the result if extractor_id is not found
+                if extractor_id:
+                    print(f"Using {extractor_id} for document type {extractor_name}")
                 else:
-                    extractor_id = context.extractor_dict[classification_results]["id"]
-                    extractor_name = context.extractor_dict[classification_results][
-                        "name"
-                    ]
-        else:
-            extractor_info = next(iter(context.extractor_dict.values()))
-            extractor_id = extractor_info.get("id")
-            extractor_name = extractor_info.get("name")
+                    print(
+                        f"No extractor found for document type {classification_results}"
+                    )
 
         if config.perform_extraction and extractor_id:
             extraction_prompts = (

@@ -211,13 +211,14 @@ class Discovery:
 
                     print(f"Selected Classifier ID: {selected_classifier['id']}")
                     print(f"Selected Classifier Name: {selected_classifier['name']}")
-                    # classifier_url = selected_classifier["asyncUrl"]
                     classifier_id = selected_classifier["id"]
+                    classifier_doc_types = selected_classifier["documentTypeIds"]
 
                     # Save to cache
                     cache["project"]["classifier_id"] = {
                         "id": classifier_id,
                         "name": selected_classifier["name"],
+                        "doc_type_ids": classifier_doc_types,
                     }
                     self._save_cache(cache)
                     return classifier_id
@@ -312,10 +313,30 @@ class Discovery:
                         )
 
                         # Add the documentTypeId as the key and a dictionary of extractor ID and name as the value
+                        # TODO: Fix addition if selecting all extractors including Generative
+                        # If selecting only Generative plus a classifier add all doc types by default
                         if extractor["id"] == "generative_extractor":
+                            gen_extractor_doc_types = questionary.confirm(
+                                "Would you like to add doc types for Generative Extraction?"
+                            ).ask()
+                            if gen_extractor_doc_types:
+                                if (
+                                    cache
+                                    and "classifier_id" in cache["project"]
+                                    and "doc_type_ids"
+                                    in cache["project"]["classifier_id"]
+                                ):
+                                    choices = cache["project"]["classifier_id"][
+                                        "doc_type_ids"
+                                    ]
+                                    selected_gen_ext_doc_types = questionary.checkbox(
+                                        "Please select Document Types for Generative Extraction:",
+                                        choices=choices,
+                                    ).ask()
                             extractor_dict[extractor["id"]] = {
                                 "id": extractor["id"],
                                 "name": extractor["name"],
+                                "doc_type_ids": selected_gen_ext_doc_types,
                             }
                         else:
                             extractor_dict[extractor["documentTypeId"]] = {
