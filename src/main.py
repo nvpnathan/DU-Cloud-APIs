@@ -38,122 +38,161 @@ def process_document(
     config: ProcessingConfig,
     context: DocumentProcessingContext,
 ) -> None:
-    """Process a document using the provided configuration and context.
-
-    Args:
-        document_path (str): Path to the document to be processed.
-        output_directory (str): Directory where output will be saved.
-        config (ProcessingConfig): Configuration for validation, classification, and extraction.
-        context (DocumentProcessingContext): Contains project_id, classifier, and extractor_dict.
-    """
+    """Process a document using the provided configuration and context."""
     try:
-        # Start digitization process
-        document_id = digitize_client.digitize(document_path)
+        document_id = start_digitization(document_path)
 
-        if document_id and config.perform_classification:
-            classification_prompts = (
-                load_prompts("classification")
-                if context.classifier == "generative_classifier"
-                else None
+        # Perform classification if required
+        document_type_id, classification_results = (
+            classify_document(document_id, document_path, config, context)
+            if config.perform_classification
+            else (None, None)
+        )
+
+        # Perform extraction if required
+        if config.perform_extraction:
+            # Extractor handling
+            extractor_id, extractor_name = get_extractor(
+                config, context, document_type_id
             )
-            document_type_id = classify_client.classify_document(
-                document_path,
-                document_id,
-                context.classifier,
-                classification_prompts,
-                config.validate_classification,
-            )
-
-        if config.validate_classification and document_type_id:
-            classification_results = validate_client.validate_classification_results(
-                document_id,
-                context.classifier,
-                document_type_id,
-                classification_prompts,
-            )
-
-            # Default extractor settings
-            extractor_id = context.extractor_dict.get(classification_results, {}).get(
-                "id"
-            )
-            extractor_name = context.extractor_dict.get(classification_results, {}).get(
-                "name"
-            )
-
-            # Check if the generative extractor is available
-            generative_extractor = context.extractor_dict.get("generative_extractor")
-
-            # If the generative extractor exists and the document type matches
-            if (
-                generative_extractor
-                and classification_results
-                in generative_extractor.get("doc_type_ids", [])
-            ):
-                extractor_id = "generative_extractor"
-                extractor_name = classification_results
-
-            # Log or handle the result if extractor_id is not found
-            if extractor_id:
-                print(f"Using {extractor_id} for document type {extractor_name}")
-            else:
-                print(f"No extractor found for document type {classification_results}")
-
-        if not config.validate_classification:
-            # Default extractor settings
-            extractor_id = context.extractor_dict.get(document_type_id, {}).get("id")
-            print(extractor_id)
-            extractor_name = context.extractor_dict.get(document_type_id, {}).get(
-                "name"
-            )
-
-            # Check if the generative extractor is available
-            generative_extractor = context.extractor_dict.get("generative_extractor")
-
-            # If the generative extractor exists and the document type matches
-            if generative_extractor and document_type_id in generative_extractor.get(
-                "doc_type_ids", []
-            ):
-                extractor_id = "generative_extractor"
-                extractor_name = document_type_id
-
-            # Log or handle the result if extractor_id is not found
-            if extractor_id:
-                print(f"Using {extractor_id} for document type {extractor_name}")
-            else:
-                print(f"No extractor found for document type {document_type_id}")
-
-        if config.perform_extraction and extractor_id:
-            extraction_prompts = (
-                load_prompts(extractor_name)
-                if extractor_id == "generative_extractor"
-                else None
-            )
-            extraction_results = extract_client.extract_document(
-                extractor_id, document_id, extraction_prompts
-            )
-
-            if not config.validate_extraction:
-                CSVWriter.write_extraction_results_to_csv(
-                    extraction_results, document_path, output_directory
-                )
-                CSVWriter.pprint_csv_results(document_path, output_directory)
-            else:
-                validated_results = validate_client.validate_extraction_results(
-                    extractor_id,
+            if extractor_id and extractor_name:
+                perform_extraction(
                     document_id,
-                    extraction_results,
-                    extraction_prompts,
+                    document_path,
+                    output_directory,
+                    extractor_id,
+                    extractor_name,
+                    config,
+                    context,
                 )
-                if validated_results:
-                    CSVWriter.write_validated_results_to_csv(
-                        validated_results,
-                        extraction_results,
-                        document_path,
-                        output_directory,
-                    )
-                    CSVWriter.pprint_csv_results(document_path, output_directory)
+
     except Exception as e:
         print(f"Error processing {document_path}: {e}")
+
+
+# 1. Digitization function
+def start_digitization(document_path: str) -> str:
+    return digitize_client.digitize(document_path)
+
+
+# 2. Classification function
+def classify_document(
+    document_id: str,
+    document_path: str,
+    config: ProcessingConfig,
+    context: DocumentProcessingContext,
+) -> tuple[str | None, dict | None]:
+    classification_prompts = (
+        load_prompts("classification")
+        if context.classifier == "generative_classifier"
+        else None
+    )
+    document_type_id = classify_client.classify_document(
+        document_path,
+        document_id,
+        context.classifier,
+        classification_prompts,
+        config.validate_classification,
+    )
+    if config.validate_classification:
+        validate_classification(
+            document_id, document_type_id, classification_prompts, context
+        )
+
+    return document_type_id, classification_prompts
+
+
+def validate_classification(
+    document_id: str,
+    document_type_id: str,
+    classification_prompts: dict,
+    context: DocumentProcessingContext,
+) -> None:
+    validate_client.validate_classification_results(
+        document_id,
+        context.classifier,
+        document_type_id,
+        classification_prompts,
+    )
+
+
+# 3. Extractor handling function
+def get_extractor(
+    config: ProcessingConfig,
+    context: DocumentProcessingContext,
+    document_type_id: str | None,
+) -> tuple[str | None, str | None]:
+    if document_type_id:
+        extractor_id = context.extractor_dict.get(document_type_id[0], {}).get("id")
+        extractor_name = context.extractor_dict.get(document_type_id[0], {}).get("name")
+    else:
+        extractor_info = next(iter(context.extractor_dict.values()))
+        extractor_id = extractor_info.get("id")
+        extractor_name = extractor_info.get("name")
+
+    generative_extractor = context.extractor_dict.get("generative_extractor")
+    if generative_extractor and document_type_id[0] in generative_extractor.get(
+        "doc_type_ids", []
+    ):
+        extractor_id = "generative_extractor"
+        extractor_name = document_type_id[0]
+
+    print_extractor_log(extractor_id, extractor_name, document_type_id)
+    return extractor_id, extractor_name
+
+
+def print_extractor_log(
+    extractor_id: str | None, extractor_name: str | None, document_type_id: str | None
+) -> None:
+    if extractor_id:
+        print(f"Using {extractor_id} for document type {extractor_name}")
+    else:
+        print(f"No extractor found for document type {document_type_id}")
+
+
+# 4. Perform extraction function
+def perform_extraction(
+    document_id: str,
+    document_path: str,
+    output_directory: str,
+    extractor_id: str,
+    extractor_name: str,
+    config: ProcessingConfig,
+    context: DocumentProcessingContext,
+) -> None:
+    extraction_prompts = (
+        load_prompts(extractor_name) if extractor_id == "generative_extractor" else None
+    )
+    extraction_results = extract_client.extract_document(
+        extractor_id, document_id, extraction_prompts
+    )
+
+    if not config.validate_extraction:
+        write_extraction_to_csv(extraction_results, document_path, output_directory)
+    else:
+        validated_results = validate_client.validate_extraction_results(
+            extractor_id, document_id, extraction_results, extraction_prompts
+        )
+        if validated_results:
+            write_validated_results_to_csv(
+                validated_results, extraction_results, document_path, output_directory
+            )
+
+
+def write_extraction_to_csv(extraction_results, document_path, output_directory):
+    CSVWriter.write_extraction_results_to_csv(
+        extraction_results, document_path, output_directory
+    )
+    CSVWriter.pprint_csv_results(document_path, output_directory)
+
+
+def write_validated_results_to_csv(
+    validated_results, extraction_results, document_path, output_directory
+):
+    CSVWriter.write_validated_results_to_csv(
+        validated_results, extraction_results, document_path, output_directory
+    )
+    CSVWriter.pprint_csv_results(document_path, output_directory)
 
 
 # Main function to process documents in the folder
@@ -200,7 +239,7 @@ if __name__ == "__main__":
         validate_classification=False,
         validate_extraction=False,
         perform_classification=True,
-        perform_extraction=True,
+        perform_extraction=False,
     )
 
     # Load context
