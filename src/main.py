@@ -136,6 +136,9 @@ def get_extractor(
     ):
         extractor_id = "generative_extractor"
         extractor_name = document_type_id
+    else:
+        extractor_id = "generative_extractor"
+        extractor_name = "default_doc"
 
     print_extractor_log(extractor_id, extractor_name, document_type_id)
     return extractor_id, extractor_name
@@ -231,14 +234,14 @@ def process_documents_in_folder(
 
 
 if __name__ == "__main__":
-    DOCUMENT_FOLDER = "./example_documents"
+    DOCUMENT_FOLDER = "./test"
     OUTPUT_DIRECTORY = "./output_results"
 
     # Create a configuration object
     config = ProcessingConfig(
         validate_classification=False,
         validate_extraction=False,
-        perform_classification=True,
+        perform_classification=False,
         perform_extraction=True,
     )
 

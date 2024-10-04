@@ -350,6 +350,7 @@ class Discovery:
                                     choices = cache["project"]["classifier_id"][
                                         "doc_type_ids"
                                     ]
+
                                     selected_gen_ext_doc_types = questionary.checkbox(
                                         "Please select Document Types for Generative Extraction:",
                                         choices=choices,
@@ -367,11 +368,12 @@ class Discovery:
                                             "doc_type_ids": choices,
                                         }
 
-                        else:
-                            extractor_dict[extractor["documentTypeId"]] = {
-                                "id": extractor["id"],
-                                "name": extractor["name"],
-                            }
+                            else:
+                                extractor_dict[extractor["id"]] = {
+                                    "id": extractor["id"],
+                                    "name": extractor["name"],
+                                    "doc_type_ids": ["default_doc"],
+                                }
 
                     # Save to cache
                     cache["project"]["extractor_ids"] = extractor_dict
