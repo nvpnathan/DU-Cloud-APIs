@@ -43,10 +43,10 @@ def process_document(
         document_id = start_digitization(document_path)
 
         # Perform classification if required
-        document_type_id, classification_results = (
+        document_type_id = (
             classify_document(document_id, document_path, config, context)
             if config.perform_classification
-            else (None, None)
+            else None
         )
 
         # Perform extraction if required
@@ -81,7 +81,7 @@ def classify_document(
     document_path: str,
     config: ProcessingConfig,
     context: DocumentProcessingContext,
-) -> tuple[str | None, dict | None]:
+) -> str | None:
     classification_prompts = (
         load_prompts("classification")
         if context.classifier == "generative_classifier"
@@ -99,7 +99,7 @@ def classify_document(
             document_id, document_type_id, classification_prompts, context
         )
 
-    return document_type_id, classification_prompts
+    return document_type_id
 
 
 def validate_classification(
@@ -123,19 +123,19 @@ def get_extractor(
     document_type_id: str | None,
 ) -> tuple[str | None, str | None]:
     if document_type_id:
-        extractor_id = context.extractor_dict.get(document_type_id[0], {}).get("id")
-        extractor_name = context.extractor_dict.get(document_type_id[0], {}).get("name")
+        extractor_id = context.extractor_dict.get(document_type_id, {}).get("id")
+        extractor_name = context.extractor_dict.get(document_type_id, {}).get("name")
     else:
         extractor_info = next(iter(context.extractor_dict.values()))
         extractor_id = extractor_info.get("id")
         extractor_name = extractor_info.get("name")
 
     generative_extractor = context.extractor_dict.get("generative_extractor")
-    if generative_extractor and document_type_id[0] in generative_extractor.get(
+    if generative_extractor and document_type_id in generative_extractor.get(
         "doc_type_ids", []
     ):
         extractor_id = "generative_extractor"
-        extractor_name = document_type_id[0]
+        extractor_name = document_type_id
 
     print_extractor_log(extractor_id, extractor_name, document_type_id)
     return extractor_id, extractor_name
@@ -239,7 +239,7 @@ if __name__ == "__main__":
         validate_classification=False,
         validate_extraction=False,
         perform_classification=True,
-        perform_extraction=False,
+        perform_extraction=True,
     )
 
     # Load context
