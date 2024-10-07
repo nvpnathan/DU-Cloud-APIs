@@ -104,6 +104,7 @@ class CSVWriter:
                             "ResultsDocument"
                         ]["Fields"]
                         if field.get("FieldName") == "items"
+                        and field.get("IsMissing") is False
                     ),
                     None,
                 )
@@ -123,17 +124,25 @@ class CSVWriter:
             for field in extraction_results["extractionResult"]["ResultsDocument"][
                 "Fields"
             ]:
-                if "Values" in field and field["Values"]:
-                    field_data = {
-                        "FieldName": field["FieldName"],
-                        "Value": field["Values"][0]["Value"],
-                        "Confidence": field["Values"][0].get("Confidence", ""),
-                        "OcrConfidence": field["Values"][0].get("OcrConfidence", ""),
-                        "IsMissing": field["IsMissing"],
-                    }
-                    writer.writerow(field_data)
+                field_data = {
+                    "FieldName": field["FieldName"],
+                    "Value": "",
+                    "Confidence": "",
+                    "OcrConfidence": "",
+                    "IsMissing": field["IsMissing"],
+                }
 
-            if table_exists:
+                # Only populate values if "Values" exists and is not empty
+                if "Values" in field and field["Values"]:
+                    field_data["Value"] = field["Values"][0].get("Value", "")
+                    field_data["Confidence"] = field["Values"][0].get("Confidence", "")
+                    field_data["OcrConfidence"] = field["Values"][0].get(
+                        "OcrConfidence", ""
+                    )
+
+                writer.writerow(field_data)
+
+            if table_exists and table_data:
                 num_rows = max(
                     len(value["Values"]) for value in headers_dict.values()
                 )  # Get the maximum number of rows

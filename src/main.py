@@ -52,9 +52,7 @@ def process_document(
         # Perform extraction if required
         if config.perform_extraction:
             # Extractor handling
-            extractor_id, extractor_name = get_extractor(
-                config, context, document_type_id
-            )
+            extractor_id, extractor_name = get_extractor(context, document_type_id)
             if extractor_id and extractor_name:
                 perform_extraction(
                     document_id,
@@ -63,7 +61,6 @@ def process_document(
                     extractor_id,
                     extractor_name,
                     config,
-                    context,
                 )
 
     except Exception as e:
@@ -118,7 +115,6 @@ def validate_classification(
 
 # 3. Extractor handling function
 def get_extractor(
-    config: ProcessingConfig,
     context: DocumentProcessingContext,
     document_type_id: str | None,
 ) -> tuple[str | None, str | None]:
@@ -161,7 +157,6 @@ def perform_extraction(
     extractor_id: str,
     extractor_name: str,
     config: ProcessingConfig,
-    context: DocumentProcessingContext,
 ) -> None:
     extraction_prompts = (
         load_prompts(extractor_name) if extractor_id == "generative_extractor" else None
@@ -234,14 +229,14 @@ def process_documents_in_folder(
 
 
 if __name__ == "__main__":
-    DOCUMENT_FOLDER = "./test"
+    DOCUMENT_FOLDER = "./example_documents"
     OUTPUT_DIRECTORY = "./output_results"
 
     # Create a configuration object
     config = ProcessingConfig(
         validate_classification=False,
         validate_extraction=False,
-        perform_classification=False,
+        perform_classification=True,
         perform_extraction=True,
     )
 

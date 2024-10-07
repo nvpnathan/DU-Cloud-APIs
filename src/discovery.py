@@ -328,7 +328,6 @@ class Discovery:
                     # Iterate over the selected extractors and gather their IDs and documentTypeIds
                     for selected_extractor in selected_extractors:
                         selected_extractor_name = selected_extractor.split(":")[0]
-
                         # Find the matching extractor from the data
                         extractor = next(
                             extractor
@@ -375,6 +374,11 @@ class Discovery:
                                     "doc_type_ids": ["default_doc"],
                                 }
 
+                        else:
+                            extractor_dict[extractor["id"]] = {
+                                "id": extractor["id"],
+                                "name": extractor["name"],
+                            }
                     # Save to cache
                     cache["project"]["extractor_ids"] = extractor_dict
                     self._save_cache_to_file(cache)
