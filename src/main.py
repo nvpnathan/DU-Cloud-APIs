@@ -132,7 +132,7 @@ def get_extractor(
     ):
         extractor_id = "generative_extractor"
         extractor_name = document_type_id
-    else:
+    if generative_extractor and not document_type_id:
         extractor_id = "generative_extractor"
         extractor_name = "default_doc"
 
