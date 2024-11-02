@@ -2,6 +2,11 @@ import os
 import json
 from discovery import Discovery
 
+# Cache configuration
+CACHE_DIR = "cache"
+CACHE_FILE = os.path.join(CACHE_DIR, "document_cache.json")
+CACHE_EXPIRY_DAYS = 7  # Cache expiry in days
+
 
 class ProcessingConfig:
     def __init__(
