@@ -61,6 +61,8 @@ def load_prompts(document_type_id: str) -> dict | None:
 
 def ensure_database():
     """Ensure the SQLite database and 'documents' table exist."""
+    if not os.path.exists(CACHE_DIR):
+        os.makedirs(CACHE_DIR)
     if not os.path.exists(SQLITE_DB_PATH):
         conn = sqlite3.connect(SQLITE_DB_PATH)
         cursor = conn.cursor()
