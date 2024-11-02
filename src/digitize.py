@@ -1,10 +1,10 @@
 import os
-import json
 import time
+import sqlite3
 import requests
 import mimetypes
 from datetime import datetime, timedelta
-from config import CACHE_DIR, CACHE_FILE, CACHE_EXPIRY_DAYS
+from config import CACHE_EXPIRY_DAYS, SQLITE_DB_PATH
 
 
 class Digitize:
@@ -12,72 +12,79 @@ class Digitize:
         self.base_url = base_url
         self.project_id = project_id
         self.bearer_token = bearer_token
-        self.document_cache = self._load_cache_from_file()
-
-    def _ensure_cache_directory(self):
-        """Ensure the cache directory exists."""
-        if not os.path.exists(CACHE_DIR):
-            os.makedirs(CACHE_DIR)
-
-    def _save_cache_to_file(self):
-        """Save the cache to a JSON file."""
-        self._ensure_cache_directory()
-        with open(CACHE_FILE, "w") as cache_file:
-            json.dump(self.document_cache, cache_file, indent=4)
-
-    def _load_cache_from_file(self):
-        """Load the cache from a JSON file or return an empty dict if it doesn't exist."""
-        if os.path.exists(CACHE_FILE):
-            with open(CACHE_FILE, "r") as cache_file:
-                return json.load(cache_file)
-        return {}
-
-    def _get_document_id_from_cache(self, filename: str) -> str | None:
-        """Retrieve the document_id based on the filename and validate its timestamp."""
-        for document_id, entry in self.document_cache.items():
-            if entry["filename"] == filename:
-                timestamp = entry.get("timestamp")
-
-                # Check if the entry is older than the expiry period
-                cache_time = datetime.fromtimestamp(timestamp)
-                if datetime.now() - cache_time > timedelta(days=CACHE_EXPIRY_DAYS):
-                    print(f"Cache expired for document: {filename}")
-                    # Remove the expired entry from cache
-                    self.document_cache.pop(document_id)
-                    self._save_cache_to_file()
-                    return None
-                else:
-                    return document_id
-        return None
 
     def _add_document_to_cache(
         self, filename: str, stage: str, document_id: str
     ) -> None:
-        """Add a document to the cache with its document_id, filename, stage, and timestamp."""
-        self.document_cache[document_id] = {
-            "filename": filename,
-            "stage": stage,
-            "timestamp": time.time(),
-        }
-        self._save_cache_to_file()
+        """Add a document to the cache in the SQLite database."""
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO documents (document_id, filename, stage, timestamp)
+            VALUES (?, ?, ?, ?)
+        """,
+            (document_id, filename, stage, time.time()),
+        )
+        conn.commit()
+        conn.close()
+
+    def _get_document_id_from_cache(self, filename: str) -> str | None:
+        """Retrieve the document_id based on the filename and validate its timestamp."""
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT document_id, timestamp FROM documents WHERE filename = ?
+        """,
+            (filename,),
+        )
+        result = cursor.fetchone()
+        conn.close()
+
+        if result:
+            document_id, timestamp = result
+            cache_time = datetime.fromtimestamp(timestamp)
+            if datetime.now() - cache_time > timedelta(days=CACHE_EXPIRY_DAYS):
+                print(f"Cache expired for document: {filename}")
+                self._remove_document_from_cache(document_id)
+                return None
+            return document_id
+        return None
 
     def _update_cache_with_document_id(
         self, filename: str, stage: str, new_document_id: str
     ) -> None:
         """Update the cache by replacing 'pending' with the actual document_id."""
-        # Find and remove the pending entry
-        for doc_id, entry in list(self.document_cache.items()):
-            if entry["filename"] == filename and doc_id == "pending":
-                del self.document_cache[doc_id]
-                break
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        cursor = conn.cursor()
 
-        # Add the new document_id entry
-        self.document_cache[new_document_id] = {
-            "filename": filename,
-            "stage": stage,
-            "timestamp": time.time(),
-        }
-        self._save_cache_to_file()
+        # Delete pending entry if it exists
+        cursor.execute(
+            """
+            DELETE FROM documents WHERE document_id = "pending" AND filename = ?
+        """,
+            (filename,),
+        )
+
+        # Insert or update the actual document_id entry
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO documents (document_id, filename, stage, timestamp)
+            VALUES (?, ?, ?, ?)
+        """,
+            (new_document_id, filename, stage, time.time()),
+        )
+        conn.commit()
+        conn.close()
+
+    def _remove_document_from_cache(self, document_id: str) -> None:
+        """Remove a document from the cache based on its document_id."""
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM documents WHERE document_id = ?", (document_id,))
+        conn.commit()
+        conn.close()
 
     def digitize(self, document_path: str) -> str | None:
         """Digitize a document and handle caching."""

@@ -1,10 +1,12 @@
 import os
 import json
+import sqlite3
 from discovery import Discovery
 
 # Cache configuration
 CACHE_DIR = "cache"
 CACHE_FILE = os.path.join(CACHE_DIR, "document_cache.json")
+SQLITE_DB_PATH = os.path.join(CACHE_DIR, "document_cache.db")
 CACHE_EXPIRY_DAYS = 7  # Cache expiry in days
 
 
@@ -55,3 +57,23 @@ def load_prompts(document_type_id: str) -> dict | None:
     else:
         print(f"Error: File '{prompts_file}' not found.")
         return None
+
+
+def ensure_database():
+    """Ensure the SQLite database and 'documents' table exist."""
+    if not os.path.exists(SQLITE_DB_PATH):
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS documents (
+                document_id TEXT PRIMARY KEY,
+                filename TEXT NOT NULL,
+                stage TEXT NOT NULL,
+                timestamp REAL NOT NULL,
+                document_type_id TEXT,
+                classify_operation_id TEXT,
+                extract_operation_id TEXT
+            )
+        """)
+        conn.commit()
+        conn.close()

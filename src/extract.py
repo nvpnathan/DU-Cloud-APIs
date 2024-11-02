@@ -1,8 +1,7 @@
-import os
-import json
 import time
+import sqlite3
 import requests
-from config import CACHE_DIR, CACHE_FILE
+from config import SQLITE_DB_PATH
 
 
 class Extract:
@@ -10,30 +9,20 @@ class Extract:
         self.base_url = base_url
         self.project_id = project_id
         self.bearer_token = bearer_token
-        self.document_cache = None
 
-    def _ensure_cache_directory(self):
-        """Ensure the cache directory exists."""
-        if not os.path.exists(CACHE_DIR):
-            os.makedirs(CACHE_DIR)
-
-    def _load_cache_if_needed(self):
-        """Load cache only when it's needed."""
-        if self.document_cache is None:
-            self.document_cache = self._load_cache_from_file()
-
-    def _load_cache_from_file(self):
-        """Load the cache from a JSON file or return an empty dict if it doesn't exist."""
-        if os.path.exists(CACHE_FILE):
-            with open(CACHE_FILE, "r") as cache_file:
-                return json.load(cache_file)
-        return {}
-
-    def _save_cache_to_file(self):
-        """Save the cache to a JSON file."""
-        self._ensure_cache_directory()
-        with open(CACHE_FILE, "w") as cache_file:
-            json.dump(self.document_cache, cache_file, indent=4)
+    def _get_document_from_db(self, document_id):
+        """Retrieve the document data from the database by document_id."""
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT * FROM documents WHERE document_id = ?
+        """,
+            (document_id,),
+        )
+        result = cursor.fetchone()
+        conn.close()
+        return result
 
     def _update_document_stage(
         self,
@@ -41,12 +30,22 @@ class Extract:
         new_stage: str,
         operation_id: str,
     ) -> None:
-        self._load_cache_if_needed()
-        """Update the document stage in the cache."""
-        if document_id in self.document_cache:
-            self.document_cache[document_id]["stage"] = new_stage
-            self.document_cache[document_id]["extract_operation_id"] = operation_id
-            self._save_cache_to_file()
+        """Update the document stage in the SQLite database."""
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        cursor = conn.cursor()
+
+        # Update document data in the database
+        cursor.execute(
+            """
+            UPDATE documents
+            SET stage = ?, extract_operation_id = ?, timestamp = ?
+            WHERE document_id = ?
+        """,
+            (new_stage, operation_id, time.time(), document_id),
+        )
+
+        conn.commit()
+        conn.close()
 
     def extract_document(
         self, extractor_id: str, document_id: str, prompts: dict = None

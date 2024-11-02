@@ -7,7 +7,7 @@ from extract import Extract
 from validate import Validate
 from result_utils import CSVWriter
 from auth import initialize_authentication
-from config import load_endpoints, load_prompts
+from config import load_endpoints, load_prompts, ensure_database
 from config import ProcessingConfig, DocumentProcessingContext
 
 # Load environment variables
@@ -17,6 +17,8 @@ base_url = os.environ["BASE_URL"]
 # Initialize Authentication
 auth = initialize_authentication()
 bearer_token = auth.bearer_token
+
+ensure_database()
 
 
 # Function to initialize clients
