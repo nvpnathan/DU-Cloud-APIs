@@ -60,12 +60,17 @@ def load_prompts(document_type_id: str) -> dict | None:
 
 
 def ensure_database():
-    """Ensure the SQLite database and 'documents' table exist."""
+    """Ensure the SQLite database and required tables exist."""
+    # Ensure the cache directory exists
     if not os.path.exists(CACHE_DIR):
         os.makedirs(CACHE_DIR)
+
+    # Check if the database file exists
     if not os.path.exists(SQLITE_DB_PATH):
         conn = sqlite3.connect(SQLITE_DB_PATH)
         cursor = conn.cursor()
+
+        # Create documents table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS documents (
                 document_id TEXT PRIMARY KEY,
@@ -74,8 +79,27 @@ def ensure_database():
                 timestamp REAL NOT NULL,
                 document_type_id TEXT,
                 classify_operation_id TEXT,
-                extract_operation_id TEXT
+                extract_operation_id TEXT,
+                digitize_duration REAL,
+                classification_duration REAL,
+                extract_duration REAL
             )
         """)
+
+        # Create classifications table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS classifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id TEXT NOT NULL,
+                filename TEXT NOT NULL,
+                document_type_id TEXT NOT NULL,
+                classification_confidence REAL NOT NULL,
+                start_page INTEGER NOT NULL,
+                page_count INTEGER NOT NULL,
+                classifier_name TEXT NOT NULL,
+                operation_id TEXT NOT NULL
+            )
+        """)
+
         conn.commit()
         conn.close()

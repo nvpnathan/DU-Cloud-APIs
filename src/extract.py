@@ -27,6 +27,7 @@ class Extract:
     def _update_document_stage(
         self,
         document_id: str,
+        extract_duration: float,
         new_stage: str,
         operation_id: str,
     ) -> None:
@@ -38,10 +39,10 @@ class Extract:
         cursor.execute(
             """
             UPDATE documents
-            SET stage = ?, extract_operation_id = ?, timestamp = ?
+            SET stage = ?, extract_operation_id = ?, extract_duration = ?, timestamp = ?
             WHERE document_id = ?
         """,
-            (new_stage, operation_id, time.time(), document_id),
+            (new_stage, operation_id, extract_duration, time.time(), document_id),
         )
 
         conn.commit()
@@ -63,7 +64,7 @@ class Extract:
         data = {"documentId": f"{document_id}", **(prompts or {})}
 
         try:
-            # Make the POST request
+            extract_start_time = time.time()
             response = requests.post(api_url, json=data, headers=headers, timeout=300)
             response.raise_for_status()  # Raise an exception for HTTP errors
 
@@ -79,9 +80,11 @@ class Extract:
                         extractor_id, operation_id
                     )
                     if extraction_results:
+                        extract_end_time = time.time()
+                        extract_duration = extract_end_time - extract_start_time
                         print("Document Extraction Complete!\n")
                         self._update_document_stage(
-                            document_id, "extracted", operation_id
+                            document_id, extract_duration, "extracted", operation_id
                         )
                     return extraction_results
 

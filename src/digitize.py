@@ -14,17 +14,17 @@ class Digitize:
         self.bearer_token = bearer_token
 
     def _add_document_to_cache(
-        self, filename: str, stage: str, document_id: str
+        self, filename: str, digitize_duration: str, stage: str, document_id: str
     ) -> None:
         """Add a document to the cache in the SQLite database."""
         conn = sqlite3.connect(SQLITE_DB_PATH)
         cursor = conn.cursor()
         cursor.execute(
             """
-            INSERT OR REPLACE INTO documents (document_id, filename, stage, timestamp)
-            VALUES (?, ?, ?, ?)
+            INSERT OR REPLACE INTO documents (document_id, filename, digitize_duration, stage, timestamp)
+            VALUES (?, ?, ?, ?, ?)
         """,
-            (document_id, filename, stage, time.time()),
+            (document_id, filename, digitize_duration, stage, time.time()),
         )
         conn.commit()
         conn.close()
@@ -53,7 +53,7 @@ class Digitize:
         return None
 
     def _update_cache_with_document_id(
-        self, filename: str, stage: str, new_document_id: str
+        self, filename: str, digitize_duration: str, stage: str, new_document_id: str
     ) -> None:
         """Update the cache by replacing 'pending' with the actual document_id."""
         conn = sqlite3.connect(SQLITE_DB_PATH)
@@ -70,10 +70,10 @@ class Digitize:
         # Insert or update the actual document_id entry
         cursor.execute(
             """
-            INSERT OR REPLACE INTO documents (document_id, filename, stage, timestamp)
-            VALUES (?, ?, ?, ?)
+            INSERT OR REPLACE INTO documents (document_id, filename, digitize_duration, stage, timestamp)
+            VALUES (?, ?, ?, ?, ?)
         """,
-            (new_document_id, filename, stage, time.time()),
+            (new_document_id, filename, digitize_duration, stage, time.time()),
         )
         conn.commit()
         conn.close()
@@ -98,7 +98,9 @@ class Digitize:
             return cached_document_id
         else:
             # Since we don't have the document_id yet, temporarily add the document with None
-            self._add_document_to_cache(filename, stage="init", document_id="pending")
+            self._add_document_to_cache(
+                filename, digitize_duration=None, stage="init", document_id="pending"
+            )
 
         # Define the API endpoint for digitization
         api_url = f"{self.base_url}{self.project_id}/digitization/start?api-version=1"
@@ -116,6 +118,7 @@ class Digitize:
             # Open the file and prepare the request
             files = {"File": (document_path, open(document_path, "rb"), mime_type)}
 
+            digitize_start_time = time.time()
             response = requests.post(api_url, files=files, headers=headers, timeout=300)
             response.raise_for_status()
 
@@ -129,8 +132,13 @@ class Digitize:
                     digitize_results = self.submit_digitization_request(document_id)
                     if digitize_results:
                         # Update the cache with the actual document_id and digitized stage
+                        digitize_end_time = time.time()
+                        digitize_duration = digitize_end_time - digitize_start_time
                         self._update_cache_with_document_id(
-                            filename, stage="digitized", new_document_id=document_id
+                            filename,
+                            digitize_duration,
+                            stage="digitized",
+                            new_document_id=document_id,
                         )
                         return digitize_results
 
