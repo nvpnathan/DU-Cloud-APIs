@@ -32,6 +32,17 @@ class DocumentProcessingContext:
 
 
 # Function to select your Classifier and/or Extractor(s)
+def load_env_file(filepath="../.env"):
+    if os.path.isfile(filepath):
+        with open(filepath) as f:
+            for line in f:
+                # Ignore empty lines and comments
+                if line.strip() and not line.startswith("#"):
+                    key, value = line.strip().split("=", 1)
+                    os.environ[key] = value.strip('"').strip("'")
+
+
+# Function to select your Classifier and/or Extractor(s)
 def load_endpoints(load_classifier, load_extractor, base_url, bearer_token):
     discovery_client = Discovery(base_url, bearer_token)
     project_id = discovery_client.get_projects()
@@ -82,13 +93,15 @@ def ensure_database():
                 extract_operation_id TEXT,
                 digitize_duration REAL,
                 classification_duration REAL,
-                extract_duration REAL
+                extract_duration REAL,
+                error_code TEXT,
+                error_message TEXT
             )
         """)
 
-        # Create classifications table
+        # Create classification table
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS classifications (
+            CREATE TABLE IF NOT EXISTS classification (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 document_id TEXT NOT NULL,
                 filename TEXT NOT NULL,
@@ -101,5 +114,21 @@ def ensure_database():
             )
         """)
 
+        # Create extraction table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS extraction (
+                "id INTEGER PRIMARY KEY AUTOINCREMENT",
+                "DocumentId TEXT",
+                "FieldId TEXT",
+                "Field TEXT",
+                "IsMissing BOOLEAN",
+                "Value TEXT",
+                "UnformattedValue TEXT",
+                "Confidence REAL",
+                "OcrConfidence REAL",
+                "OperatorConfirmed BOOLEAN",
+                "Timestamp TEXT DEFAULT CURRENT_TIMESTAMP"
+            )
+        """)
         conn.commit()
         conn.close()

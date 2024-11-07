@@ -1,18 +1,17 @@
 import os
 import concurrent.futures
-from dotenv import load_dotenv
 from digitize import Digitize
 from classify import Classify
 from extract import Extract
 from validate import Validate
 from result_utils import CSVWriter
 from auth import initialize_authentication
-from config import load_endpoints, load_prompts, ensure_database
+from config import load_env_file, load_endpoints, load_prompts, ensure_database
 from config import ProcessingConfig, DocumentProcessingContext
 
 # Load environment variables
-load_dotenv()
-base_url = os.environ["BASE_URL"]
+load_env_file()
+base_url = os.getenv("BASE_URL")
 
 # Initialize Authentication
 auth = initialize_authentication()
@@ -238,7 +237,7 @@ if __name__ == "__main__":
     config = ProcessingConfig(
         validate_classification=False,
         validate_extraction=False,
-        perform_classification=True,
+        perform_classification=False,
         perform_extraction=True,
     )
 
@@ -246,7 +245,7 @@ if __name__ == "__main__":
     project_id, classifier, extractor_dict = load_endpoints(
         load_classifier=config.perform_classification,
         load_extractor=config.perform_extraction,
-        base_url=os.environ["BASE_URL"],
+        base_url=os.getenv("BASE_URL"),
         bearer_token=bearer_token,
     )
     context = DocumentProcessingContext(project_id, classifier, extractor_dict)

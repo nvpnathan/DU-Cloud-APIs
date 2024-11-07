@@ -53,7 +53,13 @@ class Digitize:
         return None
 
     def _update_cache_with_document_id(
-        self, filename: str, digitize_duration: str, stage: str, new_document_id: str
+        self,
+        filename: str,
+        digitize_duration: str,
+        stage: str,
+        new_document_id: str,
+        error_code: str,
+        error_message: str,
     ) -> None:
         """Update the cache by replacing 'pending' with the actual document_id."""
         conn = sqlite3.connect(SQLITE_DB_PATH)
@@ -70,10 +76,18 @@ class Digitize:
         # Insert or update the actual document_id entry
         cursor.execute(
             """
-            INSERT OR REPLACE INTO documents (document_id, filename, digitize_duration, stage, timestamp)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT OR REPLACE INTO documents (document_id, filename, digitize_duration, stage, timestamp, error_code, error_message)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
-            (new_document_id, filename, digitize_duration, stage, time.time()),
+            (
+                new_document_id,
+                filename,
+                digitize_duration,
+                stage,
+                time.time(),
+                error_code,
+                error_message,
+            ),
         )
         conn.commit()
         conn.close()
@@ -118,7 +132,6 @@ class Digitize:
             # Open the file and prepare the request
             files = {"File": (document_path, open(document_path, "rb"), mime_type)}
 
-            digitize_start_time = time.time()
             response = requests.post(api_url, files=files, headers=headers, timeout=300)
             response.raise_for_status()
 
@@ -129,17 +142,10 @@ class Digitize:
 
                 # Wait for digitization completion
                 if document_id:
-                    digitize_results = self.submit_digitization_request(document_id)
+                    digitize_results = self.submit_digitization_request(
+                        document_id, filename
+                    )
                     if digitize_results:
-                        # Update the cache with the actual document_id and digitized stage
-                        digitize_end_time = time.time()
-                        digitize_duration = digitize_end_time - digitize_start_time
-                        self._update_cache_with_document_id(
-                            filename,
-                            digitize_duration,
-                            stage="digitized",
-                            new_document_id=document_id,
-                        )
                         return digitize_results
 
             print(f"Error: {response.status_code} - {response.text}")
@@ -152,7 +158,9 @@ class Digitize:
             print(f"An error occurred during digitization: {ex}")
             return None
 
-    def submit_digitization_request(self, document_id: str) -> str | None:
+    def submit_digitization_request(
+        self, document_id: str, filename: str
+    ) -> str | None:
         """Submit the digitization request and wait for completion."""
         api_url = f"{self.base_url}{self.project_id}/digitization/result/{document_id}?api-version=1"
         headers = {
@@ -160,12 +168,24 @@ class Digitize:
             "Authorization": f"Bearer {self.bearer_token}",
         }
 
+        digitize_start_time = time.time()
+
         try:
             while True:
                 response = requests.get(api_url, headers=headers, timeout=60)
                 response_data = response.json()
 
                 if response_data["status"] == "Succeeded":
+                    digitize_end_time = time.time()
+                    digitize_duration = digitize_end_time - digitize_start_time
+                    self._update_cache_with_document_id(
+                        filename,
+                        digitize_duration,
+                        stage="digitized",
+                        new_document_id=document_id,
+                        error_code=None,
+                        error_message=None,
+                    )
                     return response_data["result"]["documentObjectModel"]["documentId"]
                 elif response_data["status"] == "NotStarted":
                     print("Document Digitization not started...")
@@ -174,13 +194,48 @@ class Digitize:
                     print("Document Digitization running...")
                 else:
                     print(f"Document Digitization failed. OperationID: {document_id}")
-                    print(response_data)
-                    break
+                    error_code = response_data.get("error", {}).get("code")
+                    error_message = response_data.get("error", {}).get("message")
+                    print(f"Error code: {error_code}, Message: {error_message}")
+
+                    self._update_cache_with_document_id(
+                        filename,
+                        digitize_duration,
+                        stage="digitize_failed",
+                        new_document_id=document_id,
+                        error_code=error_code,
+                        error_message=error_message,
+                    )
+                    return None
 
         except requests.exceptions.RequestException as e:
             print(f"Error submitting digitization request: {e}")
+            self._update_cache_with_document_id(
+                filename,
+                digitize_duration,
+                stage="digitize_failed",
+                new_document_id=document_id,
+                error_code="NetworkError",
+                error_message=str(e),
+            )
         except KeyError as ke:
             print(f"KeyError: {ke}")
+            self._update_cache_with_document_id(
+                filename,
+                digitize_duration,
+                stage="digitize_failed",
+                new_document_id=document_id,
+                error_code="KeyError",
+                error_message=str(ke),
+            )
         except Exception as ex:
             print(f"An error occurred during digitization: {ex}")
+            self._update_cache_with_document_id(
+                filename,
+                digitize_duration,
+                stage="digitize_failed",
+                new_document_id=document_id,
+                error_code="KeyError",
+                error_message=str(ex),
+            )
         return None
