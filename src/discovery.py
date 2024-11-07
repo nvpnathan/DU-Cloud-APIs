@@ -3,32 +3,41 @@ import json
 import requests
 import questionary
 
+CACHE_DIR = "cache"
+CACHE_FILE = os.path.join(CACHE_DIR, "extractor_cache.json")
+
 
 class Discovery:
-    def __init__(self, base_url, bearer_token, cache_file="extractor_cache.json"):
+    def __init__(self, base_url, bearer_token):
         self.base_url = base_url
         self.bearer_token = bearer_token
-        self.cache_file = cache_file
+        self.document_cache = self._load_cache_from_file()
 
-    def _load_cache(self):
-        """Load the cached data from a JSON file."""
-        if os.path.exists(self.cache_file):
-            with open(self.cache_file, "r") as f:
-                return json.load(f)
+    def _ensure_cache_directory(self):
+        """Ensure the cache directory exists."""
+        if not os.path.exists(CACHE_DIR):
+            os.makedirs(CACHE_DIR)
+
+    def _save_cache_to_file(self, cache_data):
+        """Save the cache to a JSON file."""
+        self._ensure_cache_directory()
+        with open(CACHE_FILE, "w") as cache_file:
+            json.dump(cache_data, cache_file)
+
+    def _load_cache_from_file(self):
+        """Load the cache from a JSON file or return an empty dict if it doesn't exist."""
+        if os.path.exists(CACHE_FILE):
+            with open(CACHE_FILE, "r") as cache_file:
+                return json.load(cache_file)
         return {}
-
-    def _save_cache(self, cache_data):
-        """Save the cache data to a JSON file."""
-        with open(self.cache_file, "w") as f:
-            json.dump(cache_data, f)
 
     def get_projects(self):
         cache = {}
         # Check if the cache file exists
-        if os.path.exists(self.cache_file):
+        if os.path.exists(CACHE_FILE):
             try:
                 # Load the cache
-                cache = self._load_cache()
+                cache = self._load_cache_from_file()
 
                 # Check if the cache contains the "project" key and it has the required fields
                 if cache and "project" in cache and "id" in cache["project"]:
@@ -114,7 +123,7 @@ class Discovery:
                         "id": project_id,
                         "name": selected_project["name"],
                     }
-                    self._save_cache(cache)
+                    self._save_cache_to_file(cache)
 
                     return project_id
                 except ValueError as ve:
@@ -127,10 +136,10 @@ class Discovery:
 
     def get_classifiers(self, project_id):
         # Check if the cache file exists
-        if os.path.exists(self.cache_file):
+        if os.path.exists(CACHE_FILE):
             try:
                 # Load the cache
-                cache = self._load_cache()
+                cache = self._load_cache_from_file()
 
                 # Check if the cache contains the "classifier_id" key and it has the required fields
                 if (
@@ -235,7 +244,7 @@ class Discovery:
                         "name": selected_classifier["name"],
                         "doc_type_ids": classifier_doc_types,
                     }
-                    self._save_cache(cache)
+                    self._save_cache_to_file(cache)
                     return classifier_id
                 except ValueError as ve:
                     print(f"Error parsing JSON response: {ve}")
@@ -247,10 +256,10 @@ class Discovery:
 
     def get_extractors(self, project_id):
         # Check if the cache file exists
-        if os.path.exists(self.cache_file):
+        if os.path.exists(CACHE_FILE):
             try:
                 # Load the cache
-                cache = self._load_cache()
+                cache = self._load_cache_from_file()
 
                 # Check if the cache contains the "extractor_ids" key and it has the required fields
                 if cache and "extractor_ids" in cache["project"]:
@@ -319,7 +328,6 @@ class Discovery:
                     # Iterate over the selected extractors and gather their IDs and documentTypeIds
                     for selected_extractor in selected_extractors:
                         selected_extractor_name = selected_extractor.split(":")[0]
-
                         # Find the matching extractor from the data
                         extractor = next(
                             extractor
@@ -341,6 +349,7 @@ class Discovery:
                                     choices = cache["project"]["classifier_id"][
                                         "doc_type_ids"
                                     ]
+
                                     selected_gen_ext_doc_types = questionary.checkbox(
                                         "Please select Document Types for Generative Extraction:",
                                         choices=choices,
@@ -358,15 +367,21 @@ class Discovery:
                                             "doc_type_ids": choices,
                                         }
 
+                            else:
+                                extractor_dict[extractor["id"]] = {
+                                    "id": extractor["id"],
+                                    "name": extractor["name"],
+                                    "doc_type_ids": ["default_doc"],
+                                }
+
                         else:
-                            extractor_dict[extractor["documentTypeId"]] = {
+                            extractor_dict[extractor["id"]] = {
                                 "id": extractor["id"],
                                 "name": extractor["name"],
                             }
-
                     # Save to cache
                     cache["project"]["extractor_ids"] = extractor_dict
-                    self._save_cache(cache)
+                    self._save_cache_to_file(cache)
 
                     # Return the dictionary with documentTypeId as key and extractor ID as value
                     return extractor_dict

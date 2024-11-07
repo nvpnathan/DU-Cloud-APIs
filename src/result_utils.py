@@ -89,7 +89,7 @@ class CSVWriter:
 
             # Check if a table exists
             table_exists = any(
-                field.get("FieldName") == "items"
+                field.get("FieldType") == "Table"
                 for field in extraction_results["extractionResult"]["ResultsDocument"][
                     "Fields"
                 ]
@@ -97,19 +97,22 @@ class CSVWriter:
 
             # If a table exists, extract table headers and append them to fieldnames
             if table_exists:
-                table_data = next(
-                    (
-                        field
-                        for field in extraction_results["extractionResult"][
-                            "ResultsDocument"
-                        ]["Fields"]
-                        if field.get("FieldName") == "items"
-                    ),
-                    None,
-                )
-                if table_data:
+                # Iterate over all table fields
+                table_fields = [
+                    field
+                    for field in extraction_results["extractionResult"][
+                        "ResultsDocument"
+                    ]["Fields"]
+                    if field.get("FieldType") == "Table"
+                    and field.get("IsMissing") is False
+                ]
+
+                # Loop through each table field
+                for table_data in table_fields:
                     headers_dict = extract_table_data(table_data)
                     index = len(fieldnames)
+
+                    # Insert headers and IsMissing fields for each table
                     for key in headers_dict:
                         fieldnames.insert(index, key)
                         fieldnames.insert(index + 1, f"{key}_IsMissing")
@@ -123,17 +126,25 @@ class CSVWriter:
             for field in extraction_results["extractionResult"]["ResultsDocument"][
                 "Fields"
             ]:
-                if "Values" in field and field["Values"]:
-                    field_data = {
-                        "FieldName": field["FieldName"],
-                        "Value": field["Values"][0]["Value"],
-                        "Confidence": field["Values"][0].get("Confidence", ""),
-                        "OcrConfidence": field["Values"][0].get("OcrConfidence", ""),
-                        "IsMissing": field["IsMissing"],
-                    }
-                    writer.writerow(field_data)
+                field_data = {
+                    "FieldName": field["FieldName"],
+                    "Value": "",
+                    "Confidence": "",
+                    "OcrConfidence": "",
+                    "IsMissing": field["IsMissing"],
+                }
 
-            if table_exists:
+                # Only populate values if "Values" exists and is not empty
+                if "Values" in field and field["Values"]:
+                    field_data["Value"] = field["Values"][0].get("Value", "")
+                    field_data["Confidence"] = field["Values"][0].get("Confidence", "")
+                    field_data["OcrConfidence"] = field["Values"][0].get(
+                        "OcrConfidence", ""
+                    )
+
+                writer.writerow(field_data)
+
+            if table_exists and table_data:
                 num_rows = max(
                     len(value["Values"]) for value in headers_dict.values()
                 )  # Get the maximum number of rows
@@ -373,13 +384,13 @@ def extract_table_data(table_data):
     headers_dict = {
         component["FieldName"]: {"IsMissing": [], "Values": []}
         for field in table_data["Values"][0]["Components"]
-        if field.get("FieldId") == "items.Header"
+        if field.get("FieldId", "").endswith(".Header")
         for component in field["Values"][0]["Components"]
     }
 
     # Extract data rows
     for field in table_data["Values"][0]["Components"]:
-        if field.get("FieldId") == "items.Body":
+        if field.get("FieldId", "").endswith(".Body"):
             for line in field["Values"]:
                 for component in line["Components"]:
                     header_name = component["FieldName"]

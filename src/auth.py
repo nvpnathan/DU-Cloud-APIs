@@ -76,7 +76,7 @@ def token_refresh_scheduler(auth_instance):
 def initialize_authentication():
     # Initialize Authentication
     auth = Authentication(
-        os.environ["APP_ID"], os.environ["APP_SECRET"], os.environ["AUTH_URL"]
+        os.getenv("APP_ID"), os.getenv("APP_SECRET"), os.getenv("AUTH_URL")
     )
 
     # Create a daemon thread for token refresh

@@ -6,6 +6,13 @@ This project demonstrates how to **digitize**, **classify**, **validate**, and *
 
 UiPath Document Understanding offers standalone capabilities, allowing integration with external tools and systems through APIs. This release includes APIs for Discovery, Digitization, Classification, Extraction, and Validation. Please take a look at the [Official Documentation](https://docs.uipath.com/document-understanding/automation-cloud/latest/api-guide/example).
 
+## Project Features
+- Interactive Menu to select your Project, Classifier, and Extractor(s)
+- Digitize, Classify, and Extract Documents
+- Optional Human In The Loop (HITL)
+- Digitization Caching (7 Days)
+- Classification CSV results
+- Extraction CSV results
 
 ## Process Flowchart
 
@@ -13,7 +20,7 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
 
 ## Requirements
 
-- Python 3.11+
+- Python 3.12+
 - `requests` library
 - `python-dotenv` library
 - `questionary` library

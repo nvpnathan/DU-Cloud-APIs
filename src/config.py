@@ -1,6 +1,13 @@
 import os
 import json
+import sqlite3
 from discovery import Discovery
+
+# Cache configuration
+CACHE_DIR = "cache"
+CACHE_FILE = os.path.join(CACHE_DIR, "document_cache.json")
+SQLITE_DB_PATH = os.path.join(CACHE_DIR, "document_cache.db")
+CACHE_EXPIRY_DAYS = 7  # Cache expiry in days
 
 
 class ProcessingConfig:
@@ -22,6 +29,17 @@ class DocumentProcessingContext:
         self.project_id = project_id
         self.classifier = classifier
         self.extractor_dict = extractor_dict
+
+
+# Function to select your Classifier and/or Extractor(s)
+def load_env_file(filepath="../.env"):
+    if os.path.isfile(filepath):
+        with open(filepath) as f:
+            for line in f:
+                # Ignore empty lines and comments
+                if line.strip() and not line.startswith("#"):
+                    key, value = line.strip().split("=", 1)
+                    os.environ[key] = value.strip('"').strip("'")
 
 
 # Function to select your Classifier and/or Extractor(s)
@@ -50,3 +68,67 @@ def load_prompts(document_type_id: str) -> dict | None:
     else:
         print(f"Error: File '{prompts_file}' not found.")
         return None
+
+
+def ensure_database():
+    """Ensure the SQLite database and required tables exist."""
+    # Ensure the cache directory exists
+    if not os.path.exists(CACHE_DIR):
+        os.makedirs(CACHE_DIR)
+
+    # Check if the database file exists
+    if not os.path.exists(SQLITE_DB_PATH):
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        cursor = conn.cursor()
+
+        # Create documents table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS documents (
+                document_id TEXT PRIMARY KEY,
+                filename TEXT NOT NULL,
+                stage TEXT NOT NULL,
+                timestamp REAL NOT NULL,
+                document_type_id TEXT,
+                classify_operation_id TEXT,
+                extract_operation_id TEXT,
+                digitize_duration REAL,
+                classification_duration REAL,
+                extract_duration REAL,
+                error_code TEXT,
+                error_message TEXT
+            )
+        """)
+
+        # Create classification table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS classification (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id TEXT NOT NULL,
+                filename TEXT NOT NULL,
+                document_type_id TEXT NOT NULL,
+                classification_confidence REAL NOT NULL,
+                start_page INTEGER NOT NULL,
+                page_count INTEGER NOT NULL,
+                classifier_name TEXT NOT NULL,
+                operation_id TEXT NOT NULL
+            )
+        """)
+
+        # Create extraction table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS extraction (
+                "id INTEGER PRIMARY KEY AUTOINCREMENT",
+                "DocumentId TEXT",
+                "FieldId TEXT",
+                "Field TEXT",
+                "IsMissing BOOLEAN",
+                "Value TEXT",
+                "UnformattedValue TEXT",
+                "Confidence REAL",
+                "OcrConfidence REAL",
+                "OperatorConfirmed BOOLEAN",
+                "Timestamp TEXT DEFAULT CURRENT_TIMESTAMP"
+            )
+        """)
+        conn.commit()
+        conn.close()
