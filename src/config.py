@@ -31,19 +31,18 @@ class DocumentProcessingContext:
         self.extractor_dict = extractor_dict
 
 
-# Function to select your Classifier and/or Extractor(s)
 def load_env_file(filepath=".env"):
+    """Load environment variables from a .env file."""
     if os.path.isfile(filepath):
         with open(filepath) as f:
             for line in f:
-                # Ignore empty lines and comments
                 if line.strip() and not line.startswith("#"):
                     key, value = line.strip().split("=", 1)
                     os.environ[key] = value.strip('"').strip("'")
 
 
-# Function to select your Classifier and/or Extractor(s)
 def load_endpoints(load_classifier, load_extractor, base_url, bearer_token):
+    """Load project and optional classifier/extractor information."""
     discovery_client = Discovery(base_url, bearer_token)
     project_id = discovery_client.get_projects()
 
@@ -56,6 +55,19 @@ def load_endpoints(load_classifier, load_extractor, base_url, bearer_token):
     )
 
     return project_id, classifier, extractor_dict
+
+
+def get_processing_config(base_url, bearer_token):
+    """Retrieve configuration with boolean flags managed by Discovery."""
+    discovery = Discovery(base_url, bearer_token)
+
+    # Initialize ProcessingConfig with values retrieved by Discovery
+    return ProcessingConfig(
+        validate_classification=discovery.validate_classification,
+        validate_extraction=discovery.validate_extraction,
+        perform_classification=discovery.perform_classification,
+        perform_extraction=discovery.perform_extraction,
+    )
 
 
 # Function to load prompts from a JSON file based on the document type ID
@@ -92,6 +104,8 @@ def ensure_database():
                 digitization_operation_id TEXT,
                 classification_operation_id TEXT,
                 extraction_operation_id TEXT,
+                validation_extraction_operation_id TEXT,
+                validation_classification_operation_id TEXT,
                 digitization_duration REAL,
                 classification_duration REAL,
                 extraction_duration REAL,

@@ -7,7 +7,13 @@ from validate import Validate
 from result_utils import CSVWriter
 from write_results import WriteResults
 from auth import initialize_authentication
-from config import load_env_file, load_endpoints, load_prompts, ensure_database
+from config import (
+    load_env_file,
+    load_endpoints,
+    load_prompts,
+    ensure_database,
+    get_processing_config,
+)
 from config import ProcessingConfig, DocumentProcessingContext
 
 # Load environment variables
@@ -234,13 +240,22 @@ if __name__ == "__main__":
     DOCUMENT_FOLDER = "./example_documents"
     OUTPUT_DIRECTORY = "./output_results"
 
-    # Create a configuration object
-    config = ProcessingConfig(
-        validate_classification=False,
-        validate_extraction=True,
-        perform_classification=True,
-        perform_extraction=True,
-    )
+    # # Create a configuration object
+    # config = ProcessingConfig(
+    #     validate_classification=False,
+    #     validate_extraction=False,
+    #     perform_classification=True,
+    #     perform_extraction=True,
+    # )
+
+    # Initialize ProcessingConfig using Discovery's cache or prompts
+    config = get_processing_config(base_url=base_url, bearer_token=bearer_token)
+
+    print("Configuration loaded:")
+    print("Validate Classification:", config.validate_classification)
+    print("Validate Extraction:", config.validate_extraction)
+    print("Perform Classification:", config.perform_classification)
+    print("Perform Extraction:", config.perform_extraction)
 
     # Load context
     project_id, classifier, extractor_dict = load_endpoints(

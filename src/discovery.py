@@ -39,7 +39,7 @@ class Discovery:
         """Save the cache to a JSON file."""
         self._ensure_cache_directory()
         with open(CACHE_FILE, "w") as cache_file:
-            json.dump(cache_data, cache_file)
+            json.dump(cache_data, cache_file, indent=4)
 
     def _load_cache_from_file(self):
         """Load the cache from a JSON file or return an empty dict if it doesn't exist."""
@@ -50,23 +50,21 @@ class Discovery:
 
     def _get_cached_boolean(self, cache_key, question_text):
         """Retrieve a cached boolean value or prompt the user if not in cache."""
-        # Check if the value is already in cache
         if cache_key in self.document_cache:
             cached_value = self.document_cache[cache_key]
-            # Ask the user if they want to use the cached value
             use_cached = questionary.confirm(
                 f"Use cached value for {question_text} ({cached_value})?"
             ).ask()
+
             if use_cached:
                 return cached_value
             else:
-                # Automatically switch to the opposite value
+                # Automatically switch to the opposite value and save it
                 new_value = not cached_value
-                # Update the cache with the new value
                 self.document_cache[cache_key] = new_value
                 return new_value
 
-        # If no cached value exists, prompt the user and update the cache
+        # Prompt the user for a new value if not in cache and update cache
         new_value = questionary.confirm(question_text).ask()
         self.document_cache[cache_key] = new_value
         return new_value
