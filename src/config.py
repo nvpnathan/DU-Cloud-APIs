@@ -1,7 +1,6 @@
 import os
 import json
 import sqlite3
-from discovery import Discovery
 
 # Cache configuration
 CACHE_DIR = "cache"
@@ -31,20 +30,18 @@ class DocumentProcessingContext:
         self.extractor_dict = extractor_dict
 
 
-# Function to select your Classifier and/or Extractor(s)
-def load_env_file(filepath="../.env"):
+def load_env_file(filepath=".env"):
+    """Load environment variables from a .env file."""
     if os.path.isfile(filepath):
         with open(filepath) as f:
             for line in f:
-                # Ignore empty lines and comments
                 if line.strip() and not line.startswith("#"):
                     key, value = line.strip().split("=", 1)
                     os.environ[key] = value.strip('"').strip("'")
 
 
-# Function to select your Classifier and/or Extractor(s)
-def load_endpoints(load_classifier, load_extractor, base_url, bearer_token):
-    discovery_client = Discovery(base_url, bearer_token)
+def load_endpoints(discovery_client, load_classifier, load_extractor):
+    """Load project and optional classifier/extractor information."""
     project_id = discovery_client.get_projects()
 
     # Conditionally load classifiers and extractors based on flags
@@ -56,6 +53,17 @@ def load_endpoints(load_classifier, load_extractor, base_url, bearer_token):
     )
 
     return project_id, classifier, extractor_dict
+
+
+def get_processing_config(discovery_client):
+    """Retrieve configuration with boolean flags managed by Discovery."""
+    # Initialize ProcessingConfig with values retrieved by Discovery
+    return ProcessingConfig(
+        validate_classification=discovery_client.validate_classification,
+        validate_extraction=discovery_client.validate_extraction,
+        perform_classification=discovery_client.perform_classification,
+        perform_extraction=discovery_client.perform_extraction,
+    )
 
 
 # Function to load prompts from a JSON file based on the document type ID
@@ -89,13 +97,19 @@ def ensure_database():
                 stage TEXT NOT NULL,
                 timestamp REAL NOT NULL,
                 document_type_id TEXT,
-                classify_operation_id TEXT,
-                extract_operation_id TEXT,
-                digitize_duration REAL,
+                digitization_operation_id TEXT,
+                classification_operation_id TEXT,
+                classification_validation_operation_id TEXT,
+                extraction_operation_id TEXT,
+                extraction_validation_operation_id TEXT,
+                digitization_duration REAL,
                 classification_duration REAL,
-                extract_duration REAL,
+                classification_validation_duration REAL,
+                extraction_duration REAL,
+                extraction_validation_duration REAL,
                 error_code TEXT,
                 error_message TEXT
+                timestamp TEXT DEFAULT CURRENT_TIMESTAMP
             )
         """)
 
@@ -117,18 +131,25 @@ def ensure_database():
         # Create extraction table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS extraction (
-                "id INTEGER PRIMARY KEY AUTOINCREMENT",
-                "DocumentId TEXT",
-                "FieldId TEXT",
-                "Field TEXT",
-                "IsMissing BOOLEAN",
-                "Value TEXT",
-                "UnformattedValue TEXT",
-                "Confidence REAL",
-                "OcrConfidence REAL",
-                "OperatorConfirmed BOOLEAN",
-                "Timestamp TEXT DEFAULT CURRENT_TIMESTAMP"
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                filename TEXT NOT NULL,
+                document_id TEXT NOT NULL,
+                document_type_id TEXT NOT NULL,
+                field_id TEXT,
+                field TEXT,
+                is_missing BOOLEAN,
+                field_value TEXT,
+                field_unformatted_value TEXT,
+                validated_field_value TEXT,
+                is_correct BOOLEAN,
+                confidence REAL,
+                ocr_confidence REAL,
+                operator_confirmed BOOLEAN,
+                row_index INTEGER,
+                column_index INTEGER,
+                timestamp TEXT DEFAULT CURRENT_TIMESTAMP
             )
+
         """)
         conn.commit()
         conn.close()

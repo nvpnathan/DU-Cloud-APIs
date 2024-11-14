@@ -2,6 +2,11 @@ import os
 import time
 import requests
 import threading
+from config import load_env_file
+from urllib.parse import urlparse
+
+# Load environment variables
+load_env_file()
 
 
 class Authentication:
@@ -74,10 +79,24 @@ def token_refresh_scheduler(auth_instance):
 
 # Function to initialize authentication and start the refresh thread
 def initialize_authentication():
+    # Retrieve environment variables
+    app_id = os.getenv("APP_ID")
+    app_secret = os.getenv("APP_SECRET")
+    auth_url = os.getenv("AUTH_URL")
+
+    # Validate APP_ID and APP_SECRET are not None
+    if not app_id or not app_secret:
+        raise ValueError(
+            "APP_ID and APP_SECRET must not be None. Please set these environment variables."
+        )
+
+    # Validate AUTH_URL
+    parsed_url = urlparse(auth_url)
+    if not (parsed_url.scheme and parsed_url.netloc):
+        raise ValueError("AUTH_URL is not a valid URL. Please provide a valid URL.")
+
     # Initialize Authentication
-    auth = Authentication(
-        os.getenv("APP_ID"), os.getenv("APP_SECRET"), os.getenv("AUTH_URL")
-    )
+    auth = Authentication(app_id, app_secret, auth_url)
 
     # Create a daemon thread for token refresh
     refresh_thread = threading.Thread(target=token_refresh_scheduler, args=(auth,))

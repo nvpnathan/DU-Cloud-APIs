@@ -1,12 +1,19 @@
 import os
 import concurrent.futures
+from discovery import Discovery
 from digitize import Digitize
 from classify import Classify
 from extract import Extract
 from validate import Validate
-from result_utils import CSVWriter
+from write_results import WriteResults
 from auth import initialize_authentication
-from config import load_env_file, load_endpoints, load_prompts, ensure_database
+from config import (
+    load_env_file,
+    load_endpoints,
+    load_prompts,
+    ensure_database,
+    get_processing_config,
+)
 from config import ProcessingConfig, DocumentProcessingContext
 
 # Load environment variables
@@ -16,7 +23,7 @@ base_url = os.getenv("BASE_URL")
 # Initialize Authentication
 auth = initialize_authentication()
 bearer_token = auth.bearer_token
-
+discovery_client = Discovery(base_url, bearer_token)
 ensure_database()
 
 
@@ -35,7 +42,6 @@ def initialize_clients(
 # Function to handle document processing
 def process_document(
     document_path: str,
-    output_directory: str,
     config: ProcessingConfig,
     context: DocumentProcessingContext,
 ) -> None:
@@ -58,7 +64,6 @@ def process_document(
                 perform_extraction(
                     document_id,
                     document_path,
-                    output_directory,
                     extractor_id,
                     extractor_name,
                     config,
@@ -93,25 +98,14 @@ def classify_document(
         config.validate_classification,
     )
     if config.validate_classification:
-        validate_classification(
-            document_id, document_type_id, classification_prompts, context
+        document_type_id = validate_client.validate_classification_results(
+            document_id,
+            context.classifier,
+            document_type_id,
+            classification_prompts,
         )
 
     return document_type_id
-
-
-def validate_classification(
-    document_id: str,
-    document_type_id: str,
-    classification_prompts: dict,
-    context: DocumentProcessingContext,
-) -> None:
-    validate_client.validate_classification_results(
-        document_id,
-        context.classifier,
-        document_type_id,
-        classification_prompts,
-    )
 
 
 # 3. Extractor handling function
@@ -154,7 +148,6 @@ def print_extractor_log(
 def perform_extraction(
     document_id: str,
     document_path: str,
-    output_directory: str,
     extractor_id: str,
     extractor_name: str,
     config: ProcessingConfig,
@@ -167,37 +160,36 @@ def perform_extraction(
     )
 
     if not config.validate_extraction:
-        write_extraction_to_csv(extraction_results, document_path, output_directory)
+        write_extraction_results(extraction_results, document_path)
     else:
         validated_results = validate_client.validate_extraction_results(
             extractor_id, document_id, extraction_results, extraction_prompts
         )
         if validated_results:
-            write_validated_results_to_csv(
-                validated_results, extraction_results, document_path, output_directory
+            write_validated_results(
+                validated_results, extraction_results, document_path
             )
 
 
-def write_extraction_to_csv(extraction_results, document_path, output_directory):
-    CSVWriter.write_extraction_results_to_csv(
-        extraction_results, document_path, output_directory
+def write_extraction_results(extraction_results, document_path):
+    write_results = WriteResults(
+        document_path=document_path, extraction_results=extraction_results
     )
-    CSVWriter.pprint_csv_results(document_path, output_directory)
+    write_results.write_results()
 
 
-def write_validated_results_to_csv(
-    validated_results, extraction_results, document_path, output_directory
-):
-    CSVWriter.write_validated_results_to_csv(
-        validated_results, extraction_results, document_path, output_directory
+def write_validated_results(validated_results, extraction_results, document_path):
+    write_results = WriteResults(
+        document_path=document_path,
+        extraction_results=extraction_results,
+        validation_extraction_results=validated_results,
     )
-    CSVWriter.pprint_csv_results(document_path, output_directory)
+    write_results.write_results()
 
 
 # Main function to process documents in the folder
 def process_documents_in_folder(
     folder_path: str,
-    output_directory: str,
     config: ProcessingConfig,
     context: DocumentProcessingContext,
 ) -> None:
@@ -215,7 +207,6 @@ def process_documents_in_folder(
                     executor.submit(
                         process_document,
                         document_path,
-                        output_directory,
                         config,
                         context,
                     )
@@ -231,22 +222,21 @@ def process_documents_in_folder(
 
 if __name__ == "__main__":
     DOCUMENT_FOLDER = "./example_documents"
-    OUTPUT_DIRECTORY = "./output_results"
 
-    # Create a configuration object
-    config = ProcessingConfig(
-        validate_classification=False,
-        validate_extraction=False,
-        perform_classification=False,
-        perform_extraction=True,
-    )
+    # Initialize ProcessingConfig using Discovery's cache or prompts
+    config = get_processing_config(discovery_client)
+
+    print("Configuration loaded:")
+    print("Validate Classification:", config.validate_classification)
+    print("Validate Extraction:", config.validate_extraction)
+    print("Perform Classification:", config.perform_classification)
+    print("Perform Extraction:", config.perform_extraction)
 
     # Load context
     project_id, classifier, extractor_dict = load_endpoints(
+        discovery_client=discovery_client,
         load_classifier=config.perform_classification,
         load_extractor=config.perform_extraction,
-        base_url=os.getenv("BASE_URL"),
-        bearer_token=bearer_token,
     )
     context = DocumentProcessingContext(project_id, classifier, extractor_dict)
     # Initialize clients using the context
@@ -255,4 +245,4 @@ if __name__ == "__main__":
     )
 
     # Process documents
-    process_documents_in_folder(DOCUMENT_FOLDER, OUTPUT_DIRECTORY, config, context)
+    process_documents_in_folder(DOCUMENT_FOLDER, config, context)

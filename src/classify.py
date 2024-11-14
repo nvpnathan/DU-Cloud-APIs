@@ -2,6 +2,7 @@ import time
 import sqlite3
 import requests
 from config import SQLITE_DB_PATH
+from api_utils import submit_async_request
 
 
 class Classify:
@@ -10,27 +11,13 @@ class Classify:
         self.project_id = project_id
         self.bearer_token = bearer_token
 
-    def _get_document_from_db(self, document_id):
-        """Retrieve the document data from the database by document_id."""
-        conn = sqlite3.connect(SQLITE_DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT * FROM documents WHERE document_id = ?
-        """,
-            (document_id,),
-        )
-        result = cursor.fetchone()
-        conn.close()
-        return result
-
     def _update_document_stage(
         self,
         document_id: str,
         document_type_id: str,
         classification_duration: float,
-        new_stage: str,
         operation_id: str,
+        new_stage: str,
     ) -> None:
         """Update the document stage in the SQLite database."""
         conn = sqlite3.connect(SQLITE_DB_PATH)
@@ -40,7 +27,7 @@ class Classify:
         cursor.execute(
             """
             UPDATE documents
-            SET stage = ?, document_type_id = ?, classify_operation_id = ?,
+            SET stage = ?, document_type_id = ?, classification_operation_id = ?,
             classification_duration = ?, timestamp = ?
             WHERE document_id = ?
         """,
@@ -61,7 +48,6 @@ class Classify:
         self,
         classification_results: dict,
         filename: str,
-        classification_duration: float,
         operation_id: str,
     ):
         try:
@@ -74,7 +60,7 @@ class Classify:
             classifier_name = None
 
             # Parse classification results to find the document type, confidence, start_page, and page_count
-            for result in classification_results["result"]["classificationResults"]:
+            for result in classification_results["classificationResults"]:
                 document_id = result["DocumentId"]
                 document_type_id = result["DocumentTypeId"]
                 classification_confidence = result["Confidence"]
@@ -92,13 +78,6 @@ class Classify:
                     page_count,
                     classifier_name,
                     operation_id,
-                )
-                self._update_document_stage(
-                    document_id,
-                    document_type_id,
-                    classification_duration,
-                    new_stage="classified",
-                    operation_id=operation_id,
                 )
         except ValueError as ve:
             print(f"Error parsing JSON response: {ve}")
@@ -122,7 +101,7 @@ class Classify:
         # Insert classification results into the 'classifications' table
         cursor.execute(
             """
-            INSERT INTO classifications (document_id, filename, document_type_id, classification_confidence,
+            INSERT INTO classification (document_id, filename, document_type_id, classification_confidence,
                                          start_page, page_count, classifier_name, operation_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
@@ -154,8 +133,8 @@ class Classify:
             document_id,
             document_type_id=None,
             classification_duration=None,
-            new_stage="classify_init",
             operation_id=None,
+            new_stage="classify_init",
         )
         # Define the API endpoint for document classification
         api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier}/classification/start?api-version=1"
@@ -170,7 +149,6 @@ class Classify:
         data = {"documentId": f"{document_id}", **(classification_prompts or {})}
 
         try:
-            classification_start_time = time.time()
             response = requests.post(api_url, json=data, headers=headers, timeout=60)
             response.raise_for_status()  # Raise an exception for HTTP errors
 
@@ -182,27 +160,26 @@ class Classify:
 
                 # Wait until classification request is completed
                 if operation_id:
-                    classification_results = self.submit_classification_request(
-                        classifier, operation_id
+                    classification_results = submit_async_request(
+                        action="classification",
+                        base_url=self.base_url,
+                        project_id=self.project_id,
+                        module_url=f"classifiers/{classifier}/classification",
+                        operation_id=operation_id,
+                        document_id=document_id,
+                        bearer_token=self.bearer_token,
                     )
 
                     if validate_classification:
-                        return classification_results["result"]
+                        return classification_results
 
-                    classification_end_time = time.time()
-                    classification_duration = (
-                        classification_end_time - classification_start_time
-                    )
                     self._parse_classification_results(
-                        classification_results,
-                        document_path,
-                        classification_duration,
-                        operation_id,
+                        classification_results, document_path, operation_id
                     )
 
-                    document_type_id = classification_results["result"][
-                        "classificationResults"
-                    ][0]["DocumentTypeId"]
+                    document_type_id = classification_results["classificationResults"][
+                        0
+                    ]["DocumentTypeId"]
                     print(f"Classification: {document_type_id}\n")
 
                     return document_type_id
@@ -216,48 +193,3 @@ class Classify:
         except Exception as ex:
             print(f"An error occurred during classification: {ex}")
             # Handle any other unexpected errors
-
-    def submit_classification_request(self, classifier, operation_id):
-        # Define the API endpoint for validation
-        api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier}/classification/result/{operation_id}?api-version=1.0"
-
-        # Define the headers with the Bearer token and content type
-        headers = {
-            "accept": "application/json",
-            "Authorization": f"Bearer {self.bearer_token}",
-        }
-
-        try:
-            while True:
-                response = requests.get(api_url, headers=headers, timeout=60)
-                response.raise_for_status()  # Raise an exception for HTTP errors
-
-                response_data = response.json()
-
-                if response_data["status"] == "Succeeded":
-                    classification_results = response_data
-                    return classification_results
-
-                elif response_data["status"] == "NotStarted":
-                    print("Document Classification not started...")
-                elif response_data["status"] == "Running":
-                    time.sleep(1)
-                    print("Document Classification running...")
-                else:
-                    print(
-                        f"Document Classification failed. OperationID: {operation_id}"
-                    )
-                    print(response_data)
-                    # Handle the failure condition as required
-                    break
-
-        except requests.exceptions.RequestException as e:
-            print(f"Error submitting classification request: {e}")
-            # Handle network-related errors
-        except KeyError as ke:
-            print(f"KeyError: {ke}")
-            # Handle missing keys in the response JSON
-        except Exception as ex:
-            print(f"An error occurred during classification: {ex}")
-            # Handle any other unexpected errors
-            return None

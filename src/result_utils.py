@@ -121,7 +121,6 @@ class CSVWriter:
             # Initialize csv.DictWriter with dynamic fieldnames
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
-
             # Write regular fields to the CSV
             for field in extraction_results["extractionResult"]["ResultsDocument"][
                 "Fields"
