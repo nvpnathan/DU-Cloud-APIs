@@ -13,6 +13,23 @@ class Discovery:
         self.bearer_token = bearer_token
         self.document_cache = self._load_cache_from_file()
 
+        # Retrieve boolean values from cache or prompt the user
+        self.validate_classification = self._get_cached_boolean(
+            "validate_classification", "Validate classification?"
+        )
+        self.validate_extraction = self._get_cached_boolean(
+            "validate_extraction", "Validate extraction?"
+        )
+        self.perform_classification = self._get_cached_boolean(
+            "perform_classification", "Perform classification?"
+        )
+        self.perform_extraction = self._get_cached_boolean(
+            "perform_extraction", "Perform extraction?"
+        )
+
+        # Save updated cache values
+        self._save_cache_to_file(self.document_cache)
+
     def _ensure_cache_directory(self):
         """Ensure the cache directory exists."""
         if not os.path.exists(CACHE_DIR):
@@ -30,6 +47,29 @@ class Discovery:
             with open(CACHE_FILE, "r") as cache_file:
                 return json.load(cache_file)
         return {}
+
+    def _get_cached_boolean(self, cache_key, question_text):
+        """Retrieve a cached boolean value or prompt the user if not in cache."""
+        # Check if the value is already in cache
+        if cache_key in self.document_cache:
+            cached_value = self.document_cache[cache_key]
+            # Ask the user if they want to use the cached value
+            use_cached = questionary.confirm(
+                f"Use cached value for {question_text} ({cached_value})?"
+            ).ask()
+            if use_cached:
+                return cached_value
+            else:
+                # Automatically switch to the opposite value
+                new_value = not cached_value
+                # Update the cache with the new value
+                self.document_cache[cache_key] = new_value
+                return new_value
+
+        # If no cached value exists, prompt the user and update the cache
+        new_value = questionary.confirm(question_text).ask()
+        self.document_cache[cache_key] = new_value
+        return new_value
 
     def get_projects(self):
         cache = {}

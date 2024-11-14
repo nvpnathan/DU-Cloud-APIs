@@ -5,6 +5,7 @@ from classify import Classify
 from extract import Extract
 from validate import Validate
 from result_utils import CSVWriter
+from write_results import WriteResults
 from auth import initialize_authentication
 from config import load_env_file, load_endpoints, load_prompts, ensure_database
 from config import ProcessingConfig, DocumentProcessingContext
@@ -93,25 +94,14 @@ def classify_document(
         config.validate_classification,
     )
     if config.validate_classification:
-        validate_classification(
-            document_id, document_type_id, classification_prompts, context
+        document_type_id = validate_client.validate_classification_results(
+            document_id,
+            context.classifier,
+            document_type_id,
+            classification_prompts,
         )
 
     return document_type_id
-
-
-def validate_classification(
-    document_id: str,
-    document_type_id: str,
-    classification_prompts: dict,
-    context: DocumentProcessingContext,
-) -> None:
-    validate_client.validate_classification_results(
-        document_id,
-        context.classifier,
-        document_type_id,
-        classification_prompts,
-    )
 
 
 # 3. Extractor handling function
@@ -179,19 +169,30 @@ def perform_extraction(
 
 
 def write_extraction_to_csv(extraction_results, document_path, output_directory):
-    CSVWriter.write_extraction_results_to_csv(
-        extraction_results, document_path, output_directory
+    # CSVWriter.write_extraction_results_to_csv(
+    #     extraction_results, document_path, output_directory
+    # )
+    write_results = WriteResults(
+        document_path=document_path, extraction_results=extraction_results
     )
+    write_results.write_results()
     CSVWriter.pprint_csv_results(document_path, output_directory)
 
 
 def write_validated_results_to_csv(
     validated_results, extraction_results, document_path, output_directory
 ):
-    CSVWriter.write_validated_results_to_csv(
-        validated_results, extraction_results, document_path, output_directory
+    # CSVWriter.write_validated_results_to_csv(
+    #     validated_results, extraction_results, document_path, output_directory
+    # )
+    # CSVWriter.pprint_csv_results(document_path, output_directory)
+
+    write_results = WriteResults(
+        document_path=document_path,
+        extraction_results=extraction_results,
+        validation_extraction_results=validated_results,
     )
-    CSVWriter.pprint_csv_results(document_path, output_directory)
+    write_results.write_results()
 
 
 # Main function to process documents in the folder
@@ -236,8 +237,8 @@ if __name__ == "__main__":
     # Create a configuration object
     config = ProcessingConfig(
         validate_classification=False,
-        validate_extraction=False,
-        perform_classification=False,
+        validate_extraction=True,
+        perform_classification=True,
         perform_extraction=True,
     )
 

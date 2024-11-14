@@ -32,7 +32,7 @@ class DocumentProcessingContext:
 
 
 # Function to select your Classifier and/or Extractor(s)
-def load_env_file(filepath="../.env"):
+def load_env_file(filepath=".env"):
     if os.path.isfile(filepath):
         with open(filepath) as f:
             for line in f:
@@ -89,13 +89,15 @@ def ensure_database():
                 stage TEXT NOT NULL,
                 timestamp REAL NOT NULL,
                 document_type_id TEXT,
-                classify_operation_id TEXT,
-                extract_operation_id TEXT,
-                digitize_duration REAL,
+                digitization_operation_id TEXT,
+                classification_operation_id TEXT,
+                extraction_operation_id TEXT,
+                digitization_duration REAL,
                 classification_duration REAL,
-                extract_duration REAL,
+                extraction_duration REAL,
                 error_code TEXT,
                 error_message TEXT
+                timestamp TEXT DEFAULT CURRENT_TIMESTAMP
             )
         """)
 
@@ -117,18 +119,23 @@ def ensure_database():
         # Create extraction table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS extraction (
-                "id INTEGER PRIMARY KEY AUTOINCREMENT",
-                "DocumentId TEXT",
-                "FieldId TEXT",
-                "Field TEXT",
-                "IsMissing BOOLEAN",
-                "Value TEXT",
-                "UnformattedValue TEXT",
-                "Confidence REAL",
-                "OcrConfidence REAL",
-                "OperatorConfirmed BOOLEAN",
-                "Timestamp TEXT DEFAULT CURRENT_TIMESTAMP"
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                filename TEXT NOT NULL,
+                document_id TEXT NOT NULL,
+                document_type_id TEXT NOT NULL,
+                field_id TEXT,
+                field TEXT,
+                is_missing BOOLEAN,
+                field_value TEXT,
+                field_unformatted_value TEXT,
+                validated_field_value TEXT,
+                is_correct BOOLEAN,
+                confidence REAL,
+                ocr_confidence REAL,
+                operator_confirmed BOOLEAN,
+                timestamp TEXT DEFAULT CURRENT_TIMESTAMP
             )
+
         """)
         conn.commit()
         conn.close()
