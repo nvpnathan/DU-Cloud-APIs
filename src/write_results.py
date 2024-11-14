@@ -88,6 +88,7 @@ class WriteResults:
 
                 for value in table["Values"]:
                     for cell in value["Cells"]:
+                        # Skip header row
                         if cell["RowIndex"] != 0 and not cell["IsHeader"]:
                             cell_values = cell.get("Values", [{}])
                             first_value = cell_values[0] if cell_values else {}
@@ -111,7 +112,13 @@ class WriteResults:
                                 "is_correct": (
                                     first_value.get("DataSource") != "ManuallyChanged"
                                 ),
+                                "row_index": cell["RowIndex"],  # Adding RowIndex
+                                "column_index": cell[
+                                    "ColumnIndex"
+                                ],  # Adding ColumnIndex
                             }
+
+                            # Insert each cell's data into the database
                             columns = ", ".join(row_data.keys())
                             placeholders = ", ".join(["?"] * len(row_data))
                             sql = f"INSERT INTO 'extraction' ({columns}) VALUES ({placeholders})"
@@ -185,12 +192,8 @@ class WriteResults:
 
                             # Get validated_field_value and other relevant data
                             validated_field_value = first_value.get("Value", None)
-                            operator_confirmed = first_value.get("OperatorConfirmed")
-                            is_correct = (
-                                first_value.get("DataSource") != "ManuallyChanged"
-                                if "DataSource" in first_value
-                                else True
-                            )
+                            operator_confirmed = cell.get("OperatorConfirmed")
+                            is_correct = cell.get("DataSource") != "ManuallyChanged"
 
                             # Map to the appropriate database field name for the cell's column
                             field_name = headers.get(cell["ColumnIndex"])
@@ -204,7 +207,7 @@ class WriteResults:
                             sql = """
                                 UPDATE extraction
                                 SET validated_field_value = ?, operator_confirmed = ?, is_correct = ?
-                                WHERE document_id = ? AND field_id = ? AND field = ?
+                                WHERE document_id = ? AND field_id = ? AND field = ? AND row_index = ? AND column_index = ?
                             """
                             # Execute the update with the prepared data
                             self.cursor.execute(
@@ -216,6 +219,8 @@ class WriteResults:
                                     document_id,
                                     field_id,
                                     field_name,
+                                    cell["RowIndex"],  # Unique row index
+                                    cell["ColumnIndex"],  # Unique column index
                                 ),
                             )
 

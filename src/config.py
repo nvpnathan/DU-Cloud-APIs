@@ -1,7 +1,6 @@
 import os
 import json
 import sqlite3
-from discovery import Discovery
 
 # Cache configuration
 CACHE_DIR = "cache"
@@ -41,9 +40,8 @@ def load_env_file(filepath=".env"):
                     os.environ[key] = value.strip('"').strip("'")
 
 
-def load_endpoints(load_classifier, load_extractor, base_url, bearer_token):
+def load_endpoints(discovery_client, load_classifier, load_extractor):
     """Load project and optional classifier/extractor information."""
-    discovery_client = Discovery(base_url, bearer_token)
     project_id = discovery_client.get_projects()
 
     # Conditionally load classifiers and extractors based on flags
@@ -57,16 +55,14 @@ def load_endpoints(load_classifier, load_extractor, base_url, bearer_token):
     return project_id, classifier, extractor_dict
 
 
-def get_processing_config(base_url, bearer_token):
+def get_processing_config(discovery_client):
     """Retrieve configuration with boolean flags managed by Discovery."""
-    discovery = Discovery(base_url, bearer_token)
-
     # Initialize ProcessingConfig with values retrieved by Discovery
     return ProcessingConfig(
-        validate_classification=discovery.validate_classification,
-        validate_extraction=discovery.validate_extraction,
-        perform_classification=discovery.perform_classification,
-        perform_extraction=discovery.perform_extraction,
+        validate_classification=discovery_client.validate_classification,
+        validate_extraction=discovery_client.validate_extraction,
+        perform_classification=discovery_client.perform_classification,
+        perform_extraction=discovery_client.perform_extraction,
     )
 
 
@@ -108,7 +104,9 @@ def ensure_database():
                 validation_classification_operation_id TEXT,
                 digitization_duration REAL,
                 classification_duration REAL,
+                classification_validation_duration REAL,
                 extraction_duration REAL,
+                extraction_validation_duration REAL,
                 error_code TEXT,
                 error_message TEXT
                 timestamp TEXT DEFAULT CURRENT_TIMESTAMP
@@ -147,6 +145,8 @@ def ensure_database():
                 confidence REAL,
                 ocr_confidence REAL,
                 operator_confirmed BOOLEAN,
+                row_index INTEGER,
+                column_index INTEGER,
                 timestamp TEXT DEFAULT CURRENT_TIMESTAMP
             )
 

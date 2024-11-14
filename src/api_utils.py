@@ -1,6 +1,7 @@
 import time
 import sqlite3
 import requests
+from datetime import datetime
 from config import SQLITE_DB_PATH
 
 
@@ -136,9 +137,9 @@ def submit_validation_request(
     :param extractor_id: Extractor ID (required for extraction validation)
     :return: The result data if successful, otherwise None
     """
-    if action == "classification":
+    if action.startswith == "classification":
         api_url = f"{base_url}{project_id}/classifiers/ml-classification/validation/result/{operation_id}?api-version=1"
-    elif action == "extraction" and extractor_id:
+    elif action.startswith == "extraction" and extractor_id:
         api_url = f"{base_url}{project_id}/extractors/{extractor_id}/validation/result/{operation_id}?api-version=1"
     else:
         print("Invalid action or missing extractor ID for extraction.")
@@ -186,6 +187,41 @@ def submit_validation_request(
                         )
                     elif action_data_status == "Completed":
                         print(f"Validate Document {action.capitalize()} is completed.")
+                        # Extract document ID based on action type
+                        document_key = (
+                            "validatedExtractionResults"
+                            if action == "extraction_validation"
+                            else "validatedClassificationResults"
+                        )
+                        document_id = response_data["result"][document_key][
+                            "documentId"
+                        ]
+
+                        # Parse start and end times
+                        start_time_str = response_data["result"]["actionData"][
+                            "lastAssignedTime"
+                        ]
+                        end_time_str = response_data["result"]["actionData"][
+                            "completionTime"
+                        ]
+                        start_time = datetime.fromisoformat(
+                            start_time_str.replace("Z", "+00:00")
+                        )
+                        end_time = datetime.fromisoformat(
+                            end_time_str.replace("Z", "+00:00")
+                        )
+
+                        # Calculate duration
+                        duration = end_time - start_time
+                        _update_document_stage(
+                            document_id=document_id,
+                            action=action,
+                            new_stage=action,
+                            duration=duration,
+                            operation_id=operation_id,
+                            error_code=None,
+                            error_message=None,
+                        )
                         return response_data
                     else:
                         print("Unknown validation action status.")

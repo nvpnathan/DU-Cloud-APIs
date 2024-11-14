@@ -1,4 +1,6 @@
+import sqlite3
 import requests
+from config import SQLITE_DB_PATH
 from api_utils import submit_validation_request
 
 
@@ -7,6 +9,39 @@ class Validate:
         self.base_url = base_url
         self.project_id = project_id
         self.bearer_token = bearer_token
+
+    def _update_document_stage(
+        self,
+        action: str,
+        document_id: str,
+        new_stage: str,
+        operation_id: str,
+        error_code: str,
+        error_message: str,
+    ) -> None:
+        """Update the document stage in the SQLite database."""
+        with sqlite3.connect(SQLITE_DB_PATH) as conn:
+            cursor = conn.cursor()
+
+            # Define the column names dynamically based on the action
+            operation_id_column = f"{action}_operation_id"
+
+            cursor.execute(
+                f"""
+                UPDATE documents
+                SET stage = ?, {operation_id_column} = ?, error_code = ?, error_message = ?
+                WHERE document_id = ?
+                """,
+                (
+                    new_stage,
+                    operation_id,
+                    error_code,
+                    error_message,
+                    document_id,
+                ),
+            )
+
+            conn.commit()
 
     def validate_extraction_results(
         self,
@@ -51,8 +86,17 @@ class Validate:
 
                 # Wait until the validation operation is completed
                 if operation_id:
+                    self._update_document_stage(
+                        action="validation_extraction",
+                        document_id=document_id,
+                        new_stage="extraction-validation-submitted",
+                        operation_id=operation_id,
+                        error_code=None,
+                        error_message=None,
+                    )
+                    print("testing validation submit")
                     validation_result = submit_validation_request(
-                        action="extraction",
+                        action="extraction_validation",
                         bearer_token=self.bearer_token,
                         base_url=self.base_url,
                         project_id=self.project_id,
@@ -119,8 +163,16 @@ class Validate:
 
                 # Wait until the validation operation is completed
                 if operation_id:
+                    self._update_document_stage(
+                        action="validation_classification",
+                        document_id=document_id,
+                        new_stage="classification-validation-submitted",
+                        operation_id=operation_id,
+                        error_code=None,
+                        error_message=None,
+                    )
                     validation_result = submit_validation_request(
-                        action="classification",
+                        action="classification_validation",
                         bearer_token=self.bearer_token,
                         base_url=self.base_url,
                         project_id=self.project_id,

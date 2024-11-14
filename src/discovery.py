@@ -52,21 +52,16 @@ class Discovery:
         """Retrieve a cached boolean value or prompt the user if not in cache."""
         if cache_key in self.document_cache:
             cached_value = self.document_cache[cache_key]
-            use_cached = questionary.confirm(
-                f"Use cached value for {question_text} ({cached_value})?"
-            ).ask()
+            user_value = questionary.confirm(question_text, default=cached_value).ask()
 
-            if use_cached:
-                return cached_value
-            else:
-                # Automatically switch to the opposite value and save it
-                new_value = not cached_value
-                self.document_cache[cache_key] = new_value
-                return new_value
+            self.document_cache[cache_key] = user_value
+            self._save_cache_to_file(self.document_cache)  # Save to file
+            return user_value
 
         # Prompt the user for a new value if not in cache and update cache
         new_value = questionary.confirm(question_text).ask()
         self.document_cache[cache_key] = new_value
+        self._save_cache_to_file(self.document_cache)  # Save to file
         return new_value
 
     def get_projects(self):
