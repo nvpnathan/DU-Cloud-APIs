@@ -137,9 +137,9 @@ def submit_validation_request(
     :param extractor_id: Extractor ID (required for extraction validation)
     :return: The result data if successful, otherwise None
     """
-    if action.startswith == "classification":
+    if action.startswith("classification"):
         api_url = f"{base_url}{project_id}/classifiers/ml-classification/validation/result/{operation_id}?api-version=1"
-    elif action.startswith == "extraction" and extractor_id:
+    elif action.startswith("extraction") and extractor_id:
         api_url = f"{base_url}{project_id}/extractors/{extractor_id}/validation/result/{operation_id}?api-version=1"
     else:
         print("Invalid action or missing extractor ID for extraction.")
@@ -193,9 +193,14 @@ def submit_validation_request(
                             if action == "extraction_validation"
                             else "validatedClassificationResults"
                         )
-                        document_id = response_data["result"][document_key][
-                            "documentId"
-                        ]
+                        if action == "classification_validation":
+                            document_id = response_data["result"][document_key][0][
+                                "DocumentId"
+                            ]
+                        else:
+                            document_id = response_data["result"][document_key][
+                                "DocumentId"
+                            ]
 
                         # Parse start and end times
                         start_time_str = response_data["result"]["actionData"][
@@ -212,7 +217,7 @@ def submit_validation_request(
                         )
 
                         # Calculate duration
-                        duration = end_time - start_time
+                        duration = (end_time - start_time).total_seconds()
                         _update_document_stage(
                             document_id=document_id,
                             action=action,

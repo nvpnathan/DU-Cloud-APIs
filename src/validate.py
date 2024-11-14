@@ -87,7 +87,7 @@ class Validate:
                 # Wait until the validation operation is completed
                 if operation_id:
                     self._update_document_stage(
-                        action="validation_extraction",
+                        action="extraction_validation",
                         document_id=document_id,
                         new_stage="extraction-validation-submitted",
                         operation_id=operation_id,
@@ -164,7 +164,7 @@ class Validate:
                 # Wait until the validation operation is completed
                 if operation_id:
                     self._update_document_stage(
-                        action="validation_classification",
+                        action="classification_validation",
                         document_id=document_id,
                         new_stage="classification-validation-submitted",
                         operation_id=operation_id,
