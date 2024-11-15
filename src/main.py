@@ -16,6 +16,8 @@ from config import (
 )
 from config import ProcessingConfig, DocumentProcessingContext
 
+# Initialize/Verify DB
+ensure_database()
 # Load environment variables
 load_env_file()
 base_url = os.getenv("BASE_URL")
@@ -24,7 +26,6 @@ base_url = os.getenv("BASE_URL")
 auth = initialize_authentication()
 bearer_token = auth.bearer_token
 discovery_client = Discovery(base_url, bearer_token)
-ensure_database()
 
 
 # Function to initialize clients
