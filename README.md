@@ -169,6 +169,8 @@ These tables are created and managed in the [`ensure_database`](src/config.py) f
 
 &#9744; Write Tests for Discovery API
 
+&#9744; Perform validation outside of the workflow (optional)
+
 &#9744; Create CSV output files from sqlite results
 
 &#9744; Add unique batch_id for each run
