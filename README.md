@@ -86,14 +86,15 @@ The project structure is organized as follows:
 DU-Cloud-APIs/
 │
 ├── src/
-│   ├── main.py         # Main entry point for the application
-│   ├── auth.py         # Authentication module for obtaining bearer token
-│   ├── digitize.py     # Digitize module for initiating document digitization
-│   ├── classify.py     # Classify module for document classification
-│   ├── extract.py      # Extract module for document extraction
-│   ├── validate.py     # Validate module for document validation
-│   ├── config.py       # Configuration module for project variables
-│   └── result_utils.py # Utility module for printing and writing extraction results
+│   ├── main.py          # Main entry point for the application
+│   ├── auth.py          # Authentication module for obtaining bearer token
+│   ├── digitize.py      # Digitize module for initiating document digitization
+│   ├── classify.py      # Classify module for document classification
+│   ├── extract.py       # Extract module for document extraction
+│   ├── validate.py      # Validate module for document validation
+│   ├── api_utils.py     # Validate module for document validation
+│   ├── config.py        # Configuration module for project variables, sqlite db creation
+│   └── write_results.py # Utility module for and writing classification and extraction results to sqlite
 │
 ├── tests/
 │   ├── test_main.py     # Test for the main application entry point
@@ -109,12 +110,71 @@ DU-Cloud-APIs/
 └── output_results/      # Folder containing the CSV's of the Document Extraction Results
 ```
 
+## SQLite Usage
+
+This project uses SQLite to store and manage various document processing results. The database schema includes the following tables:
+
+1. **documents**: Stores metadata and processing stages for each document.
+    - `document_id`: Unique identifier for the document.
+    - `filename`: Name of the document file.
+    - `stage`: Current processing stage of the document.
+    - `timestamp`: Timestamp of the last update.
+    - `document_type_id`: Type of the document.
+    - `digitization_operation_id`: Operation ID for digitization.
+    - `classification_operation_id`: Operation ID for classification.
+    - `classification_validation_operation_id`: Operation ID for classification validation.
+    - `extraction_operation_id`: Operation ID for extraction.
+    - `extraction_validation_operation_id`: Operation ID for extraction validation.
+    - `digitization_duration`: Duration of the digitization process.
+    - `classification_duration`: Duration of the classification process.
+    - `classification_validation_duration`: Duration of the classification validation process.
+    - `extraction_duration`: Duration of the extraction process.
+    - `extraction_validation_duration`: Duration of the extraction validation process.
+    - `error_code`: Error code if any error occurred.
+    - `error_message`: Error message if any error occurred.
+
+2. **classification**: Stores classification results for each document.
+    - `id`: Auto-incremented primary key.
+    - `document_id`: Unique identifier for the document.
+    - `filename`: Name of the document file.
+    - `document_type_id`: Type of the document.
+    - `classification_confidence`: Confidence score of the classification.
+    - `start_page`: Starting page of the classified section.
+    - `page_count`: Number of pages in the classified section.
+    - `classifier_name`: Name of the classifier used.
+    - `operation_id`: Operation ID for the classification.
+
+3. **extraction**: Stores extraction results for each document.
+    - `id`: Auto-incremented primary key.
+    - `filename`: Name of the document file.
+    - `document_id`: Unique identifier for the document.
+    - `document_type_id`: Type of the document.
+    - `field_id`: Identifier for the field.
+    - `field`: Name of the field.
+    - `is_missing`: Boolean indicating if the field is missing.
+    - `field_value`: Extracted value of the field.
+    - `field_unformatted_value`: Unformatted extracted value of the field.
+    - `validated_field_value`: Validated value of the field.
+    - `is_correct`: Boolean indicating if the extracted value is correct.
+    - `confidence`: Confidence score of the extraction.
+    - `ocr_confidence`: OCR confidence score of the extraction.
+    - `operator_confirmed`: Boolean indicating if the value was confirmed by an operator.
+    - `row_index`: Row index for table fields.
+    - `column_index`: Column index for table fields.
+    - `timestamp`: Timestamp of the extraction.
+
+These tables are created and managed in the [`ensure_database`](src/config.py) function in [src/config.py](src/config.py).
+
 ## TODO
 
 &#9744; Write Tests for Discovery API
 
-&#9745; Write Output CSV for Classification
+&#9744; Create CSV output files from sqlite results
 
-&#9745; Add Ruff for linting
+&#9744; Add unique batch_id for each run
+
+&#9745; Moved Async requests to `api_utils.py`
+
+&#9745; Added sqlit tables (`documents`, `classification`, `extraction`) for all classification, extraction, and validation results
 
 &#9745; Write initial tests for core
