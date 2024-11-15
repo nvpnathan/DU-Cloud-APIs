@@ -321,107 +321,116 @@ class Discovery:
         try:
             # Get Extractors
             response = requests.get(api_url, headers=headers, timeout=300)
-            if response.status_code == 200:
-                # Try parsing the JSON response
-                try:
-                    data = response.json()
-                    # Prepare the list of extractors choices
-                    choices = []
-                    predefined_choice = "Generative Extractor: Available"
-                    predefined_key = "Generative Extractor"
-
-                    # Check if extractors are present
-                    if not data["extractors"]:
-                        print("No extractors found.")
-                        return None
-
-                    for extractor in data["extractors"]:
-                        status = extractor.get("status")
-                        choice = f"{extractor['name']}: {status}"
-                        if choice.startswith(predefined_key):
-                            predefined_choice = choice
-                        else:
-                            choices.append(choice)
-
-                    # Sort choices alphabetically
-                    choices.sort()
-
-                    # Ensure predefined choice is at the top
-                    if project_id == "00000000-0000-0000-0000-000000000000":
-                        choices.insert(0, predefined_choice)
-
-                    # Prompt the user to select one or more extractors
-                    selected_extractors = questionary.checkbox(
-                        "Please select one or more Extractors:", choices=choices
-                    ).ask()
-
-                    # Initialize an empty dictionary to store the documentTypeId and corresponding extractor ID
-                    extractor_dict = {}
-
-                    # Iterate over the selected extractors and gather their IDs and documentTypeIds
-                    for selected_extractor in selected_extractors:
-                        selected_extractor_name = selected_extractor.split(":")[0]
-                        # Find the matching extractor from the data
-                        extractor = next(
-                            extractor
-                            for extractor in data["extractors"]
-                            if extractor["name"] == selected_extractor_name
-                        )
-
-                        if extractor["id"] == "generative_extractor":
-                            gen_extractor_doc_types = questionary.confirm(
-                                "Would you like to add doc types for Generative Extraction?"
-                            ).ask()
-                            if gen_extractor_doc_types:
-                                if (
-                                    cache
-                                    and "classifier_id" in cache["project"]
-                                    and "doc_type_ids"
-                                    in cache["project"]["classifier_id"]
-                                ):
-                                    choices = cache["project"]["classifier_id"][
-                                        "doc_type_ids"
-                                    ]
-
-                                    selected_gen_ext_doc_types = questionary.checkbox(
-                                        "Please select Document Types for Generative Extraction:",
-                                        choices=choices,
-                                    ).ask()
-                                    if selected_gen_ext_doc_types:
-                                        extractor_dict[extractor["id"]] = {
-                                            "id": extractor["id"],
-                                            "name": extractor["name"],
-                                            "doc_type_ids": selected_gen_ext_doc_types,
-                                        }
-                                    else:
-                                        extractor_dict[extractor["id"]] = {
-                                            "id": extractor["id"],
-                                            "name": extractor["name"],
-                                            "doc_type_ids": choices,
-                                        }
-
-                            else:
-                                extractor_dict[extractor["id"]] = {
-                                    "id": extractor["id"],
-                                    "name": extractor["name"],
-                                    "doc_type_ids": ["default_doc"],
-                                }
-
-                        else:
-                            extractor_dict[extractor["id"]] = {
-                                "id": extractor["id"],
-                                "name": extractor["name"],
-                            }
-                    # Save to cache
-                    cache["project"]["extractor_ids"] = extractor_dict
-                    self._save_cache_to_file(cache)
-
-                    # Return the dictionary with documentTypeId as key and extractor ID as value
-                    return extractor_dict
-                except ValueError as ve:
-                    print(f"Error parsing JSON response: {ve}")
-            else:
+            if response.status_code != 200:
                 print(f"Error: {response.status_code} - {response.text}")
+                return None
+
+            # Try parsing the JSON response
+            try:
+                data = response.json()
+            except ValueError as ve:
+                print(f"Error parsing JSON response: {ve}")
+                return None
+
+            if not data.get("extractors"):
+                print("No extractors found.")
+                return None
+
+            choices, predefined_choice = prepare_extractor_choices(data["extractors"])
+
+            # Ensure predefined choice is at the top for specific project ID
+            if project_id == "00000000-0000-0000-0000-000000000000":
+                choices.insert(0, predefined_choice)
+
+            # Prompt the user to select one or more extractors
+            selected_extractors = questionary.checkbox(
+                "Please select one or more Extractors:", choices=choices
+            ).ask()
+
+            # Build the extractor dictionary based on user selections
+            extractor_dict = build_extractor_dict(
+                data["extractors"], selected_extractors, cache
+            )
+
+            # Save to cache and return
+            cache["project"]["extractor_ids"] = extractor_dict
+            self._save_cache_to_file(cache)
+            return extractor_dict
 
         except Exception as e:
             print(f"An error occurred during getting extractors: {e}")
+            return None
+
+
+def prepare_extractor_choices(extractors):
+    """Prepares the list of choices and handles the predefined choice."""
+    choices = []
+    predefined_choice = "Generative Extractor: Available"
+    predefined_key = "Generative Extractor"
+
+    for extractor in extractors:
+        status = extractor.get("status", "Unknown")
+        choice = f"{extractor['name']}: {status}"
+        if choice.startswith(predefined_key):
+            predefined_choice = choice
+        else:
+            choices.append(choice)
+
+    choices.sort()
+    return choices, predefined_choice
+
+
+def build_extractor_dict(extractors, selected_extractors, cache):
+    """Creates a dictionary of selected extractors with their document types."""
+    extractor_dict = {}
+    for selected_extractor in selected_extractors:
+        selected_extractor_name = selected_extractor.split(":")[0]
+
+        # Find the matching extractor from the data
+        extractor = next(
+            (ext for ext in extractors if ext["name"] == selected_extractor_name), None
+        )
+        if not extractor:
+            continue  # Skip if no matching extractor is found
+
+        # Handle generative extractor document types
+        if extractor["id"] == "generative_extractor":
+            handle_generative_extractor(extractor, cache, extractor_dict)
+        else:
+            extractor_dict[extractor["id"]] = {
+                "id": extractor["id"],
+                "name": extractor["name"],
+            }
+
+    return extractor_dict
+
+
+def handle_generative_extractor(extractor, cache, extractor_dict):
+    """Prompts the user for document types for the generative extractor."""
+    gen_extractor_doc_types = questionary.confirm(
+        "Would you like to add doc types for Generative Extraction?"
+    ).ask()
+
+    if gen_extractor_doc_types and cache:
+        doc_type_choices = (
+            cache.get("project", {}).get("classifier_id", {}).get("doc_type_ids", [])
+        )
+        selected_gen_ext_doc_types = (
+            questionary.checkbox(
+                "Please select Document Types for Generative Extraction:",
+                choices=doc_type_choices,
+            ).ask()
+            or doc_type_choices
+        )  # Use all choices if none selected
+        extractor_dict[extractor["id"]] = {
+            "id": extractor["id"],
+            "name": extractor["name"],
+            "doc_type_ids": selected_gen_ext_doc_types,
+        }
+    else:
+        # Use default document type if no selection is made
+        extractor_dict[extractor["id"]] = {
+            "id": extractor["id"],
+            "name": extractor["name"],
+            "doc_type_ids": ["default_doc"],
+        }
