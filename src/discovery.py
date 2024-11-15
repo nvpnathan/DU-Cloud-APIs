@@ -295,11 +295,16 @@ class Discovery:
                 cache = self._load_cache_from_file()
 
                 # Check if the cache contains the "extractor_ids" key and it has the required fields
-                if cache and "extractor_ids" in cache["project"]:
-                    use_cache = questionary.confirm("Use cached Extractor(s)?").ask()
+                if cache and "extractor_ids" in cache.get("project", {}):
+                    extractor_names = [
+                        extractor["name"]
+                        for extractor in cache["project"]["extractor_ids"].values()
+                    ]
+                    use_cache = questionary.confirm(
+                        f"Use cached Extractor(s):\n {',\n'.join(extractor_names)}?"
+                    ).ask()
                     if use_cache:
-                        extractor_dict = cache["project"]["extractor_ids"]
-                        return extractor_dict
+                        return cache["project"]["extractor_ids"]
                 else:
                     print("Cache file exists, but no valid extractor data found.")
                     # Handle case where the cache file exists but "classifier_id" key is missing or incomplete
