@@ -182,6 +182,12 @@ def earnings_business_rule(data):
             if rate * hours != this_period:
                 logger.warning(f"Row {row_index} failed rate check: {field_values}")
                 passed = False
+
+            # Check if earnings rate equals earnings this period
+            if rate == this_period:
+                logger.info(f"Row {row_index} rate maches period: {field_values}")
+                passed = True
+
         except ValueError as e:
             logger.error("Error processing row %f: %f", row_index, e)
             passed = False

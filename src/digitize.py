@@ -99,7 +99,7 @@ class Digitize:
     def _prepare_file(self, document_path: str):
         """Prepare the file for upload."""
         mime_type, _ = mimetypes.guess_type(document_path)
-        mime_type = mime_type or "application/octet-stream"
+        mime_type = mime_type or "multipart/form-data"
         return {
             "File": (
                 os.path.basename(document_path),
