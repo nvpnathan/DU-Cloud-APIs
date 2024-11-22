@@ -301,7 +301,7 @@ class Discovery:
                         for extractor in cache["project"]["extractor_ids"].values()
                     ]
                     use_cache = questionary.confirm(
-                        f"Use cached Extractor(s):\n {',\n'.join(extractor_names)}\n?"
+                        f"""Use cached Extractor(s):\n {',\n'.join(extractor_names)}\n?"""
                     ).ask()
                     if use_cache:
                         return cache["project"]["extractor_ids"]
