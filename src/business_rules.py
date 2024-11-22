@@ -171,7 +171,7 @@ def earnings_business_rule(data):
             f: fields[f].get("value") for f in required_fields if f in fields
         }
         if any(v is None for v in field_values.values()):
-            logger.warning("Row %f failed rate check: %f", row_index, field_values)
+            logger.warning(f"Row {row_index} failed rate check: {field_values}")
             passed = False
             continue
 
@@ -180,7 +180,7 @@ def earnings_business_rule(data):
             hours = float(field_values["Earnings hours"])
             this_period = float(field_values["Earnings this period"])
             if rate * hours != this_period:
-                logger.warning("Row %f failed rate check: %f", row_index, field_values)
+                logger.warning(f"Row {row_index} failed rate check: {field_values}")
                 passed = False
         except ValueError as e:
             logger.error("Error processing row %f: %f", row_index, e)
