@@ -204,7 +204,7 @@ def submit_validation_request(
 
                         # Parse start and end times
                         start_time_str = response_data["result"]["actionData"][
-                            "lastAssignedTime" ## Not valid if directly assigned!
+                            "lastAssignedTime"  ## Not valid if directly assigned!
                         ]
                         end_time_str = response_data["result"]["actionData"][
                             "completionTime"
