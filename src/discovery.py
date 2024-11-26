@@ -402,7 +402,7 @@ def build_extractor_dict(extractors, selected_extractors, cache):
         if extractor["id"] == "generative_extractor":
             handle_generative_extractor(extractor, cache, extractor_dict)
         else:
-            extractor_dict[extractor["id"]] = {
+            extractor_dict[extractor["documentTypeId"]] = {
                 "id": extractor["id"],
                 "name": extractor["name"],
             }
