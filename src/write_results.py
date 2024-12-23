@@ -1,4 +1,5 @@
 import os
+import csv
 import sqlite3
 from config import SQLITE_DB_PATH
 
@@ -232,6 +233,54 @@ class WriteResults:
         self.update_validated_field_data()
         self.update_validated_table_data()
 
+    def export_query_to_csv(self):
+        """
+        Exports the result of an SQLite query to a CSV file.
+        The CSV file is named after the 'filename' column in the query.
+
+        Raises:
+            ValueError: If the query doesn't return rows for the specified filename.
+        """
+        try:
+            query = """
+                SELECT filename, field_id, field, is_missing, field_value,
+                    field_unformatted_value, confidence, ocr_confidence
+                FROM extraction
+                WHERE filename = ?;
+            """
+
+            # Execute the query with self.filename as a parameter
+            self.cursor.execute(query, (self.filename,))
+            rows = self.cursor.fetchall()
+            column_names = [description[0] for description in self.cursor.description]
+
+            # Check if rows are returned
+            if not rows:
+                raise ValueError(f"No rows returned for filename '{self.filename}'.")
+
+            # Generate a CSV file name based on self.filename
+            csv_filename = os.path.basename(self.filename)  # Strip any path components
+            csv_filename = (
+                os.path.splitext(csv_filename)[0] + ".csv"
+            )  # Ensure a .csv extension
+
+            # Define the output path
+            output_dir = "output_results"
+            os.makedirs(output_dir, exist_ok=True)  # Ensure the directory exists
+            csv_filepath = os.path.join(output_dir, csv_filename)
+
+            # Write the query results to the CSV file
+            with open(csv_filepath, mode="w", newline="", encoding="utf-8") as csv_file:
+                writer = csv.writer(csv_file)
+                writer.writerow(column_names)  # Write the header
+                writer.writerows(rows)  # Write the data
+
+            print(f"Data exported to {csv_filepath}")
+        except sqlite3.Error as e:
+            print(f"SQLite error: {e}")
+        except ValueError as e:
+            print(f"ValueError: {e}")
+
     def write_results(self):
         try:
             # Write regular and validated results
@@ -240,6 +289,7 @@ class WriteResults:
             if self.validation_results:
                 self.write_validated_results()
 
+            self.export_query_to_csv()
             # Commit once after all data is written
             self.conn.commit()
 

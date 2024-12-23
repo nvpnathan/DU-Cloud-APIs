@@ -222,7 +222,7 @@ def process_documents_in_folder(
 
 
 if __name__ == "__main__":
-    DOCUMENT_FOLDER = "./example_documents"
+    DOCUMENT_FOLDER = "example_documents"
 
     # Initialize ProcessingConfig using Discovery's cache or prompts
     config = get_processing_config(discovery_client)

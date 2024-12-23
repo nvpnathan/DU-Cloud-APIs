@@ -94,7 +94,7 @@ class Validate:
                         error_code=None,
                         error_message=None,
                     )
-                    print("testing validation submit")
+
                     validation_result = submit_validation_request(
                         action="extraction_validation",
                         bearer_token=self.bearer_token,

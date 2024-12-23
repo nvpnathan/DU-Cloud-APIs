@@ -105,11 +105,7 @@ def submit_async_request(
                 error_code = response_data.get("error", {}).get("code")
                 error_message = response_data.get("error", {}).get("message")
                 _log_error(action, document_id, operation_id, error_code, error_message)
-                return {
-                    "status": "Failed",
-                    "error_code": error_code,
-                    "error_message": error_message,
-                }
+                raise RuntimeError(f"Operation {action} failed: {error_message} (Error Code: {error_code})")
 
     except requests.exceptions.RequestException as e:
         _log_error(action, document_id, operation_id, "NetworkError", str(e))

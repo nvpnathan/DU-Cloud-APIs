@@ -375,11 +375,12 @@ def prepare_extractor_choices(extractors):
 
     for extractor in extractors:
         status = extractor.get("status", "Unknown")
-        choice = f"{extractor['name']}: {status}"
-        if choice.startswith(predefined_key):
-            predefined_choice = choice
-        else:
-            choices.append(choice)
+        if status == "Available":
+            choice = f"{extractor['name']}: {status}"
+            if choice.startswith(predefined_key):
+                predefined_choice = choice
+            else:
+                choices.append(choice)
 
     choices.sort()
     return choices, predefined_choice
