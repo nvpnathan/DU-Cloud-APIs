@@ -51,7 +51,7 @@ class Validate:
         extraction_prompts: dict,
     ) -> dict | None:
         # Define the API endpoint for validation
-        api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/validation/start?api-version=1"
+        api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/validation/start?api-version=1.1"
 
         # Define the headers with the Bearer token and content type
         headers = {
@@ -123,7 +123,7 @@ class Validate:
         classificastion_prompts: dict,
     ) -> str | None:
         # Define the API endpoint for validation
-        api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier_id}/validation/start?api-version=1"
+        api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier_id}/validation/start?api-version=1.1"
 
         document_type_id = classification_results["classificationResults"][0][
             "DocumentTypeId"

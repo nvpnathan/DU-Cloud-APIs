@@ -143,7 +143,7 @@ class WriteResults:
             )
 
             # Determine is_correct based on the DataSource
-            if field.get("DataSource") == "ManuallyChanged":
+            if field.get("DataSource") in {"ManuallyChanged", "Manual"}:
                 is_correct = False
             else:
                 is_correct = True
@@ -194,7 +194,7 @@ class WriteResults:
                             # Get validated_field_value and other relevant data
                             validated_field_value = first_value.get("Value", None)
                             operator_confirmed = cell.get("OperatorConfirmed")
-                            is_correct = cell.get("DataSource") != "ManuallyChanged"
+                            is_correct = cell.get("DataSource") not in {"ManuallyChanged", "Manual"}
 
                             # Map to the appropriate database field name for the cell's column
                             field_name = headers.get(cell["ColumnIndex"])

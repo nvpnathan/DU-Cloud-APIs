@@ -66,7 +66,7 @@ def submit_async_request(
     bearer_token: str,
 ) -> dict:
     api_url = (
-        f"{base_url}{project_id}/{module_url}/result/{operation_id}?api-version=1.0"
+        f"{base_url}{project_id}/{module_url}/result/{operation_id}?api-version=1.1"
     )
     headers = {
         "accept": "application/json",
@@ -105,7 +105,9 @@ def submit_async_request(
                 error_code = response_data.get("error", {}).get("code")
                 error_message = response_data.get("error", {}).get("message")
                 _log_error(action, document_id, operation_id, error_code, error_message)
-                raise RuntimeError(f"Operation {action} failed: {error_message} (Error Code: {error_code})")
+                raise RuntimeError(
+                    f"Operation {action} failed: {error_message} (Error Code: {error_code})"
+                )
 
     except requests.exceptions.RequestException as e:
         _log_error(action, document_id, operation_id, "NetworkError", str(e))
@@ -134,9 +136,9 @@ def submit_validation_request(
     :return: The result data if successful, otherwise None
     """
     if action.startswith("classification"):
-        api_url = f"{base_url}{project_id}/classifiers/ml-classification/validation/result/{operation_id}?api-version=1"
+        api_url = f"{base_url}{project_id}/classifiers/ml-classification/validation/result/{operation_id}?api-version=1.1"
     elif action.startswith("extraction") and extractor_id:
-        api_url = f"{base_url}{project_id}/extractors/{extractor_id}/validation/result/{operation_id}?api-version=1"
+        api_url = f"{base_url}{project_id}/extractors/{extractor_id}/validation/result/{operation_id}?api-version=1.1"
     else:
         print("Invalid action or missing extractor ID for extraction.")
         return None

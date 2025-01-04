@@ -92,7 +92,7 @@ class Discovery:
             # Handle case where cache file does not exist
             # Proceed to fetch projects from the API
 
-        api_url = f"{self.base_url}?api-version=1"
+        api_url = f"{self.base_url}?api-version=1.1"
         headers = {
             "Authorization": f"Bearer {self.bearer_token}",
             "accept": "text/plain",
@@ -129,7 +129,10 @@ class Discovery:
 
                     # Prompt the user to select a project
                     selected_project = questionary.select(
-                        "Please select a Project:", choices=choices
+                        "Please select a Project:",
+                        choices=choices,
+                        use_jk_keys=False,
+                        use_search_filter=True,
                     ).ask()
 
                     # Prompt the user to select a project
@@ -198,7 +201,7 @@ class Discovery:
             # Handle case where cache file does not exist
             # Proceed to fetch projects from the API
 
-        api_url = f"{self.base_url}/{project_id}/classifiers?api-version=1"
+        api_url = f"{self.base_url}/{project_id}/classifiers?api-version=1.1"
         headers = {
             "Authorization": f"Bearer {self.bearer_token}",
             "accept": "text/plain",
@@ -214,32 +217,25 @@ class Discovery:
                     data = response.json()
                     # Prepare the list of classifiers choices
                     choices = []
-                    predefined_choice = "Generative Classifier: Available"
-                    predefined_key = "Generative Classifier"
-
                     # Check if classifiers are present
                     if not data["classifiers"]:
                         print("No classifiers found.")
                         return None
-
+                    print(data)
                     for classifier in data["classifiers"]:
                         status = classifier.get("status")
                         choice = f"{classifier['name']}: {status}"
-                        if choice.startswith(predefined_key):
-                            predefined_choice = choice
-                        else:
-                            choices.append(choice)
+                        choices.append(choice)
 
                     # Sort choices alphabetically
                     choices.sort()
 
-                    # Ensure predefined choice is at the top
-                    if project_id == "00000000-0000-0000-0000-000000000000":
-                        choices.insert(0, predefined_choice)
-
                     # Prompt the user to select a classifier
                     selected_classifier = questionary.select(
-                        "Please select a classifier:", choices=choices
+                        "Please select a classifier:",
+                        choices=choices,
+                        use_jk_keys=False,
+                        use_search_filter=True,
                     ).ask()
 
                     selected_classifier_name = selected_classifier.split(":")[0]
@@ -317,7 +313,7 @@ class Discovery:
             # Handle case where cache file does not exist
             # Proceed to fetch projects from the API
 
-        api_url = f"{self.base_url}/{project_id}/extractors?api-version=1"
+        api_url = f"{self.base_url}/{project_id}/extractors?api-version=1.1"
         headers = {
             "Authorization": f"Bearer {self.bearer_token}",
             "accept": "text/plain",
@@ -341,15 +337,14 @@ class Discovery:
                 print("No extractors found.")
                 return None
 
-            choices, predefined_choice = prepare_extractor_choices(data["extractors"])
-
-            # Ensure predefined choice is at the top for specific project ID
-            if project_id == "00000000-0000-0000-0000-000000000000":
-                choices.insert(0, predefined_choice)
+            choices = prepare_extractor_choices(data["extractors"])
 
             # Prompt the user to select one or more extractors
             selected_extractors = questionary.checkbox(
-                "Please select one or more Extractors:", choices=choices
+                "Please select one or more Extractors:",
+                choices=choices,
+                use_jk_keys=False,
+                use_search_filter=True,
             ).ask()
 
             # Build the extractor dictionary based on user selections
@@ -370,20 +365,15 @@ class Discovery:
 def prepare_extractor_choices(extractors):
     """Prepares the list of choices and handles the predefined choice."""
     choices = []
-    predefined_choice = "Generative Extractor: Available"
-    predefined_key = "Generative Extractor"
 
     for extractor in extractors:
         status = extractor.get("status", "Unknown")
         if status == "Available":
             choice = f"{extractor['name']}: {status}"
-            if choice.startswith(predefined_key):
-                predefined_choice = choice
-            else:
-                choices.append(choice)
+            choices.append(choice)
 
     choices.sort()
-    return choices, predefined_choice
+    return choices
 
 
 def build_extractor_dict(extractors, selected_extractors, cache):
@@ -400,7 +390,7 @@ def build_extractor_dict(extractors, selected_extractors, cache):
             continue  # Skip if no matching extractor is found
 
         # Handle generative extractor document types
-        if extractor["id"] == "generative_extractor":
+        if cache["project"]["id"] == "00000000-0000-0000-0000-000000000001":
             handle_generative_extractor(extractor, cache, extractor_dict)
         else:
             extractor_dict[extractor["documentTypeId"]] = {
@@ -414,7 +404,7 @@ def build_extractor_dict(extractors, selected_extractors, cache):
 def handle_generative_extractor(extractor, cache, extractor_dict):
     """Prompts the user for document types for the generative extractor."""
     gen_extractor_doc_types = questionary.confirm(
-        "Would you like to add doc types for Generative Extraction?"
+        f"Would you like to add doc types for {extractor["name"]}?"
     ).ask()
 
     if gen_extractor_doc_types and cache:

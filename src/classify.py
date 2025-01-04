@@ -137,7 +137,7 @@ class Classify:
             new_stage="classify_init",
         )
         # Define the API endpoint for document classification
-        api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier}/classification/start?api-version=1"
+        api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier}/classification/start?api-version=1.1"
 
         # Define the headers with the Bearer token and content type
         headers = {
