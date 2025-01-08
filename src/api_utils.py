@@ -25,14 +25,13 @@ def _update_document_stage(
         cursor.execute(
             f"""
             UPDATE documents
-            SET stage = ?, {operation_id_column} = ?, {duration_column} = ?, timestamp = ?, error_code = ?, error_message = ?
+            SET stage = ?, {operation_id_column} = ?, {duration_column} = ?, error_code = ?, error_message = ?
             WHERE document_id = ?
             """,
             (
                 new_stage,
                 operation_id,
                 duration,
-                time.time(),
                 error_code,
                 error_message,
                 document_id,

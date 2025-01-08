@@ -1,4 +1,3 @@
-import time
 import sqlite3
 import requests
 from config import SQLITE_DB_PATH
@@ -28,7 +27,7 @@ class Classify:
             """
             UPDATE documents
             SET stage = ?, document_type_id = ?, classification_operation_id = ?,
-            classification_duration = ?, timestamp = ?
+            classification_duration = ?
             WHERE document_id = ?
         """,
             (
@@ -36,7 +35,6 @@ class Classify:
                 document_type_id,
                 operation_id,
                 classification_duration,
-                time.time(),
                 document_id,
             ),
         )
