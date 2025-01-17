@@ -67,7 +67,18 @@ class WriteResults:
                 )
             columns = ", ".join(field_data.keys())
             placeholders = ", ".join(["?"] * len(field_data))
-            sql = f"INSERT INTO extraction ({columns}) VALUES ({placeholders})"
+            update_assignments = ", ".join(
+                f"{key} = excluded.{key}" for key in field_data.keys()
+            )
+
+            # Upsert SQL query
+            sql = f"""
+                INSERT INTO extraction ({columns})
+                VALUES ({placeholders})
+                ON CONFLICT(filename, field_id, field, row_index, column_index)
+                DO UPDATE SET {update_assignments}
+            """
+
             self.cursor.execute(sql, list(field_data.values()))
 
     def insert_table_data(self):
@@ -119,10 +130,19 @@ class WriteResults:
                                 ],  # Adding ColumnIndex
                             }
 
-                            # Insert each cell's data into the database
+                            # Dynamic upsert SQL query
                             columns = ", ".join(row_data.keys())
                             placeholders = ", ".join(["?"] * len(row_data))
-                            sql = f"INSERT INTO 'extraction' ({columns}) VALUES ({placeholders})"
+                            update_assignments = ", ".join(
+                                f"{key} = excluded.{key}" for key in row_data.keys()
+                            )
+
+                            sql = f"""
+                                INSERT INTO extraction ({columns})
+                                VALUES ({placeholders})
+                                ON CONFLICT(filename, field_id, field, row_index, column_index)
+                                DO UPDATE SET {update_assignments}
+                            """
                             self.cursor.execute(sql, list(row_data.values()))
 
     def update_validated_field_data(self):

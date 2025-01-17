@@ -170,10 +170,9 @@ def perform_extraction(
     extraction_results = extract_client.extract_document(
         extractor_id, document_id, extraction_prompts
     )
+    write_extraction_results(extraction_results, document_path)
 
-    if not config.validate_extraction:
-        write_extraction_results(extraction_results, document_path)
-    else:
+    if config.validate_extraction:
         validated_results = validate_client.validate_extraction_results(
             extractor_id, document_id, extraction_results, extraction_prompts
         )
