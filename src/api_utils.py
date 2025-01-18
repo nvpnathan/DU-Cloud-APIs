@@ -11,6 +11,7 @@ def _update_document_stage(
     duration: float,
     new_stage: str,
     operation_id: str,
+    extractor_id: str,
     error_code: str,
     error_message: str,
 ) -> None:
@@ -25,13 +26,14 @@ def _update_document_stage(
         cursor.execute(
             f"""
             UPDATE documents
-            SET stage = ?, {operation_id_column} = ?, {duration_column} = ?, error_code = ?, error_message = ?
+            SET stage = ?, {operation_id_column} = ?, {duration_column} = ?, extractor_id = ?, error_code = ?, error_message = ?
             WHERE document_id = ?
             """,
             (
                 new_stage,
                 operation_id,
                 duration,
+                extractor_id,
                 error_code,
                 error_message,
                 document_id,
@@ -90,6 +92,7 @@ def submit_async_request(
                     duration=duration,
                     new_stage=action,
                     operation_id=operation_id,
+                    extractor_id=None,
                     error_code=None,
                     error_message=None,
                 )
@@ -221,6 +224,7 @@ def submit_validation_request(
                             new_stage=action,
                             duration=duration,
                             operation_id=operation_id,
+                            extractor_id=None,
                             error_code=None,
                             error_message=None,
                         )
