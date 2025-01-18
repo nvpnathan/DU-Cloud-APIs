@@ -145,7 +145,7 @@ class Digitize:
                     action=self.action,
                     base_url=self.base_url,
                     project_id=self.project_id,
-                    module_url="digitization",
+                    module_id="digitization",
                     operation_id=document_id,
                     document_id=document_id,
                     bearer_token=self.bearer_token,

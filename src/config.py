@@ -107,6 +107,8 @@ def ensure_database():
                 classification_validation_duration REAL,
                 extraction_duration REAL,
                 extraction_validation_duration REAL,
+                classifier_id TEXT,
+                extractor_id TEXT,
                 error_code TEXT,
                 error_message TEXT
                 timestamp TEXT DEFAULT CURRENT_TIMESTAMP
@@ -146,8 +148,6 @@ def ensure_database():
                 operator_confirmed BOOLEAN,
                 row_index INTEGER DEFAULT -1,
                 column_index INTEGER DEFAULT -1,
-                classifier_id TEXT,
-                extractor_id TEXT,
                 timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (filename, field_id, field, row_index, column_index)
             )

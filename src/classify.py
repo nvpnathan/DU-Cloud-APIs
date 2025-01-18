@@ -162,7 +162,7 @@ class Classify:
                         action="classification",
                         base_url=self.base_url,
                         project_id=self.project_id,
-                        module_url=f"classifiers/{classifier}/classification",
+                        module_id=classifier,
                         operation_id=operation_id,
                         document_id=document_id,
                         bearer_token=self.bearer_token,

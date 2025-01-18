@@ -39,7 +39,7 @@ class Extract:
                         action="extraction",
                         base_url=self.base_url,
                         project_id=self.project_id,
-                        module_url=f"extractors/{extractor_id}/extraction",
+                        module_id=extractor_id,
                         operation_id=operation_id,
                         document_id=document_id,
                         bearer_token=self.bearer_token,

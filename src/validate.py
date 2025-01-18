@@ -101,7 +101,7 @@ class Validate:
                         base_url=self.base_url,
                         project_id=self.project_id,
                         operation_id=operation_id,
-                        extractor_id=extractor_id,
+                        module_id=extractor_id,
                     )
                     print("Extraction Validation Complete!\n")
                     return validation_result
@@ -177,6 +177,7 @@ class Validate:
                         base_url=self.base_url,
                         project_id=self.project_id,
                         operation_id=operation_id,
+                        module_id=classifier_id,
                     )
                     print("Classification Validation Complete!\n")
 

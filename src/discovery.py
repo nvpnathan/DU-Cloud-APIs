@@ -221,7 +221,7 @@ class Discovery:
                     if not data["classifiers"]:
                         print("No classifiers found.")
                         return None
-                    print(data)
+
                     for classifier in data["classifiers"]:
                         status = classifier.get("status")
                         choice = f"{classifier['name']}: {status}"

@@ -11,9 +11,10 @@ def _update_document_stage(
     duration: float,
     new_stage: str,
     operation_id: str,
-    extractor_id: str,
-    error_code: str,
-    error_message: str,
+    classifier_id: str = None,
+    extractor_id: str = None,
+    error_code: str = None,
+    error_message: str = None,
 ) -> None:
     """Update the document stage in the SQLite database."""
     with sqlite3.connect(SQLITE_DB_PATH) as conn:
@@ -23,23 +24,33 @@ def _update_document_stage(
         operation_id_column = f"{action}_operation_id"
         duration_column = f"{action}_duration"
 
-        cursor.execute(
-            f"""
+        # Start with the base SQL query
+        sql_query = f"""
             UPDATE documents
-            SET stage = ?, {operation_id_column} = ?, {duration_column} = ?, extractor_id = ?, error_code = ?, error_message = ?
-            WHERE document_id = ?
-            """,
-            (
-                new_stage,
-                operation_id,
-                duration,
-                extractor_id,
-                error_code,
-                error_message,
-                document_id,
-            ),
-        )
+            SET stage = ?, {operation_id_column} = ?, {duration_column} = ?
+        """
+        params = [new_stage, operation_id, duration]
 
+        # Add classifier_id to the query if it's not None
+        if classifier_id is not None:
+            sql_query += ", classifier_id = ?"
+            params.append(classifier_id)
+
+        # Add extractor_id to the query if it's not None
+        if extractor_id is not None:
+            sql_query += ", extractor_id = ?"
+            params.append(extractor_id)
+
+        # Add error_code and error_message to the query
+        sql_query += ", error_code = ?, error_message = ?"
+        params.extend([error_code, error_message])
+
+        # Add the WHERE clause
+        sql_query += " WHERE document_id = ?"
+        params.append(document_id)
+
+        # Execute the dynamically constructed query
+        cursor.execute(sql_query, params)
         conn.commit()
 
 
@@ -52,6 +63,8 @@ def _log_error(action, document_id, operation_id, error_code, error_message):
         duration=None,
         new_stage=f"{action}_failed",
         operation_id=operation_id,
+        classifier_id=None,
+        extractor_id=None,
         error_code=error_code,
         error_message=error_message,
     )
@@ -61,14 +74,28 @@ def submit_async_request(
     action: str,
     base_url: str,
     project_id: str,
-    module_url: str,
+    module_id: str,
     operation_id: str,
     document_id: str,
     bearer_token: str,
 ) -> dict:
-    api_url = (
-        f"{base_url}{project_id}/{module_url}/result/{operation_id}?api-version=1.1"
-    )
+    classifier_id = None
+    extractor_id = None
+
+    if action.startswith("digitization") and module_id:
+        api_url = (
+            f"{base_url}{project_id}/{module_id}/result/{operation_id}?api-version=1.1"
+        )
+    elif action.startswith("classification") and module_id:
+        api_url = f"{base_url}{project_id}/classifiers/{module_id}/classification/result/{operation_id}?api-version=1.1"
+        classifier_id = module_id
+    elif action.startswith("extraction") and module_id:
+        api_url = f"{base_url}{project_id}/extractors/{module_id}/extraction/result/{operation_id}?api-version=1.1"
+        extractor_id = module_id
+    else:
+        print("Invalid action or missing Module ID for extraction.")
+        return None
+
     headers = {
         "accept": "application/json",
         "Authorization": f"Bearer {bearer_token}",
@@ -92,7 +119,8 @@ def submit_async_request(
                     duration=duration,
                     new_stage=action,
                     operation_id=operation_id,
-                    extractor_id=None,
+                    classifier_id=classifier_id,
+                    extractor_id=extractor_id,
                     error_code=None,
                     error_message=None,
                 )
@@ -127,7 +155,7 @@ def submit_validation_request(
     base_url: str,
     project_id: str,
     operation_id: str,
-    extractor_id: str = None,
+    module_id: str = None,
 ) -> dict | None:
     """
     Submits a validation request (either for classification or extraction) and waits for the process to complete.
@@ -137,10 +165,15 @@ def submit_validation_request(
     :param extractor_id: Extractor ID (required for extraction validation)
     :return: The result data if successful, otherwise None
     """
+    classifier_id = None
+    extractor_id = None
+
     if action.startswith("classification"):
-        api_url = f"{base_url}{project_id}/classifiers/ml-classification/validation/result/{operation_id}?api-version=1.1"
-    elif action.startswith("extraction") and extractor_id:
-        api_url = f"{base_url}{project_id}/extractors/{extractor_id}/validation/result/{operation_id}?api-version=1.1"
+        api_url = f"{base_url}{project_id}/classifiers/{module_id}/validation/result/{operation_id}?api-version=1.1"
+        classifier_id = module_id
+    elif action.startswith("extraction") and module_id:
+        api_url = f"{base_url}{project_id}/extractors/{module_id}/validation/result/{operation_id}?api-version=1.1"
+        extractor_id = module_id
     else:
         print("Invalid action or missing extractor ID for extraction.")
         return None
@@ -224,7 +257,8 @@ def submit_validation_request(
                             new_stage=action,
                             duration=duration,
                             operation_id=operation_id,
-                            extractor_id=None,
+                            classifier_id=classifier_id,
+                            extractor_id=extractor_id,
                             error_code=None,
                             error_message=None,
                         )
