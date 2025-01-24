@@ -130,6 +130,7 @@ This project uses SQLite to store and manage various document processing results
     - `classification_validation_duration`: Duration of the classification validation process.
     - `extraction_duration`: Duration of the extraction process.
     - `extraction_validation_duration`: Duration of the extraction validation process.
+    - `project_id`: Identifier for the project used.
     - `classifier_id`: Identifier for the classifier used.
     - `extractor_id`: Identifier for the extractor used.
     - `error_code`: Error code if any error occurred.
@@ -173,11 +174,11 @@ These tables are created and managed in the [`ensure_database`](src/config.py) f
 
 &#9744; Perform validation outside of the workflow (optional)
 
+&#9744; Add unique batch_id for each run
+
 &#9745; Create CSV output files from sqlite results
 
 &#9745; Bumped DU REST API version to `1.1`
-
-&#9744; Add unique batch_id for each run
 
 &#9745; Moved Async requests to `api_utils.py`
 
