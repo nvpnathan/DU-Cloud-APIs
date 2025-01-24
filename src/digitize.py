@@ -57,17 +57,25 @@ class Digitize:
         self._execute_sql(
             """
             UPDATE documents
-            SET document_id = ?, stage = ?, timestamp = ?, error_code = ?, error_message = ?
+            SET document_id = ?, stage = ?, timestamp = ?, project_id = ?, error_code = ?, error_message = ?
             WHERE filename = ?
             """,
-            (document_id, stage, time.time(), error_code, error_message, filename),
+            (
+                document_id,
+                stage,
+                time.time(),
+                self.project_id,
+                error_code,
+                error_message,
+                filename,
+            ),
         )
 
         # If no row was updated, insert a new one
         self._execute_sql(
             """
-            INSERT INTO documents (document_id, filename, stage, timestamp, error_code, error_message)
-            SELECT ?, ?, ?, ?, ?, ?
+            INSERT INTO documents (document_id, filename, stage, timestamp, project_id, error_code, error_message)
+            SELECT ?, ?, ?, ?, ?, ?, ?
             WHERE NOT EXISTS (
                 SELECT 1 FROM documents WHERE filename = ?
             )
@@ -77,6 +85,7 @@ class Digitize:
                 filename,
                 stage,
                 time.time(),
+                self.project_id,
                 error_code,
                 error_message,
                 filename,

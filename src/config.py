@@ -107,6 +107,7 @@ def ensure_database():
                 classification_validation_duration REAL,
                 extraction_duration REAL,
                 extraction_validation_duration REAL,
+                project_id TEXT,
                 classifier_id TEXT,
                 extractor_id TEXT,
                 error_code TEXT,

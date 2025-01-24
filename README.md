@@ -130,6 +130,8 @@ This project uses SQLite to store and manage various document processing results
     - `classification_validation_duration`: Duration of the classification validation process.
     - `extraction_duration`: Duration of the extraction process.
     - `extraction_validation_duration`: Duration of the extraction validation process.
+    - `classifier_id`: Identifier for the classifier used.
+    - `extractor_id`: Identifier for the extractor used.
     - `error_code`: Error code if any error occurred.
     - `error_message`: Error message if any error occurred.
 
@@ -145,7 +147,6 @@ This project uses SQLite to store and manage various document processing results
     - `operation_id`: Operation ID for the classification.
 
 3. **extraction**: Stores extraction results for each document.
-    - `id`: Auto-incremented primary key.
     - `filename`: Name of the document file.
     - `document_id`: Unique identifier for the document.
     - `document_type_id`: Type of the document.
@@ -159,9 +160,10 @@ This project uses SQLite to store and manage various document processing results
     - `confidence`: Confidence score of the extraction.
     - `ocr_confidence`: OCR confidence score of the extraction.
     - `operator_confirmed`: Boolean indicating if the value was confirmed by an operator.
-    - `row_index`: Row index for table fields.
-    - `column_index`: Column index for table fields.
-    - `timestamp`: Timestamp of the extraction.
+    - `row_index`: Row index for table fields (default -1).
+    - `column_index`: Column index for table fields (default -1).
+    - `timestamp`: Timestamp of the extraction (default CURRENT_TIMESTAMP).
+    - `PRIMARY KEY (filename, field_id, field, row_index, column_index)`.
 
 These tables are created and managed in the [`ensure_database`](src/config.py) function in [src/config.py](src/config.py).
 
@@ -171,12 +173,14 @@ These tables are created and managed in the [`ensure_database`](src/config.py) f
 
 &#9744; Perform validation outside of the workflow (optional)
 
-&#9744; Create CSV output files from sqlite results
+&#9745; Create CSV output files from sqlite results
+
+&#9745; Bumped DU REST API version to `1.1`
 
 &#9744; Add unique batch_id for each run
 
 &#9745; Moved Async requests to `api_utils.py`
 
-&#9745; Added sqlit tables (`documents`, `classification`, `extraction`) for all classification, extraction, and validation results
+&#9745; Added sqlite tables (`documents`, `classification`, `extraction`) for all classification, extraction, and validation results
 
 &#9745; Write initial tests for core
