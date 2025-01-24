@@ -68,6 +68,7 @@ def process_document(
                     extractor_id,
                     extractor_name,
                     config,
+                    context,
                 )
 
     except Exception as e:
@@ -122,14 +123,21 @@ def get_extractor(
         extractor_id = extractor_info.get("id")
         extractor_name = extractor_info.get("name")
 
-    generative_extractor = context.extractor_dict.get("generative_extractor")
-    if generative_extractor and document_type_id in generative_extractor.get(
-        "doc_type_ids", []
-    ):
-        extractor_id = "generative_extractor"
+    generative_extractor = context.project_id == "00000000-0000-0000-0000-000000000001"
+    if generative_extractor and document_type_id:
+        extractor_id = next(
+            (
+                extractor["id"]
+                for extractor in context.extractor_dict.values()
+                if document_type_id in extractor.get("doc_type_ids", [])
+            ),
+            None,
+        )
         extractor_name = document_type_id
     if generative_extractor and not document_type_id:
-        extractor_id = "generative_extractor"
+        extractor_id = next(
+            (extractor["id"] for extractor in context.extractor_dict.values()), None
+        )
         extractor_name = "default_doc"
 
     print_extractor_log(extractor_id, extractor_name, document_type_id)
@@ -152,17 +160,19 @@ def perform_extraction(
     extractor_id: str,
     extractor_name: str,
     config: ProcessingConfig,
+    context: DocumentProcessingContext,
 ) -> None:
     extraction_prompts = (
-        load_prompts(extractor_name) if extractor_id == "generative_extractor" else None
+        load_prompts(extractor_name)
+        if context.project_id == "00000000-0000-0000-0000-000000000001"
+        else None
     )
     extraction_results = extract_client.extract_document(
         extractor_id, document_id, extraction_prompts
     )
+    write_extraction_results(extraction_results, document_path)
 
-    if not config.validate_extraction:
-        write_extraction_results(extraction_results, document_path)
-    else:
+    if config.validate_extraction:
         validated_results = validate_client.validate_extraction_results(
             extractor_id, document_id, extraction_results, extraction_prompts
         )
@@ -222,7 +232,7 @@ def process_documents_in_folder(
 
 
 if __name__ == "__main__":
-    DOCUMENT_FOLDER = "./example_documents"
+    DOCUMENT_FOLDER = "example_documents"
 
     # Initialize ProcessingConfig using Discovery's cache or prompts
     config = get_processing_config(discovery_client)

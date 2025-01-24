@@ -1,4 +1,3 @@
-import time
 import sqlite3
 import requests
 from config import SQLITE_DB_PATH
@@ -28,7 +27,7 @@ class Classify:
             """
             UPDATE documents
             SET stage = ?, document_type_id = ?, classification_operation_id = ?,
-            classification_duration = ?, timestamp = ?
+            classification_duration = ?
             WHERE document_id = ?
         """,
             (
@@ -36,7 +35,6 @@ class Classify:
                 document_type_id,
                 operation_id,
                 classification_duration,
-                time.time(),
                 document_id,
             ),
         )
@@ -137,7 +135,7 @@ class Classify:
             new_stage="classify_init",
         )
         # Define the API endpoint for document classification
-        api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier}/classification/start?api-version=1"
+        api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier}/classification/start?api-version=1.1"
 
         # Define the headers with the Bearer token and content type
         headers = {
@@ -164,7 +162,7 @@ class Classify:
                         action="classification",
                         base_url=self.base_url,
                         project_id=self.project_id,
-                        module_url=f"classifiers/{classifier}/classification",
+                        module_id=classifier,
                         operation_id=operation_id,
                         document_id=document_id,
                         bearer_token=self.bearer_token,

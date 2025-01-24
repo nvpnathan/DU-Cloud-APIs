@@ -107,6 +107,9 @@ def ensure_database():
                 classification_validation_duration REAL,
                 extraction_duration REAL,
                 extraction_validation_duration REAL,
+                project_id TEXT,
+                classifier_id TEXT,
+                extractor_id TEXT,
                 error_code TEXT,
                 error_message TEXT
                 timestamp TEXT DEFAULT CURRENT_TIMESTAMP
@@ -131,7 +134,6 @@ def ensure_database():
         # Create extraction table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS extraction (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 filename TEXT NOT NULL,
                 document_id TEXT NOT NULL,
                 document_type_id TEXT NOT NULL,
@@ -145,11 +147,11 @@ def ensure_database():
                 confidence REAL,
                 ocr_confidence REAL,
                 operator_confirmed BOOLEAN,
-                row_index INTEGER,
-                column_index INTEGER,
-                timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+                row_index INTEGER DEFAULT -1,
+                column_index INTEGER DEFAULT -1,
+                timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (filename, field_id, field, row_index, column_index)
             )
-
         """)
         conn.commit()
         conn.close()

@@ -12,7 +12,7 @@ class Extract:
         self, extractor_id: str, document_id: str, prompts: dict = None
     ) -> dict | None:
         # Define the API endpoint for document extraction
-        api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/extraction/start?api-version=1"
+        api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/extraction/start?api-version=1.1"
 
         # Define the headers with the Bearer token and content type
         headers = {
@@ -39,7 +39,7 @@ class Extract:
                         action="extraction",
                         base_url=self.base_url,
                         project_id=self.project_id,
-                        module_url=f"extractors/{extractor_id}/extraction",
+                        module_id=extractor_id,
                         operation_id=operation_id,
                         document_id=document_id,
                         bearer_token=self.bearer_token,

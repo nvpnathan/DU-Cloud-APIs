@@ -51,7 +51,7 @@ class Validate:
         extraction_prompts: dict,
     ) -> dict | None:
         # Define the API endpoint for validation
-        api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/validation/start?api-version=1"
+        api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/validation/start?api-version=1.1"
 
         # Define the headers with the Bearer token and content type
         headers = {
@@ -94,14 +94,14 @@ class Validate:
                         error_code=None,
                         error_message=None,
                     )
-                    print("testing validation submit")
+
                     validation_result = submit_validation_request(
                         action="extraction_validation",
                         bearer_token=self.bearer_token,
                         base_url=self.base_url,
                         project_id=self.project_id,
                         operation_id=operation_id,
-                        extractor_id=extractor_id,
+                        module_id=extractor_id,
                     )
                     print("Extraction Validation Complete!\n")
                     return validation_result
@@ -123,7 +123,7 @@ class Validate:
         classificastion_prompts: dict,
     ) -> str | None:
         # Define the API endpoint for validation
-        api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier_id}/validation/start?api-version=1"
+        api_url = f"{self.base_url}{self.project_id}/classifiers/{classifier_id}/validation/start?api-version=1.1"
 
         document_type_id = classification_results["classificationResults"][0][
             "DocumentTypeId"
@@ -177,6 +177,7 @@ class Validate:
                         base_url=self.base_url,
                         project_id=self.project_id,
                         operation_id=operation_id,
+                        module_id=classifier_id,
                     )
                     print("Classification Validation Complete!\n")
 
