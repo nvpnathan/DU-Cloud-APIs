@@ -6,7 +6,7 @@ import threading
 from typing import Optional
 from dataclasses import dataclass
 from urllib.parse import urlparse
-from config import load_env_file
+from project_config import load_env_file
 
 # Configure logging
 logging.basicConfig(

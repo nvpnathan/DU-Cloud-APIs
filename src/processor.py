@@ -1,11 +1,11 @@
 import os
 import concurrent.futures
-from config import (
-    load_prompts,
+from project_setup import load_prompts
+from project_config import (
     ProcessingConfig,
     DocumentProcessingContext,
 )
-from write_results import WriteResults
+from utils.write_results import WriteResults
 
 
 class DocumentProcessor:

@@ -2,9 +2,7 @@ import os
 import json
 import requests
 import questionary
-
-CACHE_DIR = "cache"
-CACHE_FILE = os.path.join(CACHE_DIR, "document_cache.json")
+from project_config import CACHE_DIR, CACHE_FILE
 
 
 class Discovery:

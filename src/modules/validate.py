@@ -1,7 +1,7 @@
 import sqlite3
 import requests
-from config import SQLITE_DB_PATH
-from api_utils import submit_validation_request
+from project_config import SQLITE_DB_PATH
+from .async_request_handler import submit_validation_request
 
 
 class Validate:

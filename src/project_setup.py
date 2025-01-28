@@ -1,32 +1,16 @@
 import os
 import json
 import sqlite3
-from discovery import Discovery
-from digitize import Digitize
-from classify import Classify
-from extract import Extract
-from validate import Validate
-from auth import initialize_authentication
-from config import ProcessingConfig, DocumentProcessingContext
+from modules import Digitize, Classify, Extract, Validate, Discovery
+from utils.auth import initialize_authentication
+from project_config import ProcessingConfig, DocumentProcessingContext, BASE_URL, CACHE_DIR, SQLITE_DB_PATH, load_env_file
 
-CACHE_DIR = "cache"
-CACHE_FILE = os.path.join(CACHE_DIR, "document_cache.json")
-SQLITE_DB_PATH = os.path.join(CACHE_DIR, "document_cache.db")
-BASE_URL = os.getenv("BASE_URL")
+
 
 # Initialize Authentication
 auth = initialize_authentication()
 bearer_token = auth.bearer_token
-
-
-def load_env_file(filepath=".env"):
-    """Load environment variables from a .env file."""
-    if os.path.isfile(filepath):
-        with open(filepath) as f:
-            for line in f:
-                if line.strip() and not line.startswith("#"):
-                    key, value = line.strip().split("=", 1)
-                    os.environ[key] = value.strip('"').strip("'")
+base_url = os.getenv("BASE_URL")
 
 
 def ensure_cache_directory():
@@ -50,8 +34,6 @@ def ensure_database():
                 document_id TEXT PRIMARY KEY,
                 filename TEXT NOT NULL,
                 stage TEXT NOT NULL,
-                timestamp REAL NOT NULL,
-                document_type_id TEXT,
                 digitization_operation_id TEXT,
                 classification_operation_id TEXT,
                 classification_validation_operation_id TEXT,
@@ -67,7 +49,7 @@ def ensure_database():
                 extractor_id TEXT,
                 error_code TEXT,
                 error_message TEXT,
-                timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+                timestamp REAL NOT NULL
             )
         """)
 
@@ -190,5 +172,5 @@ def initialize_environment():
 
     # Initialize clients
     clients = initialize_clients(context, BASE_URL, bearer_token)
-
+    print(clients)
     return config, context, clients

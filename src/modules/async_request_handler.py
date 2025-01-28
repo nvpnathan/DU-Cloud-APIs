@@ -2,7 +2,7 @@ import time
 import sqlite3
 import requests
 from datetime import datetime
-from config import SQLITE_DB_PATH
+from project_config import SQLITE_DB_PATH
 
 
 def _update_document_stage(
