@@ -4,7 +4,7 @@ import requests
 import questionary
 
 CACHE_DIR = "cache"
-CACHE_FILE = os.path.join(CACHE_DIR, "extractor_cache.json")
+CACHE_FILE = os.path.join(CACHE_DIR, "document_cache.json")
 
 
 class Discovery:
