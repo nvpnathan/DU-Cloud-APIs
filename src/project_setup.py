@@ -172,5 +172,5 @@ def initialize_environment():
 
     # Initialize clients
     clients = initialize_clients(context, BASE_URL, bearer_token)
-    print(clients)
+
     return config, context, clients

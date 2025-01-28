@@ -109,22 +109,31 @@ class Discovery:
                     predefined_choice = "Predefined: Pretrained models to be used for standard scenarios. For custom extractors, create a Project in the Document Understanding app in Automation Cloud."
                     predefined_key = "Predefined"
 
+                    # Create a list to hold the predefined projects and other projects
+                    predefined_projects = []
+                    other_projects = []
+
                     for project in data["projects"]:
-                        description = project.get(
-                            "description", "No description available"
-                        )
-                        choice = f"{project['name']}: {description}"
-                        if choice.startswith(predefined_key):
-                            predefined_choice = choice
+                        # Ensure predefined projects with specific IDs appear first
+                        if project["id"] in ["00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000001"]:
+                            description = project.get("description", "No description available")
+                            choice = f"{project['name']}: {description}"
+                            predefined_projects.append(choice)
                         else:
-                            choices.append(choice)
+                            description = project.get("description", "No description available")
+                            choice = f"{project['name']}: {description}"
+                            other_projects.append(choice)
 
-                    # Sort choices alphabetically
-                    choices.sort()
+                    # Combine the lists, putting predefined projects first
+                    choices = predefined_projects + other_projects
 
-                    # Ensure predefined choice is at the top
-                    choices.insert(0, predefined_choice)
+                    # Ensure predefined choice is at the top (if you have a specific predefined entry)
+                    if predefined_choice not in choices:
+                        choices.insert(0, predefined_choice)
 
+                    # Sort remaining choices alphabetically
+                    choices = predefined_projects + sorted(other_projects)
+                    
                     # Prompt the user to select a project
                     selected_project = questionary.select(
                         "Please select a Project:",
