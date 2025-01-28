@@ -1,5 +1,5 @@
 import requests
-from api_utils import submit_async_request
+from .async_request_handler import submit_async_request
 
 
 class Extract:

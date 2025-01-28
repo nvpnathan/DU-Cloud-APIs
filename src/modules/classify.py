@@ -1,7 +1,7 @@
 import sqlite3
 import requests
-from config import SQLITE_DB_PATH
-from api_utils import submit_async_request
+from project_config import SQLITE_DB_PATH
+from .async_request_handler import submit_async_request
 
 
 class Classify:
@@ -13,7 +13,6 @@ class Classify:
     def _update_document_stage(
         self,
         document_id: str,
-        document_type_id: str,
         classification_duration: float,
         operation_id: str,
         new_stage: str,
@@ -26,13 +25,12 @@ class Classify:
         cursor.execute(
             """
             UPDATE documents
-            SET stage = ?, document_type_id = ?, classification_operation_id = ?,
+            SET stage = ?, classification_operation_id = ?,
             classification_duration = ?
             WHERE document_id = ?
         """,
             (
                 new_stage,
-                document_type_id,
                 operation_id,
                 classification_duration,
                 document_id,
@@ -129,7 +127,6 @@ class Classify:
         # Update the cache to indicate the classification process has started
         self._update_document_stage(
             document_id,
-            document_type_id=None,
             classification_duration=None,
             operation_id=None,
             new_stage="classify_init",

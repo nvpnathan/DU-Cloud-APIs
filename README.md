@@ -86,22 +86,27 @@ The project structure is organized as follows:
 DU-Cloud-APIs/
 │
 ├── src/
-│   ├── main.py          # Main entry point for the application
-│   ├── auth.py          # Authentication module for obtaining bearer token
-│   ├── digitize.py      # Digitize module for initiating document digitization
-│   ├── classify.py      # Classify module for document classification
-│   ├── extract.py       # Extract module for document extraction
-│   ├── validate.py      # Validate module for document validation
-│   ├── api_utils.py     # Validate module for document validation
-│   ├── config.py        # Configuration module for project variables, sqlite db creation
-│   └── write_results.py # Utility module for and writing classification and extraction results to sqlite
-│
+│   ├── main.py                  # Main entry point for the application
+│   ├── processor.py             # Logic for processing pipeline (should include orchestration, or configuration setup if needed)
+│   ├── project_config.py        # Configuration module for project variables and sqlite db creation
+│   ├── project_setup.py         # Application-level setup (initialization, environment loading)
+│   ├── modules/                 
+│   │   ├── __init__.py
+│   │   ├── digitize.py          # Digitize module for initiating document digitization
+│   │   ├── classify.py          # Classify module for document classification
+│   │   ├── extract.py           # Extract module for document extraction
+│   │   ├── validate.py          # Validate module for document validation
+│   │   └── async_request_handler.py  # Module for handling async requests related to validation
+│   └── utils/
+│       ├── auth.py              # Authentication module for obtaining bearer token
+│       └── write_results.py     # Utility module for writing classification and extraction results to SQLite
 ├── tests/
-│   ├── test_main.py     # Test for the main application entry point
-│   ├── test_digitize.py # Test for the document digitization module
-│   ├── test_classify.py # Test for the document classification module
-│   ├── test_extract.py  # Test for the document extraction module
-│   └── test_validate.py # Test for the document validation module
+│   ├── test_main.py      # Test for the main application entry point
+│   ├── test_digitize.py  # Test for the document digitization module
+│   ├── test_discovery.py # Test for the document discovery module
+│   ├── test_classify.py  # Test for the document classification module
+│   ├── test_extract.py   # Test for the document extraction module
+│   └── test_validate.py  # Test for the document validation module
 │
 ├── .env.example         # Example environment variables file
 ├── requirements.txt     # Python modules configuration file

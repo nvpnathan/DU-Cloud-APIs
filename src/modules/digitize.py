@@ -1,12 +1,13 @@
 import os
 import time
 import sqlite3
+import logging
 import requests
 import mimetypes
 from datetime import datetime, timedelta
-from api_utils import submit_async_request
-from config import CACHE_EXPIRY_DAYS, SQLITE_DB_PATH
-import logging
+from project_config import CACHE_EXPIRY_DAYS, SQLITE_DB_PATH
+from .async_request_handler import submit_async_request
+
 
 # Configure logging
 logging.basicConfig(

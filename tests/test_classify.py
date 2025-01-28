@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import Mock
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
-from classify import Classify
+from modules.classify import Classify
 
 
 class TestClassify(unittest.TestCase):

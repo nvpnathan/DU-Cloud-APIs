@@ -5,7 +5,7 @@ from unittest.mock import Mock
 from requests.exceptions import RequestException
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
-from validate import Validate
+from modules.validate import Validate
 
 
 class TestValidate(unittest.TestCase):
