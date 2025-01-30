@@ -90,7 +90,7 @@ DU-Cloud-APIs/
 │   ├── processor.py             # Logic for processing pipeline (should include orchestration, or configuration setup if needed)
 │   ├── project_config.py        # Configuration module for project variables and sqlite db creation
 │   ├── project_setup.py         # Application-level setup (initialization, environment loading)
-│   ├── modules/                 
+│   ├── modules/  
 │   │   ├── __init__.py
 │   │   ├── digitize.py          # Digitize module for initiating document digitization
 │   │   ├── classify.py          # Classify module for document classification

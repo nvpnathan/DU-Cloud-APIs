@@ -6,7 +6,7 @@ import threading
 from typing import Optional
 from dataclasses import dataclass
 from urllib.parse import urlparse
-from project_config import load_env_file
+from dotenv import load_dotenv
 
 # Configure logging
 logging.basicConfig(
@@ -15,7 +15,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Load environment variables
-load_env_file()
+load_dotenv()
 
 
 class AuthenticationError(Exception):

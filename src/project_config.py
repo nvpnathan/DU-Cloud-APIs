@@ -1,5 +1,5 @@
 import os
-
+from dotenv import load_dotenv
 
 # Define the path to the configuration file
 CACHE_DIR = "cache"
@@ -8,6 +8,7 @@ CACHE_EXPIRY_DAYS = 7
 SQLITE_DB_PATH = os.path.join(CACHE_DIR, "document_cache.db")
 
 # Load environment variables
+load_dotenv()
 BASE_URL = os.getenv("BASE_URL")
 
 
@@ -54,13 +55,3 @@ class DocumentProcessingContext:
         self.project_id: str = project_id
         self.classifier: str | None = classifier
         self.extractor_dict: dict | None = extractor_dict
-
-
-def load_env_file(filepath=".env"):
-    """Load environment variables from a .env file."""
-    if os.path.isfile(filepath):
-        with open(filepath) as f:
-            for line in f:
-                if line.strip() and not line.startswith("#"):
-                    key, value = line.strip().split("=", 1)
-                    os.environ[key] = value.strip('"').strip("'")

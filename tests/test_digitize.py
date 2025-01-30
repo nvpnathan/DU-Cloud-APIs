@@ -25,11 +25,12 @@ class TestDigitize(unittest.TestCase):
             "result": {"documentObjectModel": {"documentId": "12345"}},
         }
 
-        with unittest.mock.patch(
-            "requests.post", return_value=post_response
-        ) as mock_post, unittest.mock.patch(
-            "requests.get", return_value=get_response
-        ) as mock_get:
+        with (
+            unittest.mock.patch(
+                "requests.post", return_value=post_response
+            ) as mock_post,
+            unittest.mock.patch("requests.get", return_value=get_response) as mock_get,
+        ):
             digitizer = Digitize(base_url, project_id, bearer_token)
             digitize_results = digitizer.digitize("./example_documents/id_card.jpg")
 
