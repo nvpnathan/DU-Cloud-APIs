@@ -1,11 +1,20 @@
 import os
 import json
 import sqlite3
+from dotenv import load_dotenv
 from modules import Digitize, Classify, Extract, Validate, Discovery
 from utils.auth import initialize_authentication
-from project_config import ProcessingConfig, DocumentProcessingContext, BASE_URL, CACHE_DIR, SQLITE_DB_PATH, load_env_file
+from project_config import (
+    ProcessingConfig,
+    DocumentProcessingContext,
+    BASE_URL,
+    CACHE_DIR,
+    SQLITE_DB_PATH,
+)
 
 
+# Load environment variables
+load_dotenv()
 
 # Initialize Authentication
 auth = initialize_authentication()
@@ -148,7 +157,7 @@ def load_prompts(document_type_id: str) -> dict | None:
 def initialize_environment():
     """Initialize the processing environment."""
     # Load environment variables
-    load_env_file()
+    load_dotenv()
 
     # Ensure database exists
     ensure_database()

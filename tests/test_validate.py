@@ -24,11 +24,14 @@ class TestValidate(unittest.TestCase):
         response.status_code = 202
         response.json.return_value = response_data
 
-        with unittest.mock.patch(
-            "requests.post", return_value=response
-        ) as mock_post, unittest.mock.patch.object(
-            Validate, "submit_extraction_validation_request", return_value=response_data
-        ) as mock_submit:
+        with (
+            unittest.mock.patch("requests.post", return_value=response) as mock_post,
+            unittest.mock.patch.object(
+                Validate,
+                "submit_extraction_validation_request",
+                return_value=response_data,
+            ) as mock_submit,
+        ):
             validator = Validate(base_url, project_id, bearer_token)
             validated_results = validator.validate_extraction_results(
                 extractor_id, document_id, extraction_results, extraction_prompts
