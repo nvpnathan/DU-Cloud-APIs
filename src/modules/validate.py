@@ -1,6 +1,5 @@
-import sqlite3
 import requests
-from project_config import SQLITE_DB_PATH
+from utils.db_utils import update_document_stage
 from .async_request_handler import submit_validation_request
 
 
@@ -9,39 +8,6 @@ class Validate:
         self.base_url = base_url
         self.project_id = project_id
         self.bearer_token = bearer_token
-
-    def _update_document_stage(
-        self,
-        action: str,
-        document_id: str,
-        new_stage: str,
-        operation_id: str,
-        error_code: str,
-        error_message: str,
-    ) -> None:
-        """Update the document stage in the SQLite database."""
-        with sqlite3.connect(SQLITE_DB_PATH) as conn:
-            cursor = conn.cursor()
-
-            # Define the column names dynamically based on the action
-            operation_id_column = f"{action}_operation_id"
-
-            cursor.execute(
-                f"""
-                UPDATE documents
-                SET stage = ?, {operation_id_column} = ?, error_code = ?, error_message = ?
-                WHERE document_id = ?
-                """,
-                (
-                    new_stage,
-                    operation_id,
-                    error_code,
-                    error_message,
-                    document_id,
-                ),
-            )
-
-            conn.commit()
 
     def validate_extraction_results(
         self,
@@ -86,7 +52,7 @@ class Validate:
 
                 # Wait until the validation operation is completed
                 if operation_id:
-                    self._update_document_stage(
+                    update_document_stage(
                         action="extraction_validation",
                         document_id=document_id,
                         new_stage="extraction-validation-submitted",
@@ -163,7 +129,7 @@ class Validate:
 
                 # Wait until the validation operation is completed
                 if operation_id:
-                    self._update_document_stage(
+                    update_document_stage(
                         action="classification_validation",
                         document_id=document_id,
                         new_stage="classification-validation-submitted",
