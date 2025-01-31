@@ -1,4 +1,5 @@
 import requests
+from utils.db_utils import update_document_stage
 from .async_request_handler import submit_async_request
 
 
@@ -11,6 +12,13 @@ class Extract:
     def extract_document(
         self, extractor_id: str, document_id: str, prompts: dict = None
     ) -> dict | None:
+        # Update the cache to indicate the extraction process has started
+        update_document_stage(
+            action="extraction",
+            document_id=document_id,
+            operation_id=None,
+            new_stage="extraction_init",
+        )
         # Define the API endpoint for document extraction
         api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/extraction/start?api-version=1.1"
 

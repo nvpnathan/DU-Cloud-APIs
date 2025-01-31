@@ -1,70 +1,17 @@
 import time
-import sqlite3
 import requests
 from datetime import datetime
-from project_config import SQLITE_DB_PATH
-
-
-def _update_document_stage(
-    action: str,
-    document_id: str,
-    duration: float,
-    new_stage: str,
-    operation_id: str,
-    classifier_id: str = None,
-    extractor_id: str = None,
-    error_code: str = None,
-    error_message: str = None,
-) -> None:
-    """Update the document stage in the SQLite database."""
-    with sqlite3.connect(SQLITE_DB_PATH) as conn:
-        cursor = conn.cursor()
-
-        # Define the column names dynamically based on the action
-        operation_id_column = f"{action}_operation_id"
-        duration_column = f"{action}_duration"
-
-        # Start with the base SQL query
-        sql_query = f"""
-            UPDATE documents
-            SET stage = ?, {operation_id_column} = ?, {duration_column} = ?
-        """
-        params = [new_stage, operation_id, duration]
-
-        # Add classifier_id to the query if it's not None
-        if classifier_id is not None:
-            sql_query += ", classifier_id = ?"
-            params.append(classifier_id)
-
-        # Add extractor_id to the query if it's not None
-        if extractor_id is not None:
-            sql_query += ", extractor_id = ?"
-            params.append(extractor_id)
-
-        # Add error_code and error_message to the query
-        sql_query += ", error_code = ?, error_message = ?"
-        params.extend([error_code, error_message])
-
-        # Add the WHERE clause
-        sql_query += " WHERE document_id = ?"
-        params.append(document_id)
-
-        # Execute the dynamically constructed query
-        cursor.execute(sql_query, params)
-        conn.commit()
+from utils.db_utils import update_document_stage
 
 
 def _log_error(action, document_id, operation_id, error_code, error_message):
     print(f"{action.capitalize()} failed. OperationID: {operation_id}")
     print(f"Error Code: {error_code}, Error Message: {error_message}")
-    _update_document_stage(
+    update_document_stage(
         action=action,
         document_id=document_id,
-        duration=None,
         new_stage=f"{action}_failed",
         operation_id=operation_id,
-        classifier_id=None,
-        extractor_id=None,
         error_code=error_code,
         error_message=error_message,
     )
@@ -113,7 +60,7 @@ def submit_async_request(
                 duration = end_time - start_time
                 print(f"{action.capitalize()} completed successfully!")
 
-                _update_document_stage(
+                update_document_stage(
                     action=action,
                     document_id=document_id,
                     duration=duration,
@@ -121,8 +68,6 @@ def submit_async_request(
                     operation_id=operation_id,
                     classifier_id=classifier_id,
                     extractor_id=extractor_id,
-                    error_code=None,
-                    error_message=None,
                 )
                 return response_data.get("result")
 
@@ -251,7 +196,7 @@ def submit_validation_request(
 
                         # Calculate duration
                         duration = (end_time - start_time).total_seconds()
-                        _update_document_stage(
+                        update_document_stage(
                             document_id=document_id,
                             action=action,
                             new_stage=action,
@@ -259,8 +204,6 @@ def submit_validation_request(
                             operation_id=operation_id,
                             classifier_id=classifier_id,
                             extractor_id=extractor_id,
-                            error_code=None,
-                            error_message=None,
                         )
                         return response_data
                     else:

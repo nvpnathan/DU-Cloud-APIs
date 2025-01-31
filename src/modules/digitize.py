@@ -1,13 +1,9 @@
 import os
-import time
-import sqlite3
 import logging
 import requests
 import mimetypes
-from datetime import datetime, timedelta
-from project_config import CACHE_EXPIRY_DAYS, SQLITE_DB_PATH
 from .async_request_handler import submit_async_request
-
+from utils.db_utils import get_document_id_from_cache, update_cache
 
 # Configure logging
 logging.basicConfig(
@@ -22,89 +18,12 @@ class Digitize:
         self.bearer_token = bearer_token
         self.action = "digitization"
 
-    def _execute_sql(self, query, params=()):
-        """Helper method to execute an SQL query."""
-        with sqlite3.connect(SQLITE_DB_PATH) as conn:
-            cursor = conn.cursor()
-            cursor.execute(query, params)
-            return cursor.fetchall()
-
-    def _get_document_id_from_cache(self, filename: str) -> str | None:
-        """Retrieve the document_id based on the filename and validate its timestamp."""
-        result = self._execute_sql(
-            "SELECT document_id, timestamp FROM documents WHERE filename = ?",
-            (filename,),
-        )
-        if result:
-            document_id, timestamp = result[0]
-            cache_time = datetime.fromtimestamp(timestamp)
-            if datetime.now() - cache_time > timedelta(days=CACHE_EXPIRY_DAYS):
-                logging.info(f"Cache expired for document: {filename}")
-                self._remove_document_from_cache(filename)
-                return None
-            return document_id
-        return None
-
-    def _update_cache(
-        self,
-        filename: str,
-        document_id: str | None,
-        stage: str,
-        error_code=None,
-        error_message=None,
-    ):
-        """Insert or update the document cache."""
-        # Update the row if it exists
-        self._execute_sql(
-            """
-            UPDATE documents
-            SET document_id = ?, stage = ?, timestamp = ?, project_id = ?, error_code = ?, error_message = ?
-            WHERE filename = ?
-            """,
-            (
-                document_id,
-                stage,
-                time.time(),
-                self.project_id,
-                error_code,
-                error_message,
-                filename,
-            ),
-        )
-
-        # If no row was updated, insert a new one
-        self._execute_sql(
-            """
-            INSERT INTO documents (document_id, filename, stage, timestamp, project_id, error_code, error_message)
-            SELECT ?, ?, ?, ?, ?, ?, ?
-            WHERE NOT EXISTS (
-                SELECT 1 FROM documents WHERE filename = ?
-            )
-            """,
-            (
-                document_id,
-                filename,
-                stage,
-                time.time(),
-                self.project_id,
-                error_code,
-                error_message,
-                filename,
-            ),
-        )
-
-    def _remove_document_from_cache(self, filename: str) -> None:
-        """Remove a document from the cache based on its filename."""
-        self._execute_sql("DELETE FROM documents WHERE filename = ?", (filename,))
-
     def _log_error(self, filename, action, error_code, error_message):
         """Log an error and update the database."""
         logging.error(
             f"{action.capitalize()} failed for {filename}. Code: {error_code}, Message: {error_message}"
         )
-        self._update_cache(
-            filename, None, f"{action}_failed", error_code, error_message
-        )
+        update_cache(filename, None, f"{action}_failed", error_code, error_message)
 
     def _prepare_file(self, document_path: str):
         """Prepare the file for upload."""
@@ -121,7 +40,7 @@ class Digitize:
     def digitize(self, document_path: str) -> str | None:
         """Digitize a document and handle caching."""
         filename = os.path.basename(document_path)
-        cached_document_id = self._get_document_id_from_cache(filename)
+        cached_document_id = get_document_id_from_cache(filename)
         if cached_document_id:
             logging.info(
                 f"Using cached document ID: {cached_document_id} for {filename}"
@@ -129,7 +48,12 @@ class Digitize:
             return cached_document_id
 
         # Log the initiation stage with no document_id
-        self._update_cache(filename, None, "init")
+        update_cache(
+            filename=filename,
+            document_id=None,
+            stage="init",
+            project_id=self.project_id,
+        )
 
         api_url = f"{self.base_url}{self.project_id}/digitization/start?api-version=1"
         headers = {
@@ -149,7 +73,12 @@ class Digitize:
                     raise ValueError("Missing documentId in the response.")
 
                 # Update cache with the retrieved document_id
-                self._update_cache(filename, document_id, "digitize-pending")
+                update_cache(
+                    filename=filename,
+                    document_id=document_id,
+                    stage="digitize-pending",
+                    project_id=self.project_id,
+                )
 
                 digitize_results = submit_async_request(
                     action=self.action,

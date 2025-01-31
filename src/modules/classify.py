@@ -1,7 +1,6 @@
-import sqlite3
 import requests
-from project_config import SQLITE_DB_PATH
 from .async_request_handler import submit_async_request
+from utils.db_utils import update_document_stage, insert_classification_results
 
 
 class Classify:
@@ -9,36 +8,6 @@ class Classify:
         self.base_url = base_url
         self.project_id = project_id
         self.bearer_token = bearer_token
-
-    def _update_document_stage(
-        self,
-        document_id: str,
-        classification_duration: float,
-        operation_id: str,
-        new_stage: str,
-    ) -> None:
-        """Update the document stage in the SQLite database."""
-        conn = sqlite3.connect(SQLITE_DB_PATH)
-        cursor = conn.cursor()
-
-        # Update document data in the database
-        cursor.execute(
-            """
-            UPDATE documents
-            SET stage = ?, classification_operation_id = ?,
-            classification_duration = ?
-            WHERE document_id = ?
-        """,
-            (
-                new_stage,
-                operation_id,
-                classification_duration,
-                document_id,
-            ),
-        )
-
-        conn.commit()
-        conn.close()
 
     def _parse_classification_results(
         self,
@@ -65,7 +34,7 @@ class Classify:
                 classifier_name = result["ClassifierName"]
 
                 # Insert the classification results into the SQLite database
-                self._insert_classification_results(
+                insert_classification_results(
                     document_id,
                     filename,
                     document_type_id,
@@ -79,43 +48,6 @@ class Classify:
             print(f"Error parsing JSON response: {ve}")
             return None
 
-    def _insert_classification_results(
-        self,
-        document_id: str,
-        filename: str,
-        document_type_id: str,
-        classification_confidence: float,
-        start_page: int,
-        page_count: int,
-        classifier_name: str,
-        operation_id: str,
-    ) -> None:
-        """Insert classification results into the SQLite database."""
-        conn = sqlite3.connect(SQLITE_DB_PATH)
-        cursor = conn.cursor()
-
-        # Insert classification results into the 'classifications' table
-        cursor.execute(
-            """
-            INSERT INTO classification (document_id, filename, document_type_id, classification_confidence,
-                                         start_page, page_count, classifier_name, operation_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-            (
-                document_id,
-                filename,
-                document_type_id,
-                classification_confidence,
-                start_page,
-                page_count,
-                classifier_name,
-                operation_id,
-            ),
-        )
-
-        conn.commit()
-        conn.close()
-
     def classify_document(
         self,
         document_path: str,
@@ -125,9 +57,9 @@ class Classify:
         validate_classification: bool = False,
     ) -> dict | None:
         # Update the cache to indicate the classification process has started
-        self._update_document_stage(
-            document_id,
-            classification_duration=None,
+        update_document_stage(
+            action="classification",
+            document_id=document_id,
             operation_id=None,
             new_stage="classify_init",
         )
