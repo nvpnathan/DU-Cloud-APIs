@@ -1,5 +1,5 @@
-from project_setup import initialize_environment
 from processor import DocumentProcessor
+from project_setup import initialize_environment
 
 if __name__ == "__main__":
     # Initialize environment (clients, config, context)
