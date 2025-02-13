@@ -25,6 +25,8 @@ def submit_async_request(
     operation_id: str,
     document_id: str,
     bearer_token: str,
+    max_retries: int = 3,  # Maximum retries for errors
+    retry_delay: float = 2.0,  # Initial delay for retries
 ) -> dict:
     classifier_id = None
     extractor_id = None
@@ -48,9 +50,10 @@ def submit_async_request(
         "Authorization": f"Bearer {bearer_token}",
     }
     start_time = time.time()
+    retries = 0
 
-    try:
-        while True:
+    while True:
+        try:
             response = requests.get(api_url, headers=headers, timeout=60)
             response.raise_for_status()
             response_data = response.json()
@@ -71,27 +74,45 @@ def submit_async_request(
                 )
                 return response_data.get("result")
 
-            elif response_data["status"] == "NotStarted":
-                print(f"{action.capitalize()} not started...")
-            elif response_data["status"] == "Running":
+            elif response_data["status"] in {"NotStarted", "Running"}:
+                print(f"{action.capitalize()} status: {response_data['status']}...")
                 time.sleep(1)
-                print(f"{action.capitalize()} running...")
-            else:
+                continue
+
+            else:  # Handle failure states
                 error_code = response_data.get("error", {}).get("code")
                 error_message = response_data.get("error", {}).get("message")
                 _log_error(action, document_id, operation_id, error_code, error_message)
+
+                if error_code == "[UnexpectedInternalServerError]":
+                    if retries < max_retries:
+                        retries += 1
+                        delay = retry_delay * (
+                            2 ** (retries - 1)
+                        )  # Exponential backoff
+                        print(
+                            f"Retrying due to error: {error_code}. Retry {retries}/{max_retries} in {delay} seconds..."
+                        )
+                        time.sleep(delay)
+                        continue  # Retry the loop
+                    else:
+                        raise RuntimeError(
+                            f"Maximum retries reached for error {error_code}. Unable to complete the request."
+                        )
+
+                # Raise for other errors
                 raise RuntimeError(
                     f"Operation {action} failed: {error_message} (Error Code: {error_code})"
                 )
 
-    except requests.exceptions.RequestException as e:
-        _log_error(action, document_id, operation_id, "NetworkError", str(e))
-    except KeyError as ke:
-        _log_error(action, document_id, operation_id, "KeyError", str(ke))
-    except Exception as ex:
-        _log_error(action, document_id, operation_id, "UnexpectedError", str(ex))
+        except requests.exceptions.RequestException as e:
+            _log_error(action, document_id, operation_id, "NetworkError", str(e))
+        except KeyError as ke:
+            _log_error(action, document_id, operation_id, "KeyError", str(ke))
+        except Exception as ex:
+            _log_error(action, document_id, operation_id, "UnexpectedError", str(ex))
 
-    return None
+        return None
 
 
 def submit_validation_request(

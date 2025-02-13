@@ -121,10 +121,24 @@ class DocumentProcessor:
         self.write_extraction_results(extraction_results, document_path)
 
         if config.validate_extraction:
+            # Submit the validation request, optionally deferring the validation process
+            filename = os.path.basename(document_path)
+
             validated_results = self.validate_client.validate_extraction_results(
-                extractor_id, document_id, extraction_results, extraction_prompts
+                filename,
+                extractor_id,
+                document_id,
+                extraction_results,
+                extraction_prompts,
+                validate_extraction_later=config.validate_extraction_later,
             )
-            if validated_results:
+
+            if config.validate_extraction_later:
+                print(
+                    f"Extraction validation will be performed later for document {document_id}"
+                )
+            elif validated_results:
+                # Handle and write results only if validation was immediate
                 self.write_validated_results(
                     validated_results, extraction_results, document_path
                 )

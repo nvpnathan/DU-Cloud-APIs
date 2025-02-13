@@ -19,6 +19,7 @@ class ProcessingConfig:
     Attributes:
         validate_classification (bool): Whether to validate classification results.
         validate_extraction (bool): Whether to validate extraction results.
+        validate_extraction_later (bool): Whether to defer extraction validation (only applicable if validate_extraction is True).
         perform_classification (bool): Whether to perform classification as part of the pipeline.
         perform_extraction (bool): Whether to perform extraction as part of the pipeline.
     """
@@ -27,11 +28,15 @@ class ProcessingConfig:
         self,
         validate_classification: bool = False,
         validate_extraction: bool = False,
+        validate_extraction_later: bool = False,
         perform_classification: bool = True,
         perform_extraction: bool = True,
     ):
         self.validate_classification: bool = validate_classification
         self.validate_extraction: bool = validate_extraction
+        self.validate_extraction_later: bool = (
+            validate_extraction_later if validate_extraction else False
+        )
         self.perform_classification: bool = perform_classification
         self.perform_extraction: bool = perform_extraction
 
