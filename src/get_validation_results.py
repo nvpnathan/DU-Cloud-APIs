@@ -1,14 +1,11 @@
 import os
 import sqlite3
 from dotenv import load_dotenv
+from project_config import SQLITE_DB_PATH
 from utils.auth import initialize_authentication
 from utils.write_results import WriteResults
 from modules.async_request_handler import submit_validation_request
 
-
-# Cache configuration
-CACHE_DIR = "cache"
-SQLITE_DB_PATH = os.path.join(CACHE_DIR, "document_cache.db")
 
 # Load environment variables and initialize authentication
 load_dotenv()
