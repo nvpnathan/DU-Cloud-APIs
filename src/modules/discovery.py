@@ -217,7 +217,7 @@ class Discovery:
             # Handle case where cache file does not exist
             # Proceed to fetch projects from the API
 
-        api_url = f"{self.base_url}/{project_id}/classifiers?api-version=1.1"
+        api_url = f"{self.base_url}{project_id}/classifiers?api-version=1.1"
         headers = {
             "Authorization": f"Bearer {self.bearer_token}",
             "accept": "text/plain",
@@ -329,7 +329,7 @@ class Discovery:
             # Handle case where cache file does not exist
             # Proceed to fetch projects from the API
 
-        api_url = f"{self.base_url}/{project_id}/extractors?api-version=1.1"
+        api_url = f"{self.base_url}{project_id}/extractors?api-version=1.1"
         headers = {
             "Authorization": f"Bearer {self.bearer_token}",
             "accept": "text/plain",

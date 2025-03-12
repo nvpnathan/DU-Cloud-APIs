@@ -19,7 +19,6 @@ load_dotenv()
 # Initialize Authentication
 auth = initialize_authentication()
 bearer_token = auth.bearer_token
-base_url = os.getenv("BASE_URL")
 
 
 def ensure_cache_directory():
@@ -95,6 +94,7 @@ def ensure_database():
                 operator_confirmed BOOLEAN,
                 row_index INTEGER DEFAULT -1,
                 column_index INTEGER DEFAULT -1,
+                page_range TEXT,
                 timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (filename, field_id, field, row_index, column_index)
             )

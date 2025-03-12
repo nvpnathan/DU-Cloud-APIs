@@ -33,6 +33,9 @@ class WriteResults:
         document_type_id = self.extraction_results["extractionResult"][
             "ResultsDocument"
         ]["DocumentTypeId"]
+        page_range = self.extraction_results["extractionResult"]["ResultsDocument"][
+            "Bounds"
+        ]["PageRange"]
 
         for field in self.extraction_results["extractionResult"]["ResultsDocument"][
             "Fields"
@@ -50,6 +53,7 @@ class WriteResults:
                 "ocr_confidence": None,
                 "operator_confirmed": None,
                 "is_correct": True,
+                "page_range": page_range,
             }
             if "Values" in field and field["Values"]:
                 field_data.update(
@@ -86,6 +90,10 @@ class WriteResults:
         document_type_id = self.extraction_results["extractionResult"][
             "ResultsDocument"
         ]["DocumentTypeId"]
+
+        page_range = self.extraction_results["extractionResult"]["ResultsDocument"][
+            "Bounds"
+        ]["PageRange"]
 
         tables = (
             self.extraction_results.get("extractionResult", {})
@@ -124,10 +132,9 @@ class WriteResults:
                                 "is_correct": (
                                     first_value.get("DataSource") != "ManuallyChanged"
                                 ),
-                                "row_index": cell["RowIndex"],  # Adding RowIndex
-                                "column_index": cell[
-                                    "ColumnIndex"
-                                ],  # Adding ColumnIndex
+                                "page_range": page_range,
+                                "row_index": cell["RowIndex"],
+                                "column_index": cell["ColumnIndex"],
                             }
 
                             # Dynamic upsert SQL query
@@ -258,16 +265,16 @@ class WriteResults:
 
     def export_query_to_csv(self):
         """
-        Exports the result of an SQLite query to a CSV file.
-        The CSV file is named after the 'filename' column in the query.
+        Exports the result of an SQLite query to CSV files.
+        The CSV files are named as "filename-page_range.csv" to handle multiple document splits.
 
         Raises:
             ValueError: If the query doesn't return rows for the specified filename.
         """
         try:
             query = """
-                SELECT filename, field_id, field, is_missing, field_value,
-                    field_unformatted_value, confidence, ocr_confidence
+                SELECT filename, page_range, field_id, field, is_missing,
+                    field_value, field_unformatted_value, confidence, ocr_confidence
                 FROM extraction
                 WHERE filename = ?;
             """
@@ -281,24 +288,36 @@ class WriteResults:
             if not rows:
                 raise ValueError(f"No rows returned for filename '{self.filename}'.")
 
-            # Generate a CSV file name based on self.filename
-            csv_filename = os.path.basename(self.filename)  # Strip any path components
-            csv_filename = (
-                os.path.splitext(csv_filename)[0] + ".csv"
-            )  # Ensure a .csv extension
+            # Group data by page_range
+            data_by_page_range = {}
+            for row in rows:
+                page_range = row[1]  # Assuming page_range is the second column
+                if page_range not in data_by_page_range:
+                    data_by_page_range[page_range] = []
+                data_by_page_range[page_range].append(row)
 
-            # Define the output path
+            # Define the output directory
             output_dir = "output_results"
             os.makedirs(output_dir, exist_ok=True)  # Ensure the directory exists
-            csv_filepath = os.path.join(output_dir, csv_filename)
 
-            # Write the query results to the CSV file
-            with open(csv_filepath, mode="w", newline="", encoding="utf-8") as csv_file:
-                writer = csv.writer(csv_file)
-                writer.writerow(column_names)  # Write the header
-                writer.writerows(rows)  # Write the data
+            base_filename = os.path.splitext(os.path.basename(self.filename))[
+                0
+            ]  # Get filename without extension
 
-            print(f"Data exported to {csv_filepath}")
+            # Create separate CSV files for each page_range
+            for page_range, data_rows in data_by_page_range.items():
+                csv_filename = f"{base_filename}-pages_{page_range}.csv"
+                csv_filepath = os.path.join(output_dir, csv_filename)
+
+                with open(
+                    csv_filepath, mode="w", newline="", encoding="utf-8"
+                ) as csv_file:
+                    writer = csv.writer(csv_file)
+                    writer.writerow(column_names)  # Write the header
+                    writer.writerows(data_rows)  # Write the data
+
+                print(f"Data exported to {csv_filepath}")
+
         except sqlite3.Error as e:
             print(f"SQLite error: {e}")
         except ValueError as e:

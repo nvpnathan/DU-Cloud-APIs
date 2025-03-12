@@ -25,7 +25,7 @@ def submit_async_request(
     operation_id: str,
     document_id: str,
     bearer_token: str,
-    max_retries: int = 3,  # Maximum retries for errors
+    max_retries: int = 15,  # Maximum retries for errors
     retry_delay: float = 2.0,  # Initial delay for retries
 ) -> dict:
     classifier_id = None
@@ -84,7 +84,7 @@ def submit_async_request(
                 error_message = response_data.get("error", {}).get("message")
                 _log_error(action, document_id, operation_id, error_code, error_message)
 
-                if error_code == "[UnexpectedInternalServerError]":
+                if error_code == "[IxpExtractorUnavailableError]":
                     if retries < max_retries:
                         retries += 1
                         delay = retry_delay * (
