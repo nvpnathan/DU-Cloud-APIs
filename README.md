@@ -1,6 +1,6 @@
 # Document Understanding Cloud APIs Example
 
-This project demonstrates how to **digitize**, **classify**, **validate**, and **extract** documents using UiPath Document Understanding API's.
+This project demonstrates how to **digitize**, **classify**, **validate**, and **extract** documents using UiPath Document Understanding REST API's.
 
 ## Official Documentation
 
@@ -13,6 +13,7 @@ UiPath Document Understanding offers standalone capabilities, allowing integrati
 - Digitization Caching (7 Days)
 - Classification CSV results
 - Extraction CSV results
+- Database Results
 
 ## Process Flowchart
 
@@ -86,10 +87,11 @@ The project structure is organized as follows:
 DU-Cloud-APIs/
 │
 ├── src/
-│   ├── main.py                  # Main entry point for the application
-│   ├── processor.py             # Logic for processing pipeline (should include orchestration, or configuration setup if needed)
-│   ├── project_config.py        # Configuration module for project variables and sqlite db creation
-│   ├── project_setup.py         # Application-level setup (initialization, environment loading)
+│   ├── get_validation_results.py # Fetch and add validated results to the database (standalone)
+│   ├── main.py                   # Main entry point for the application
+│   ├── processor.py              # Logic for processing pipeline (should include orchestration, or configuration setup if needed)
+│   ├── project_config.py         # Configuration module for project variables and sqlite db creation
+│   ├── project_setup.py          # Application-level setup (initialization, environment loading)
 │   ├── modules/  
 │   │   ├── __init__.py
 │   │   ├── digitize.py          # Digitize module for initiating document digitization
@@ -99,6 +101,7 @@ DU-Cloud-APIs/
 │   │   └── async_request_handler.py  # Module for handling async requests related to validation
 │   └── utils/
 │       ├── auth.py              # Authentication module for obtaining bearer token
+│       ├── db_utils.py          # Database helper functions
 │       └── write_results.py     # Utility module for writing classification and extraction results to SQLite
 ├── tests/
 │   ├── test_main.py      # Test for the main application entry point
@@ -168,6 +171,7 @@ This project uses SQLite to store and manage various document processing results
     - `operator_confirmed`: Boolean indicating if the value was confirmed by an operator.
     - `row_index`: Row index for table fields (default -1).
     - `column_index`: Column index for table fields (default -1).
+    - `page_range`: Page range of logically split documents.
     - `timestamp`: Timestamp of the extraction (default CURRENT_TIMESTAMP).
     - `PRIMARY KEY (filename, field_id, field, row_index, column_index)`.
 
@@ -177,7 +181,7 @@ These tables are created and managed in the [`ensure_database`](src/config.py) f
 
 &#9744; Write Tests for Discovery API
 
-&#9744; Perform validation outside of the workflow (optional)
+&#9745; Perform validation outside of the workflow (optional)
 
 &#9744; Add unique batch_id for each run
 
