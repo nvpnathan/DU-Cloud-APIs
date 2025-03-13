@@ -28,26 +28,32 @@ class DocumentProcessor:
             document_id = self.start_digitization(document_path)
 
             # Perform classification if required
-            document_type_id = (
+            document_classifications = (
                 self.classify_document(document_id, document_path, config, context)
                 if config.perform_classification
-                else None
+                else []
             )
 
-            # Perform extraction if required
-            if config.perform_extraction:
-                extractor_id, extractor_name = self.get_extractor(
-                    context, document_type_id
-                )
-                if extractor_id and extractor_name:
-                    self.perform_extraction(
-                        document_id,
-                        document_path,
-                        extractor_id,
-                        extractor_name,
-                        config,
-                        context,
+            # If no classification, assume a single default document type with no page range
+            if not document_classifications:
+                document_classifications = [(None, None)]
+
+            # Process each classified document type separately
+            for document_type_id, page_range in document_classifications:
+                if config.perform_extraction:
+                    extractor_id, extractor_name = self.get_extractor(
+                        context, document_type_id
                     )
+                    if extractor_id and extractor_name:
+                        self.perform_extraction(
+                            document_id,
+                            document_path,
+                            extractor_id,
+                            extractor_name,
+                            page_range,
+                            config,
+                            context,
+                        )
 
         except Exception as e:
             print(f"Error processing {document_path}: {e}")
@@ -107,6 +113,7 @@ class DocumentProcessor:
         document_path: str,
         extractor_id: str,
         extractor_name: str,
+        page_range: str,
         config: ProcessingConfig,
         context: DocumentProcessingContext,
     ) -> None:
@@ -116,15 +123,29 @@ class DocumentProcessor:
             else None
         )
         extraction_results = self.extract_client.extract_document(
-            extractor_id, document_id, extraction_prompts
+            extractor_id, document_id, page_range, extraction_prompts
         )
         self.write_extraction_results(extraction_results, document_path)
 
         if config.validate_extraction:
+            # Submit the validation request, optionally deferring the validation process
+            filename = os.path.basename(document_path)
+
             validated_results = self.validate_client.validate_extraction_results(
-                extractor_id, document_id, extraction_results, extraction_prompts
+                filename,
+                extractor_id,
+                document_id,
+                extraction_results,
+                extraction_prompts,
+                validate_extraction_later=config.validate_extraction_later,
             )
-            if validated_results:
+
+            if config.validate_extraction_later:
+                print(
+                    f"Extraction validation will be performed later for document {document_id}"
+                )
+            elif validated_results:
+                # Handle and write results only if validation was immediate
                 self.write_validated_results(
                     validated_results, extraction_results, document_path
                 )

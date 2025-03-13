@@ -18,6 +18,15 @@ class Discovery:
         self.validate_extraction = self._get_cached_boolean(
             "validate_extraction", "Validate extraction?"
         )
+
+        # Conditionally add "validate_extraction_later"
+        if self.validate_extraction:
+            self.validate_extraction_later = self._get_cached_boolean(
+                "validate_extraction_later", "Validate Extraction Later?"
+            )
+        else:
+            self.validate_extraction_later = False  # Default to False if not applicable
+
         self.perform_classification = self._get_cached_boolean(
             "perform_classification", "Perform classification?"
         )
@@ -50,17 +59,16 @@ class Discovery:
         """Retrieve a cached boolean value or prompt the user if not in cache."""
         if cache_key in self.document_cache:
             cached_value = self.document_cache[cache_key]
-            user_value = questionary.confirm(question_text, default=cached_value).ask()
+        else:
+            cached_value = None  # Ensure we explicitly prompt if not cached
 
-            self.document_cache[cache_key] = user_value
-            self._save_cache_to_file(self.document_cache)  # Save to file
-            return user_value
+        user_value = questionary.confirm(question_text, default=cached_value).ask()
 
-        # Prompt the user for a new value if not in cache and update cache
-        new_value = questionary.confirm(question_text).ask()
-        self.document_cache[cache_key] = new_value
-        self._save_cache_to_file(self.document_cache)  # Save to file
-        return new_value
+        # Ensure False is stored in the cache when "N" is selected
+        self.document_cache[cache_key] = bool(user_value)  # Explicitly convert to bool
+        self._save_cache_to_file(self.document_cache)  # Save updated cache
+
+        return bool(user_value)  # Return the stored boolean value
 
     def get_projects(self):
         cache = {}
@@ -209,7 +217,7 @@ class Discovery:
             # Handle case where cache file does not exist
             # Proceed to fetch projects from the API
 
-        api_url = f"{self.base_url}/{project_id}/classifiers?api-version=1.1"
+        api_url = f"{self.base_url}{project_id}/classifiers?api-version=1.1"
         headers = {
             "Authorization": f"Bearer {self.bearer_token}",
             "accept": "text/plain",
@@ -321,7 +329,7 @@ class Discovery:
             # Handle case where cache file does not exist
             # Proceed to fetch projects from the API
 
-        api_url = f"{self.base_url}/{project_id}/extractors?api-version=1.1"
+        api_url = f"{self.base_url}{project_id}/extractors?api-version=1.1"
         headers = {
             "Authorization": f"Bearer {self.bearer_token}",
             "accept": "text/plain",

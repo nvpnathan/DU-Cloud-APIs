@@ -11,11 +11,26 @@ class Validate:
 
     def validate_extraction_results(
         self,
+        filename: str,
         extractor_id: str,
         document_id: str,
         extraction_results: dict,
         extraction_prompts: dict,
+        validate_extraction_later: bool = False,
     ) -> dict | None:
+        """
+        Submits a validation request for extraction results and optionally waits for the result.
+
+        Args:
+            extractor_id (str): The ID of the extractor.
+            document_id (str): The ID of the document.
+            extraction_results (dict): The extraction results to validate.
+            extraction_prompts (dict): Additional prompts for extraction validation.
+            validate_extraction_later (bool): If True, submits the request but does not wait for results.
+
+        Returns:
+            dict | None: The validation results, or None if validation is deferred.
+        """
         # Define the API endpoint for validation
         api_url = f"{self.base_url}{self.project_id}/extractors/{extractor_id}/validation/start?api-version=1.1"
 
@@ -28,7 +43,7 @@ class Validate:
 
         data = {
             "documentId": document_id,
-            "actionTitle": f"Validate - {extractor_id}",
+            "actionTitle": f"Validate - {filename}",
             "actionPriority": "Medium",
             "actionCatalog": "default_du_actions",
             "actionFolder": "Shared",
@@ -50,7 +65,7 @@ class Validate:
                 # Extract and return the operationId
                 operation_id = response_data.get("operationId")
 
-                # Wait until the validation operation is completed
+                # Update the document stage if operationId exists
                 if operation_id:
                     update_document_stage(
                         action="extraction_validation",
@@ -61,6 +76,14 @@ class Validate:
                         error_message=None,
                     )
 
+                    if validate_extraction_later:
+                        # If deferred, do not wait for the result
+                        print(
+                            f"Validation request for document {document_id} submitted and deferred."
+                        )
+                        return None
+
+                    # Wait for the validation result
                     validation_result = submit_validation_request(
                         action="extraction_validation",
                         bearer_token=self.bearer_token,
@@ -71,8 +94,8 @@ class Validate:
                     )
                     print("Extraction Validation Complete!\n")
                     return validation_result
-            print(f"Error: {response.status_code} - {response.text}")
-            return None
+                print(f"Error: {response.status_code} - {response.text}")
+                return None
 
         except requests.exceptions.RequestException as e:
             print(f"Error submitting extraction validation request: {e}")

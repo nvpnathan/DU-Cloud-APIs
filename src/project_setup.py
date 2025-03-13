@@ -19,7 +19,6 @@ load_dotenv()
 # Initialize Authentication
 auth = initialize_authentication()
 bearer_token = auth.bearer_token
-base_url = os.getenv("BASE_URL")
 
 
 def ensure_cache_directory():
@@ -95,6 +94,7 @@ def ensure_database():
                 operator_confirmed BOOLEAN,
                 row_index INTEGER DEFAULT -1,
                 column_index INTEGER DEFAULT -1,
+                page_range TEXT,
                 timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (filename, field_id, field, row_index, column_index)
             )
@@ -137,6 +137,7 @@ def get_processing_config(discovery_client):
     return ProcessingConfig(
         validate_classification=discovery_client.validate_classification,
         validate_extraction=discovery_client.validate_extraction,
+        validate_extraction_later=discovery_client.validate_extraction_later,
         perform_classification=discovery_client.perform_classification,
         perform_extraction=discovery_client.perform_extraction,
     )
@@ -164,11 +165,14 @@ def initialize_environment():
 
     discovery_client = Discovery(BASE_URL, bearer_token)
 
-    # Load endpoints
+    # Get the actual processing configuration
+    processing_config = get_processing_config(discovery_client)
+
+    # Load endpoints using the correct boolean flags
     project_id, classifier, extractor_dict = load_endpoints(
         discovery_client,
-        load_classifier=True,
-        load_extractor=True,
+        load_classifier=processing_config.perform_classification,
+        load_extractor=processing_config.perform_extraction,
     )
 
     # Create context and config

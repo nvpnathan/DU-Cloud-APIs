@@ -10,7 +10,11 @@ class Extract:
         self.bearer_token = bearer_token
 
     def extract_document(
-        self, extractor_id: str, document_id: str, prompts: dict = None
+        self,
+        extractor_id: str,
+        document_id: str,
+        page_range: str = None,
+        prompts: dict = None,
     ) -> dict | None:
         # Update the cache to indicate the extraction process has started
         update_document_stage(
@@ -29,7 +33,11 @@ class Extract:
             "Content-Type": "application/json",
         }
 
-        data = {"documentId": f"{document_id}", **(prompts or {})}
+        data = {
+            "documentId": f"{document_id}",
+            "pageRange": page_range,
+            **(prompts or {}),
+        }
 
         try:
             response = requests.post(api_url, json=data, headers=headers, timeout=300)

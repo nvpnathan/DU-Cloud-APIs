@@ -104,12 +104,22 @@ class Classify:
                         classification_results, document_path, operation_id
                     )
 
-                    document_type_id = classification_results["classificationResults"][
-                        0
-                    ]["DocumentTypeId"]
-                    print(f"Classification: {document_type_id}\n")
+                    # Extract all classified document type IDs along with their PageRanges
+                    document_classifications = [
+                        (
+                            result["DocumentTypeId"],
+                            result["DocumentBounds"]["PageRange"],
+                        )
+                        for result in classification_results.get(
+                            "classificationResults", []
+                        )
+                    ]
 
-                    return document_type_id
+                    print(
+                        f"Classification results for {document_path}: {document_classifications}"
+                    )
+
+                    return document_classifications
 
             print(f"Error: {response.status_code} - {response.text}")
             return None
