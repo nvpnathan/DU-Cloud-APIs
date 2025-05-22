@@ -2,6 +2,28 @@
 
 This project demonstrates how to **digitize**, **classify**, **validate**, and **extract** documents using UiPath Document Understanding REST API's.
 
+# Disclaimer
+
+**IMPORTANT: This code is provided for reference and example purposes only.**
+
+Please note the following:
+
+1. **No Support:** This code is not officially supported. Use it at your own risk.
+
+2. **No Warranty:** The code is provided "as is", without warranty of any kind, express or implied.
+
+3. **No Liability:** The authors or copyright holders shall not be liable for any claim, damages, or other liability arising from the use of this code.
+
+4. **Reference Only:** This code is intended to serve as a reference or example. It may not be suitable for production environments without thorough review and testing.
+
+5. **No Updates:** This code may not be actively maintained or updated. It may become outdated or incompatible with future software versions.
+
+6. **Security:** No guarantees are made regarding the security of this code. A comprehensive security review is recommended before any use in sensitive applications.
+
+7. **Licensing:** Ensure you comply with any licensing requirements if you choose to use or modify this code.
+
+By using this code, you acknowledge and agree to these terms.
+
 ## Official Documentation
 
 UiPath Document Understanding offers standalone capabilities, allowing integration with external tools and systems through APIs. This release includes APIs for Discovery, Digitization, Classification, Extraction, and Validation. Please take a look at the [Official Documentation](https://docs.uipath.com/document-understanding/automation-cloud/latest/api-guide/example).
